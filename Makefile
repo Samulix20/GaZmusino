@@ -1,5 +1,5 @@
 
-TOP_MODULE = "riscv_decoder"
+TOP_MODULE = "rv32_core"
 VERILATED_MODULE = "V${TOP_MODULE}"
 
 test:

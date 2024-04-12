@@ -7,7 +7,7 @@
 #include <verilated_vcd_c.h>
 
 // Device under test header
-#include "Vriscv_decoder.h"
+#include "Vrv32_core.h"
 
 #define MAX_SIM_TIME 20
 vluint64_t sim_time = 0;
@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
 	Verilated::commandArgs(argc, argv);
 
 	// Create device under test
-	Vriscv_decoder *dut = new Vriscv_decoder;
+	Vrv32_core *dut = new Vrv32_core;
 
 	// Waveform tracing
 	// trace signals 5 levels under dut
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 		// Advance simulation loop
 		sim_time++;
 	}
-	
+
 	// Close waveform file
 	m_trace->close();
 	// Free device under test
