@@ -80,7 +80,7 @@ end
 // Check compression
 // TODO support compresion (C extension)
 always_comb begin
-    if (instruction.opcode[1:0] != 2'b00) begin
+    if (instruction.opcode[1:0] != 2'b11) begin
         o.compressed = 1;
     end else begin
         o.compressed = 0;
@@ -96,7 +96,6 @@ always_comb begin
     })) begin
         o.invalid = 1;
     end
-
     else begin
         o.invalid = 0;
     end

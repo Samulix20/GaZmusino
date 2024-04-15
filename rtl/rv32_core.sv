@@ -5,7 +5,8 @@
 
 module rv32_core (
     input logic clk, resetn,
-    input instr_t instruction
+    input instr_t instruction,
+    output rv32_word pc
 );
 
 logic a;
@@ -13,7 +14,6 @@ instr_type_t t;
 decoded_instr_t d;
 
 // PC logic
-rv32_word pc;
 always_ff @(posedge clk) begin
     if (!resetn) begin
         pc <= 0;

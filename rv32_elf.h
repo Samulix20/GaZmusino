@@ -1,5 +1,4 @@
-#ifndef RV_ELF_H
-#define RV_ELF_H
+#pragma once
 
 #include <elf.h>
 #include <stdio.h>
@@ -8,10 +7,14 @@
 #include <cassert>
 #include <cstdlib>
 
+uint32_t read_rv32_instr(uint8_t* code, uint32_t addr) {
+    return *((uint32_t*) (code + addr));
+}
+
 uint8_t* read_rv32_elf(const char* filename) {
     FILE* fd = fopen(filename, "rb");
     // Check file is open
-    assert(fd == NULL);
+    assert(fd != NULL);
 
     // Read header
     Elf32_Ehdr* ehdr = new Elf32_Ehdr;
@@ -35,7 +38,7 @@ uint8_t* read_rv32_elf(const char* filename) {
     fseek(fd, phdr->p_offset, SEEK_SET);
     fread((void *) rv_program, sizeof(uint8_t), phdr->p_filesz, fd);
 
+    fclose(fd);
+
     return rv_program;
 }
-
-#endif // RV_ELF_H
