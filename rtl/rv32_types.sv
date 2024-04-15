@@ -57,6 +57,6 @@ typedef struct packed {
     logic [2:0] funct3;     // [14:12]
     reg_id_t rd;            // [11:7]
     opcode_t opcode;        // [6:0]
-} instr_t;
+} instr_t /*verilator public*/;
 
 `endif
