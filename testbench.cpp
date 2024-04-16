@@ -11,9 +11,9 @@
 #include "Vrv32_core___024unit.h"
 
 typedef Vrv32_core_instr_t__struct__0 rv32_instr_t;
+typedef Vrv32_core_decoded_instr_t__struct__0 rv32_decoded_instr_t;
 
-#include "rv32_elf.h"
-#include "print_bits.h"
+#include "rv32_test_utils.h"
 
 #define MAX_SIM_TIME 20
 vluint64_t sim_time = 0;
@@ -34,6 +34,8 @@ int main(int argc, char** argv) {
 	m_trace->open("waveform.vcd");
 
 	uint8_t* program_code = read_rv32_elf("build/mainrv.elf");
+	uint32_t raw_instr = 0;
+	uint32_t pc = 0;
 
 	// Testbench simulation loop
 	while (sim_time < MAX_SIM_TIME) {
@@ -47,18 +49,9 @@ int main(int argc, char** argv) {
 			dut->resetn = 1;
 			
 			if (dut->pc < 40) {
-				uint32_t raw_instr = read_rv32_instr(program_code, dut->pc);
+				pc = dut->pc;
+				raw_instr = read_rv32_instr(program_code, pc);
 				dut->instruction = raw_instr;
-				
-				
-				rv32_instr_t instr;
-				instr.set(dut->instruction);
-				
-				printf("%x %08x ", dut->pc, raw_instr);
-				print_bits(sizeof(uint32_t), &raw_instr);
-				printf(" ");
-				print_bits(sizeof(uint8_t), &instr.opcode);
-				printf("\n");
 			}
 		}
 
@@ -67,6 +60,8 @@ int main(int argc, char** argv) {
 
 		// Trace waveform
 		m_trace->dump(sim_time);
+
+		
 		
 		// Advance simulation loop
 		sim_time++;

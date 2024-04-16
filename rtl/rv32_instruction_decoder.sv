@@ -31,7 +31,7 @@ typedef struct packed {
     instr_type_t t;
     logic compressed;
     logic invalid;
-} decoded_instr_t;
+} decoded_instr_t /*verilator public*/;
 
 module rv32_instruction_decoder (
     input   instr_t instr,
@@ -90,9 +90,8 @@ end
 // Invalid instruction detection
 always_comb begin
     if (!(instruction.opcode inside {
-        7'b0110111, 7'b0010111, 7'b1101111, 7'b1100111, 7'b1100011,
-        7'b0000011, 7'b0100011, 7'b0010011, 7'b0110011, 7'b1110011,
-        7'b0001111
+        OPCODE_LUI, OPCODE_AUIPC, OPCODE_JAL, OPCODE_JARL, OPCODE_BRANCH,
+        OPCODE_LOAD, OPCODE_STORE, OPCODE_INTEGER_IMM, OPCODE_INTEGER_REG
     })) begin
         o.invalid = 1;
     end
