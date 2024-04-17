@@ -7,14 +7,14 @@ typedef logic [4:0] reg_id_t;
 
 typedef logic [6:0] opcode_t;
 
-function rv32_word decode_i_imm(rv32_word instr);
+function automatic rv32_word decode_i_imm(rv32_word instr);
     rv32_word imm;
     imm[31:11] = '{default: instr[31]};
     imm[10:0] = instr[30:20];
     return imm;
 endfunction
 
-function rv32_word decode_s_imm(rv32_word instr);
+function automatic rv32_word decode_s_imm(rv32_word instr);
     rv32_word imm;
     imm[31:11] = '{default: instr[31]};
     imm[10:5] = instr[30:25];
@@ -22,7 +22,7 @@ function rv32_word decode_s_imm(rv32_word instr);
     return imm;
 endfunction
 
-function rv32_word decode_b_imm(rv32_word instr);
+function automatic rv32_word decode_b_imm(rv32_word instr);
     rv32_word imm;
     imm[31:12] = '{default: instr[31]};
     imm[11] = instr[7];
@@ -32,14 +32,14 @@ function rv32_word decode_b_imm(rv32_word instr);
     return imm;
 endfunction
 
-function rv32_word decode_u_imm(rv32_word instr);
+function automatic rv32_word decode_u_imm(rv32_word instr);
     rv32_word imm;
     imm[31:12] = instr[31:12];
     imm[11:0] = '{default: instr[0]};
     return imm;
 endfunction
 
-function rv32_word decode_j_imm(rv32_word instr);
+function automatic rv32_word decode_j_imm(rv32_word instr);
     rv32_word imm;
     imm[31:20] = '{default: instr[31]};
     imm[19:12] = instr[19:12];

@@ -1,7 +1,6 @@
-`ifndef RV_DECODER
-`define RV_DECODER
+/* verilator lint_off UNUSEDSIGNAL */
 
-`include "rtl/rv32_types.sv"
+`include "rtl/rv32_types"
 
 module rv32_instr_decoder (
     input   rv_instr_t instr,
@@ -113,5 +112,3 @@ always_comb begin
 end
 
 endmodule
-
-`endif

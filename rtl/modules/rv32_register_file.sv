@@ -1,7 +1,4 @@
-`ifndef RV_REGISTER_FILE
-`define RV_REGISTER_FILE
-
-`include "rtl/rv32_types.sv"
+`include "rtl/rv32_types"
 
 module rv32_register_file (
     input   logic write, clk, resetn,
@@ -34,4 +31,3 @@ end
 
 endmodule
 
-`endif

@@ -1,8 +1,6 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
-`include "rtl/rv32_instr_decoder"
-`include "rtl/rv32_register_file"
-`include "rtl/rv32_int_alu"
+`include "rtl/rv32_types"
 
 module rv32_core (
     // Clk, Reset signals

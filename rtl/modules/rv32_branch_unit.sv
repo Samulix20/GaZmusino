@@ -1,8 +1,6 @@
 `ifndef RV_BRANCH_UNIT
 `define RV_BRANCH_UNIT
 
-`include "rv32_types"
-
 module rv32_branch_unit (
     input rv32_word op1, op2,
     input branch_op_t branch_op,

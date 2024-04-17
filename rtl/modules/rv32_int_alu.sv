@@ -1,6 +1,3 @@
-`ifndef RV_INT_ALU
-`define RV_INT_ALU
-
 `include "rtl/rv32_types"
 
 module rv32_int_alu (
@@ -47,5 +44,3 @@ always_comb begin
 end
 
 endmodule
-
-`endif
