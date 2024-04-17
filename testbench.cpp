@@ -10,9 +10,6 @@
 #include "Vrv32_core.h"
 #include "Vrv32_core___024unit.h"
 
-//typedef Vrv32_core_instr_t__struct__0 rv32_instr_t;
-//typedef Vrv32_core_decoded_instr_t__struct__0 rv32_decoded_instr_t;
-
 #include "rv32_test_utils.h"
 
 #define MAX_SIM_TIME 20
@@ -41,27 +38,39 @@ int main(int argc, char** argv) {
 	while (sim_time < MAX_SIM_TIME) {
 		// Clk signal
 		dut->clk ^= 1;
+		
 
 		// Reset signal
 		if(sim_time > 0 && sim_time < 5){
 			dut->resetn = 0;
 		} else {
 			dut->resetn = 1;
+			pc = dut->instr_addr;
 			
-			if (dut->pc < 40) {
-				pc = dut->pc;
+			// Protect against mem array overflow
+			if (pc < 40) {
 				raw_instr = read_rv32_instr(program_code, pc);
-				dut->fetch_instr = raw_instr;
+				dut->instr_bus = raw_instr;
+				dut->instr_ready = 1;
 			}
 		}
 
 		// Simulate signals
 		dut->eval();
 
+		// Debug
+		Vrv32_core_instr_buffer_data_t__struct__0 ibd;
+		ibd.set(dut->instr_buff_data);
+
+		// Only on high clk and after reset
+		if (dut->clk == 0 && sim_time >= 5) {
+			printf("%u ", (sim_time - 5) / 2);
+			printf("PC %08x %08x ", dut->pc, raw_instr);
+			printf("F %08x %08x\n", ibd.pc, ibd.instr.get());
+		}
+
 		// Trace waveform
 		m_trace->dump(sim_time);
-
-		
 		
 		// Advance simulation loop
 		sim_time++;

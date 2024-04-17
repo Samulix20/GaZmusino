@@ -1,6 +1,8 @@
 `ifndef RV_32_TYPES
 `define RV_32_TYPES
 
+`define RV_NOP 'h33
+
 typedef logic[31:0] rv32_word;
 
 typedef logic [4:0] reg_id_t;
@@ -112,12 +114,16 @@ typedef enum logic [2:0] {
 
 typedef enum logic [2:0]{
     ALU_IN_ZERO,
-    ALU_IN_4,
     ALU_IN_REG_1,
     ALU_IN_REG_2,
     ALU_IN_PC,
     ALU_IN_IMM
 } int_alu_input_t /*verilator public*/;
+
+typedef struct packed {
+    rv_instr_t instr;
+    rv32_word pc;
+} instr_buffer_data_t /*verilator public*/;
 
 typedef struct packed {
     logic invalid;
