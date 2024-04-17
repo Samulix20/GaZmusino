@@ -10,9 +10,8 @@ module rv32_core (
     output rv32_word pc,
 
     input rv32_word op1, op2,
-    input alu_op_t alu_op,
-    output rv32_word result,
-    output cmp_flags_t flags
+    input alu_opsel_t alu_op,
+    output rv32_word result
 );
 
 // PC logic
@@ -44,9 +43,8 @@ rv32_register_file rf(
 */
 
 rv32_int_alu int_alu(
-    .op1(op1), .op2(op2),
-    .op_sel(alu_op), .result(result),
-    .flags(flags)
+    .op1(op1), .op2(op2), .opsel(alu_op),
+    .result(result)
 );
 
 endmodule
