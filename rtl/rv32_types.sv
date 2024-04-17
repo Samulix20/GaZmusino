@@ -1,6 +1,7 @@
 `ifndef RV_32_TYPES
 `define RV_32_TYPES
 
+// Nop operation add x0 x0, 0 (0x00000033)
 `define RV_NOP 'h33
 
 typedef logic[31:0] rv32_word;

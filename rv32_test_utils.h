@@ -1,35 +1,28 @@
-#pragma once
+#ifndef RV32_TEST_UTILS
+#define RV32_TEST_UTILS
 
 #include <elf.h>
-#include <stdio.h>
-#include <inttypes.h>
 
 #include <cassert>
 #include <cstdlib>
+#include <cstdio>
 
-void print_bits(size_t size, const void* p) {
-    const uint8_t* ptr_b = (const uint8_t*) p;
+#include <memory>
+#include <fstream>
 
-    for(int8_t i = size - 1; i >= 0; i--) {
-        for(int8_t j = 7; j >= 0; j--) {
-            printf("%u", (ptr_b[i] >> j) & 1);
-        }
-    }
-
-}
-
-uint32_t read_rv32_instr(uint8_t* code, uint32_t addr) {
-    return *((uint32_t*) (code + addr));
+uint32_t read_rv32_instr(const uint8_t* code, const uint32_t addr) {
+    return *reinterpret_cast<const uint32_t*>(code + addr);
 }
 
 uint8_t* read_rv32_elf(const char* filename) {
-    FILE* fd = fopen(filename, "rb");
+    std::ifstream f(filename, std::ios::binary);
     // Check file is open
-    assert(fd != NULL);
+    assert(f.is_open());
 
     // Read header
     Elf32_Ehdr* ehdr = new Elf32_Ehdr;
-    fread((void *) ehdr, sizeof(Elf32_Ehdr), 1, fd);
+    f.read(reinterpret_cast<char*>(ehdr), sizeof(*ehdr));
+
     // Check is a 32 bit elf file
     assert(ehdr->e_ident[EI_CLASS] == 1);
     // Check is for RISC-V
@@ -37,19 +30,22 @@ uint8_t* read_rv32_elf(const char* filename) {
 
     // Set fd to read program header
     // Seek and read segment 1 cause segment 0 is used for RV attributes
-    fseek(fd, ehdr->e_phoff + 1 * sizeof(Elf32_Phdr), SEEK_SET);
     Elf32_Phdr* phdr = new Elf32_Phdr;
-    fread((void *) phdr, sizeof(Elf32_Phdr), 1, fd);
+    f.seekg(ehdr->e_phoff + sizeof(*phdr));
+    f.read(reinterpret_cast<char*>(phdr), sizeof(*phdr));
+    
     // Make sure its loadable
     assert(phdr->p_type == PT_LOAD);
 
-    // Allocate memory
-    uint8_t* rv_program = (uint8_t*) malloc(phdr->p_filesz);
+    // Allocate memory of size in memory
+    uint8_t* rv_program = new uint8_t[phdr->p_memsz];
     // Go to the segment data and read
-    fseek(fd, phdr->p_offset, SEEK_SET);
-    fread((void *) rv_program, sizeof(uint8_t), phdr->p_filesz, fd);
-
-    fclose(fd);
+    f.seekg(phdr->p_offset);
+    // Copy only the data present in the ELF file
+    f.read(reinterpret_cast<char*>(rv_program), phdr->p_filesz);
+    f.close();
 
     return rv_program;
 }
+
+#endif
