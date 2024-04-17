@@ -1,16 +1,7 @@
 `ifndef RV_BRANCH_UNIT
 `define RV_BRANCH_UNIT
 
-typedef enum data_type {
-    OP_BEQ = 4'b0000,
-    OP_BNE = 4'b0001,
-    OP_BLT = 4'b0100,
-    OP_BGE = 4'b0101,
-    OP_BLTU = 4'b0110,
-    OP_BGEU = 4'b0111,
-    OP_J = 4'b1000,
-    OP_NOP = 4'b1111
-} branch_op_t;
+`include "rv32_types"
 
 module rv32_branch_unit (
     input rv32_word op1, op2,

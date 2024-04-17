@@ -10,8 +10,8 @@
 #include "Vrv32_core.h"
 #include "Vrv32_core___024unit.h"
 
-typedef Vrv32_core_instr_t__struct__0 rv32_instr_t;
-typedef Vrv32_core_decoded_instr_t__struct__0 rv32_decoded_instr_t;
+//typedef Vrv32_core_instr_t__struct__0 rv32_instr_t;
+//typedef Vrv32_core_decoded_instr_t__struct__0 rv32_decoded_instr_t;
 
 #include "rv32_test_utils.h"
 
@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
 			if (dut->pc < 40) {
 				pc = dut->pc;
 				raw_instr = read_rv32_instr(program_code, pc);
-				dut->instruction = raw_instr;
+				dut->fetch_instr = raw_instr;
 			}
 		}
 
