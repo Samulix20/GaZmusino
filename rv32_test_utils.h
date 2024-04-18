@@ -10,8 +10,21 @@
 #include <memory>
 #include <fstream>
 
+// Device under test header
+#include "Vrv32_core.h"
+#include "Vrv32_core___024unit.h"
+
 uint32_t read_rv32_instr(const uint8_t* code, const uint32_t addr) {
     return *reinterpret_cast<const uint32_t*>(code + addr);
+}
+
+using rv_instr_t = Vrv32_core_rv_instr_t__struct__0;
+using RV32Arch = Vrv32_core___024unit;
+
+std::string rv_instr_str(rv_instr_t instr) {
+    std::string str;
+
+    return str;
 }
 
 uint8_t* read_rv32_elf(const char* filename) {

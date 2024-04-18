@@ -6,10 +6,6 @@
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
-// Device under test header
-#include "Vrv32_core.h"
-#include "Vrv32_core___024unit.h"
-
 #include "rv32_test_utils.h"
 
 #define MAX_SIM_TIME 50
@@ -33,10 +29,6 @@ int main(int argc, char** argv) {
     uint8_t* program_code = read_rv32_elf("build/mainrv.elf");
     uint32_t raw_instr = 0;
     uint32_t pc = 0;
-
-    uint32_t v = printf("|%-19s|%-19s|%-19s|%-19s|%-19s|\n", 
-        " Fetch", " Decode", " Execution", " Memory", " Writeback");
-    printf("%s\n", std::string(v-1, '=').c_str());
 
     // Testbench simulation loop
     while (sim_time < MAX_SIM_TIME) {
@@ -76,7 +68,7 @@ int main(int argc, char** argv) {
         // Only on high clk and after reset
         if (dut->clk == 0 && sim_time >= 5) {
             printf("| %08x %08x ", dut->pc, raw_instr);
-            printf("| %08x %08x ", ibd.pc, ibd.instr.get());
+            printf("| %08x %08x %s ", ibd.pc, ibd.instr.get(), rv_instr_str(ibd.instr).c_str());
             printf("| %08x %08x ", dbd.pc, dbd.instr.get());
             printf("| %08x %08x ", ebd.pc, ebd.instr.get());
             printf("| %08x %08x ", mbd.pc, mbd.instr.get());

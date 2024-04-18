@@ -6,7 +6,10 @@ VERILATED_MODULE = V${TOP_MODULE}
 run: clean verilate test
 
 verilate:
-	${VV} -I rtl/modules/* -Wall --top-module ${TOP_MODULE} --trace --trace-structs --x-assign unique --x-initial unique -cc rtl/${TOP_MODULE}.sv --exe testbench.cpp
+	${VV} -I rtl/modules/* -Wall --top-module ${TOP_MODULE} \
+	--trace --trace-structs \
+	--x-assign unique --x-initial unique \
+	-cc rtl/${TOP_MODULE}.sv --exe testbench.cpp
 
 clean:
 	rm -rf obj_dir waveform.vcd
