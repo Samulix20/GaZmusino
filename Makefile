@@ -14,4 +14,6 @@ clean:
 test:
 	make -C obj_dir -f ${VERILATED_MODULE}.mk
 	./obj_dir/${VERILATED_MODULE} +verilator+rand+reset+2
+
+wave:
 	gtkwave waveform.vcd >/dev/null 2>/dev/null &

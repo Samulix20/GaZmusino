@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
         dut->eval();
 
         // Debug
-        Vrv32_core_instr_buffer_data_t__struct__0 ibd;
+        Vrv32_core_fetch_buffer_data_t__struct__0 ibd;
         ibd.set(dut->instr_buff_data);
 
         // Only on high clk and after reset

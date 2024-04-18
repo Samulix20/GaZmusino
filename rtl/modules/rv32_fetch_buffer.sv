@@ -2,14 +2,14 @@
 
 `include "rtl/rv32_types"
 
-module rv32_instr_buffer (
+module rv32_fetch_buffer (
     // Clk, Reset signals
     input logic clk, resetn,
 
     // Core I/O
     input rv32_word pc,
     output logic stall,
-    output instr_buffer_data_t fetch_data,
+    output fetch_buffer_data_t fetch_data,
 
     // Bus I/O
     output rv32_word addr,

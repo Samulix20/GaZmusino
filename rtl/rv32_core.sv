@@ -13,7 +13,7 @@ module rv32_core (
 
     // Debug ports
     output rv32_word pc,
-    output instr_buffer_data_t instr_buff_data,
+    output fetch_buffer_data_t instr_buff_data,
     output decoded_instr_t decoded_instr
 );
 
@@ -29,7 +29,7 @@ end
 
 // Instruction buffer
 logic fetch_stall;
-rv32_instr_buffer instr_buff(
+rv32_fetch_buffer fetch_buff(
     .clk(clk), .resetn(resetn),
     .pc(pc), .stall(fetch_stall),
     .fetch_data(instr_buff_data),

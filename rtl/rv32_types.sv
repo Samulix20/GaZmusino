@@ -124,7 +124,7 @@ typedef enum logic [2:0]{
 typedef struct packed {
     rv_instr_t instr;
     rv32_word pc;
-} instr_buffer_data_t /*verilator public*/;
+} fetch_buffer_data_t /*verilator public*/;
 
 typedef struct packed {
     logic invalid;
@@ -135,5 +135,9 @@ typedef struct packed {
     int_alu_input_t int_alu_i2;
     logic register_wb;
 } decoded_instr_t /*verilator public*/;
+
+typedef struct packed {
+    logic tmp;
+} decoded_buffer_data_t /*verilator public*/;
 
 `endif
