@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     dut->trace(m_trace, 5);
     m_trace->open("waveform.vcd");
 
-    uint8_t* program_code = read_rv32_elf("build/mainrv.elf");
+    uint8_t* program_code = rv32_test::read_elf("build/mainrv.elf");
     uint32_t raw_instr = 0;
     uint32_t pc = 0;
 
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
             
             // Protect against mem array overflow
             if (pc < 40) {
-                raw_instr = read_rv32_instr(program_code, pc);
+                raw_instr = rv32_test::read_instr(program_code, pc);
                 dut->instr_bus = raw_instr;
                 dut->instr_ready = 1;
             }
@@ -54,31 +54,16 @@ int main(int argc, char** argv) {
         // Simulate signals
         dut->eval();
 
-        get_decode_stage_data(dut);
-        get_exec_stage_data(dut);
-        get_mem_stage_data(dut);
-
         // Debug
-        /*
-        Vrv32_core_fetch_buffer_data_t__struct__0 ibd;
-        ibd.set(dut->instr_buff_data);
-        Vrv32_core_decoded_buffer_data_t__struct__0 dbd;
-        dbd.set(dut->decoded_buff_data);
-        Vrv32_core_exec_buffer_data_t__struct__0 ebd;
-        ebd.set(dut->exec_buff_data);
-        Vrv32_core_mem_buffer_data_t__struct__0 mbd;
-        mbd.set(dut->mem_buff_data);
-
         // Only on high clk and after reset
         if (dut->clk == 0 && sim_time >= 5) {
-            printf("| %08x %08x ", dut->pc, raw_instr);
-            printf("| %08x %08x %s ", ibd.pc, ibd.instr.get(), rv_instr_str(ibd.instr).c_str());
-            printf("| %08x %08x ", dbd.pc, dbd.instr.get());
-            printf("| %08x %08x ", ebd.pc, ebd.instr.get());
-            printf("| %08x %08x ", mbd.pc, mbd.instr.get());
-            printf("| %u\n", (sim_time - 5) / 2);
+            printf("PC %08x | ", pc);
+            rv32_test::get_decode_stage_data(dut);
+            rv32_test::get_exec_stage_data(dut);
+            rv32_test::get_mem_stage_data(dut);
+            rv32_test::get_wb_stage_data(dut);
+            printf("\n");
         }
-        */
 
         // Trace waveform
         m_trace->dump(sim_time);

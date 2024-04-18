@@ -13,10 +13,10 @@ module rv32_core (
 );
 
 rv32_word pc;
-fetch_buffer_data_t instr_buff_data;
-decoded_buffer_data_t decoded_buff_data;
-exec_buffer_data_t exec_buff_data;
-mem_buffer_data_t mem_buff_data;
+fetch_buffer_data_t instr_buff_data /*verilator public*/;
+decoded_buffer_data_t decoded_buff_data /*verilator public*/;
+exec_buffer_data_t exec_buff_data /*verilator public*/;
+mem_buffer_data_t mem_buff_data /*verilator public*/;
 
 // PC logic
 logic exec_jump;
