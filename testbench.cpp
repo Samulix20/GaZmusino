@@ -59,11 +59,15 @@ int main(int argc, char** argv) {
         dut->eval();
 
         // Debug
+        
         Vrv32_core_fetch_buffer_data_t__struct__0 ibd;
         ibd.set(dut->instr_buff_data);
-
         Vrv32_core_decoded_buffer_data_t__struct__0 dbd;
         dbd.set(dut->decoded_buff_data);
+        Vrv32_core_exec_buffer_data_t__struct__0 ebd;
+        ebd.set(dut->exec_buff_data);
+        Vrv32_core_mem_buffer_data_t__struct__0 mbd;
+        mbd.set(dut->mem_buff_data);
 
         // Only on high clk and after reset
         if (dut->clk == 0 && sim_time >= 5) {
@@ -71,6 +75,8 @@ int main(int argc, char** argv) {
             printf("PC %08x %08x ", dut->pc, raw_instr);
             printf("F %08x %08x ", ibd.pc, ibd.instr.get());
             printf("D %08x %08x ", dbd.pc, dbd.instr.get());
+            printf("E %08x %08x ", ebd.pc, ebd.instr.get());
+            printf("M %08x %08x ", mbd.pc, mbd.instr.get());
             printf("\n");
         }
 

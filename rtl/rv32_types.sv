@@ -92,6 +92,7 @@ typedef struct packed {
 
 typedef struct packed {
     logic invalid;
+    // Immediate generation
     instr_type_t t;
     // Branch
     branch_op_t branch_op;
@@ -99,8 +100,9 @@ typedef struct packed {
     int_alu_op_t int_alu_op;
     int_alu_input_t int_alu_i1;
     int_alu_input_t int_alu_i2;
-    // WB
-    wb_result_t wb_result;
+    // Writeback source
+    wb_result_t wb_result_src;
+    // Final Writeback
     logic register_wb;
 } decoded_instr_t /*verilator public*/;
 
@@ -113,11 +115,18 @@ typedef struct packed {
 } decoded_buffer_data_t /*verilator public*/;
 
 typedef struct packed {
-    rv32_word pc;
     rv_instr_t instr;
+    rv32_word pc;
     decoded_instr_t decoded_instr;
     rv32_word mem_addr;
     rv32_word wb_result;
 } exec_buffer_data_t /*verilator public*/;
+
+typedef struct packed {
+    rv_instr_t instr;
+    rv32_word pc;
+    decoded_instr_t decoded_instr;
+    rv32_word wb_result;
+} mem_buffer_data_t /*verilator public*/;
 
 `endif

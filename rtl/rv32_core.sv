@@ -15,7 +15,8 @@ module rv32_core (
     output rv32_word pc,
     output fetch_buffer_data_t instr_buff_data,
     output decoded_buffer_data_t decoded_buff_data,
-    output exec_buffer_data_t exec_buff_data
+    output exec_buffer_data_t exec_buff_data,
+    output mem_buffer_data_t mem_buff_data
 );
 
 // PC logic
@@ -35,14 +36,16 @@ always_ff @(posedge clk) begin
 end
 
 // Register file
-rv_reg_id_t rs1, rs2;
-rv32_word reg1, reg2;
+rv_reg_id_t dec_rs1, dec_rs2, wb_rd;
+rv32_word dec_reg1, dec_reg2, wb_data;
+logic wb_we;
 rv32_register_file rf(
     .clk(clk), .resetn(resetn),
     // Decode interface
-    .r1(rs1), .o1(reg1), .r2(rs2), .o2(reg2),
+    .r1(dec_rs1), .o1(dec_reg1),
+    .r2(dec_rs2), .o2(dec_reg2),
     // Writeback interface
-    .write(0), .d(0), .rw(0)
+    .write(wb_we), .d(wb_data), .rw(wb_rd)
 );
 
 // FETCH STAGE
@@ -58,16 +61,16 @@ rv32_fetch_stage fetch_stage(
 );
 
 // DECODE STAGE
-logic decode_stall;
+logic dec_stall;
 rv32_decode_stage decode_stage(
     .clk(clk), .resetn(resetn),
     // Pipeline I/O
     .instr_data(instr_buff_data),
     .decode_data(decoded_buff_data),
-    .stall(decode_stall),
+    .stall(dec_stall),
     // Register file read I/O
-    .rs1(rs1), .rs2(rs2),
-    .reg1(reg1), .reg2(reg2)
+    .rs1(dec_rs1), .rs2(dec_rs2),
+    .reg1(dec_reg1), .reg2(dec_reg2)
 );
 
 // EXECUTION STAGE
@@ -77,6 +80,21 @@ rv32_exec_stage exec_stage(
     .exec_data(exec_buff_data),
     .do_jump(exec_jump),
     .jump_addr(exec_jump_addr)
+);
+
+// MEMORY STAGE
+logic mem_stall;
+rv32_mem_stage mem_stage(
+    .clk(clk), .resetn(resetn),
+    .exec_data(exec_buff_data),
+    .mem_data(mem_buff_data),
+    .stall(mem_stall)
+);
+
+// WRITEBACK STAGE
+rv32_wb_stage wb_stage(
+    .mem_data(mem_buff_data),
+    .reg_write(wb_we), .rd(wb_rd), .wb_data(wb_data)
 );
 
 endmodule

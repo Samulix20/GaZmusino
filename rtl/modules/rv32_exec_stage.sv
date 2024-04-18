@@ -94,7 +94,7 @@ always_comb begin
     internal_data.mem_addr = int_alu_result;
 
     // Setup data for bypass
-    case(decoded_data.decoded_instr.wb_result)
+    case(decoded_data.decoded_instr.wb_result_src)
         WB_PC4: internal_data.wb_result = decoded_data.pc + 4;
         WB_INT_ALU: internal_data.wb_result = int_alu_result;
         default internal_data.wb_result = 0;
