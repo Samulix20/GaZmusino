@@ -1,5 +1,4 @@
-`ifndef RV_BRANCH_UNIT
-`define RV_BRANCH_UNIT
+`include "rtl/rv32_types"
 
 module rv32_branch_unit (
     input rv32_word op1, op2,
@@ -31,5 +30,3 @@ always_comb begin
 end
 
 endmodule
-
-`endif

@@ -14,15 +14,23 @@ module rv32_core (
     // Debug ports
     output rv32_word pc,
     output fetch_buffer_data_t instr_buff_data,
-    output decoded_buffer_data_t decoded_buff_data
+    output decoded_buffer_data_t decoded_buff_data,
+    output exec_buffer_data_t exec_buff_data
 );
 
 // PC logic
+logic exec_jump;
+rv32_word exec_jump_addr;
+
 always_ff @(posedge clk) begin
     if (!resetn) begin
         pc <= 0;
     end else begin
-        pc <= pc + 4;
+        if(exec_jump) begin
+            pc <= exec_jump_addr;
+        end else begin
+            pc <= pc + 4;
+        end
     end
 end
 
@@ -63,11 +71,12 @@ rv32_decode_stage decode_stage(
 );
 
 // EXECUTION STAGE
-/*
-rv32_int_alu int_alu(
-    .op1(op1), .op2(op2), .opsel(alu_op),
-    .result(result)
+rv32_exec_stage exec_stage(
+    .clk(clk), .resetn(resetn),
+    .decoded_data(decoded_buff_data),
+    .exec_data(exec_buff_data),
+    .do_jump(exec_jump),
+    .jump_addr(exec_jump_addr)
 );
-*/
 
 endmodule

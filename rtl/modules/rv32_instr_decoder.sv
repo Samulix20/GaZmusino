@@ -28,6 +28,7 @@ always_comb begin
     decoded_instr.int_alu_i1 = ALU_IN_ZERO;
     decoded_instr.int_alu_i2 = ALU_IN_ZERO;
     decoded_instr.register_wb = 0;
+    decoded_instr.wb_result = WB_INT_ALU;
 
     if(~set_nop) begin
         case(instr.opcode)
@@ -53,6 +54,7 @@ always_comb begin
 
             // Jump and link
             // ALU: PC + J_IMM
+            // PC = ALU
             // RD = PC + 4
             OPCODE_JAL: begin
                 decoded_instr.t = INSTR_J_TYPE;
@@ -60,10 +62,12 @@ always_comb begin
                 decoded_instr.int_alu_i1 = ALU_IN_PC;
                 decoded_instr.int_alu_i2 = ALU_IN_IMM;
                 decoded_instr.register_wb = 1;
+                decoded_instr.wb_result = WB_INT_ALU;
             end
 
             // Jump and link using register
             // ALU: R1 + J_IMM
+            // PC = ALU
             // RD = PC + 4
             OPCODE_JALR: begin
                 decoded_instr.t = INSTR_R_TYPE;
@@ -71,10 +75,12 @@ always_comb begin
                 decoded_instr.int_alu_i1 = ALU_IN_REG_1;
                 decoded_instr.int_alu_i2 = ALU_IN_IMM;
                 decoded_instr.register_wb = 1;
+                decoded_instr.wb_result = WB_INT_ALU;
             end
 
             // Branch instruction
             // ALU: PC + B_IMM
+            // PC = ALU
             // B_UNIT: R1, R2
             OPCODE_BRANCH: begin
                 decoded_instr.t = INSTR_B_TYPE;

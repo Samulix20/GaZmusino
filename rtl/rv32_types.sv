@@ -10,48 +10,6 @@ typedef logic [4:0] rv_reg_id_t;
 
 typedef logic [6:0] opcode_t;
 
-function automatic rv32_word decode_i_imm(rv32_word instr);
-    rv32_word imm;
-    imm[31:11] = '{default: instr[31]};
-    imm[10:0] = instr[30:20];
-    return imm;
-endfunction
-
-function automatic rv32_word decode_s_imm(rv32_word instr);
-    rv32_word imm;
-    imm[31:11] = '{default: instr[31]};
-    imm[10:5] = instr[30:25];
-    imm[4:0] = instr[11:7];
-    return imm;
-endfunction
-
-function automatic rv32_word decode_b_imm(rv32_word instr);
-    rv32_word imm;
-    imm[31:12] = '{default: instr[31]};
-    imm[11] = instr[7];
-    imm[10:5] = instr[30:25];
-    imm[4:1] = instr[11:8];
-    imm[0] = 0;
-    return imm;
-endfunction
-
-function automatic rv32_word decode_u_imm(rv32_word instr);
-    rv32_word imm;
-    imm[31:12] = instr[31:12];
-    imm[11:0] = '{default: instr[0]};
-    return imm;
-endfunction
-
-function automatic rv32_word decode_j_imm(rv32_word instr);
-    rv32_word imm;
-    imm[31:20] = '{default: instr[31]};
-    imm[19:12] = instr[19:12];
-    imm[11] = instr[20];
-    imm[10:1] = instr[30:21];
-    imm[0] = 0;
-    return imm;
-endfunction
-
 // Decoding defaults to R-Type
 typedef struct packed {
     logic [6:0] funct7;     // [31:25]
@@ -113,13 +71,19 @@ typedef enum logic [2:0] {
     INSTR_J_TYPE
 } instr_type_t /*verilator public*/;
 
-typedef enum logic [2:0]{
+typedef enum logic [2:0] {
     ALU_IN_ZERO,
     ALU_IN_REG_1,
     ALU_IN_REG_2,
     ALU_IN_PC,
     ALU_IN_IMM
 } int_alu_input_t /*verilator public*/;
+
+typedef enum logic [2:0] {
+    WB_PC4,
+    WB_INT_ALU,
+    WB_MEM_DATA
+} wb_result_t /*verilator public*/;
 
 typedef struct packed {
     rv_instr_t instr;
@@ -129,10 +93,14 @@ typedef struct packed {
 typedef struct packed {
     logic invalid;
     instr_type_t t;
+    // Branch
     branch_op_t branch_op;
+    // Alu
     int_alu_op_t int_alu_op;
     int_alu_input_t int_alu_i1;
     int_alu_input_t int_alu_i2;
+    // WB
+    wb_result_t wb_result;
     logic register_wb;
 } decoded_instr_t /*verilator public*/;
 
@@ -143,5 +111,13 @@ typedef struct packed {
     rv32_word reg1;
     rv32_word reg2;
 } decoded_buffer_data_t /*verilator public*/;
+
+typedef struct packed {
+    rv32_word pc;
+    rv_instr_t instr;
+    decoded_instr_t decoded_instr;
+    rv32_word mem_addr;
+    rv32_word wb_result;
+} exec_buffer_data_t /*verilator public*/;
 
 `endif
