@@ -8,6 +8,7 @@ module rv32_decode_stage (
     // Pipeline I/O
     input fetch_buffer_data_t instr_data,
     output decoded_buffer_data_t decode_data,
+    output logic stall,
     // Register file read I/O
     output rv_reg_id_t rs1, rs2,
     input rv32_word reg1, reg2
@@ -31,6 +32,9 @@ always_comb begin
     rs2 = instr_data.instr.rs2;
     internal_data.reg1 = reg1;
     internal_data.reg2 = reg2;
+
+    // TODO make hazzard detection
+    stall = 0;
 end
 
 always_ff @(posedge clk) begin

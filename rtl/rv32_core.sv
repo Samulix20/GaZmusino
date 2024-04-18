@@ -50,11 +50,13 @@ rv32_fetch_stage fetch_stage(
 );
 
 // DECODE STAGE
+logic decode_stall;
 rv32_decode_stage decode_stage(
     .clk(clk), .resetn(resetn),
     // Pipeline I/O
     .instr_data(instr_buff_data),
     .decode_data(decoded_buff_data),
+    .stall(decode_stall),
     // Register file read I/O
     .rs1(rs1), .rs2(rs2),
     .reg1(reg1), .reg2(reg2)
