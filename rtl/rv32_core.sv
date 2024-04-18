@@ -14,7 +14,7 @@ module rv32_core (
     // Debug ports
     output rv32_word pc,
     output fetch_buffer_data_t instr_buff_data,
-    output decoded_instr_t decoded_instr
+    output decoded_buffer_data_t decoded_buff_data
 );
 
 // FETCH STAGE
@@ -29,28 +29,38 @@ end
 
 // Instruction buffer
 logic fetch_stall;
-rv32_fetch_buffer fetch_buff(
+rv32_fetch_stage fetch_stage(
     .clk(clk), .resetn(resetn),
-    .pc(pc), .stall(fetch_stall),
-    .fetch_data(instr_buff_data),
+    // CORE I/O
+    .pc(pc),
+    .stall(fetch_stall), .fetch_data(instr_buff_data),
+    // INSTR MEM I/O
     .addr(instr_addr), .instr(instr_bus),
     .ready(instr_ready)
 );
 
 // DECODE STAGE
+decoded_buffer_data_t decode_stage_output;
+
 // Decode logic
 rv32_instr_decoder decoder(
     .instr(instr_buff_data.instr),
-    .decoded_instr(decoded_instr)
+    .decoded_instr(decode_stage_output.decoded_instr)
 );
 
 // Register file
-rv32_word o1, o2;
 rv32_register_file rf(
-    .clk(clk), .resetn(resetn), .write(0),
-    .r1(instr_buff_data.instr.rs1), .r2(instr_buff_data.instr.rs2),
-    .rw(instr_buff_data.instr.rd), .d(0), .o1(o1), .o2(o2)
+    .clk(clk), .resetn(resetn),
+    .r1(instr_buff_data.instr.rs1), .o1(decode_stage_output.reg1),
+    .r2(instr_buff_data.instr.rs2), .o2(decode_stage_output.reg2),
+    .write(0), .d(0), .rw(0)
 );
+
+always_comb begin
+    decode_stage_output.instr = instr_buff_data.instr;
+    decode_stage_output.pc = instr_buff_data.pc;
+    decoded_buff_data = decode_stage_output;
+end
 
 // EXECUTION STAGE
 /*

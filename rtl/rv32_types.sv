@@ -137,7 +137,11 @@ typedef struct packed {
 } decoded_instr_t /*verilator public*/;
 
 typedef struct packed {
-    logic tmp;
+    rv_instr_t instr;
+    rv32_word pc;
+    decoded_instr_t decoded_instr;
+    rv32_word reg1;
+    rv32_word reg2;
 } decoded_buffer_data_t /*verilator public*/;
 
 `endif

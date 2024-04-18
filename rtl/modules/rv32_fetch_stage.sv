@@ -2,7 +2,7 @@
 
 `include "rtl/rv32_types"
 
-module rv32_fetch_buffer (
+module rv32_fetch_stage (
     // Clk, Reset signals
     input logic clk, resetn,
 
