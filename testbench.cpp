@@ -62,11 +62,16 @@ int main(int argc, char** argv) {
         Vrv32_core_fetch_buffer_data_t__struct__0 ibd;
         ibd.set(dut->instr_buff_data);
 
+        Vrv32_core_decoded_buffer_data_t__struct__0 dbd;
+        dbd.set(dut->decoded_buff_data);
+
         // Only on high clk and after reset
         if (dut->clk == 0 && sim_time >= 5) {
             printf("%u ", (sim_time - 5) / 2);
             printf("PC %08x %08x ", dut->pc, raw_instr);
-            printf("F %08x %08x\n", ibd.pc, ibd.instr.get());
+            printf("F %08x %08x ", ibd.pc, ibd.instr.get());
+            printf("D %08x %08x ", dbd.pc, dbd.instr.get());
+            printf("\n");
         }
 
         // Trace waveform

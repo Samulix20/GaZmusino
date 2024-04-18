@@ -6,7 +6,7 @@
 
 typedef logic[31:0] rv32_word;
 
-typedef logic [4:0] reg_id_t;
+typedef logic [4:0] rv_reg_id_t;
 
 typedef logic [6:0] opcode_t;
 
@@ -55,10 +55,10 @@ endfunction
 // Decoding defaults to R-Type
 typedef struct packed {
     logic [6:0] funct7;     // [31:25]
-    reg_id_t rs2;           // [24:20]
-    reg_id_t rs1;           // [19:15]
+    rv_reg_id_t rs2;           // [24:20]
+    rv_reg_id_t rs1;           // [19:15]
     logic [2:0] funct3;     // [14:12]
-    reg_id_t rd;            // [11:7]
+    rv_reg_id_t rd;            // [11:7]
     opcode_t opcode;        // [6:0]
 } rv_instr_t /*verilator public*/;
 

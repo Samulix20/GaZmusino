@@ -17,7 +17,6 @@ module rv32_core (
     output decoded_buffer_data_t decoded_buff_data
 );
 
-// FETCH STAGE
 // PC logic
 always_ff @(posedge clk) begin
     if (!resetn) begin
@@ -27,11 +26,22 @@ always_ff @(posedge clk) begin
     end
 end
 
-// Instruction buffer
+// Register file
+rv_reg_id_t rs1, rs2;
+rv32_word reg1, reg2;
+rv32_register_file rf(
+    .clk(clk), .resetn(resetn),
+    // Decode interface
+    .r1(rs1), .o1(reg1), .r2(rs2), .o2(reg2),
+    // Writeback interface
+    .write(0), .d(0), .rw(0)
+);
+
+// FETCH STAGE
 logic fetch_stall;
 rv32_fetch_stage fetch_stage(
     .clk(clk), .resetn(resetn),
-    // CORE I/O
+    // Pipeline I/O
     .pc(pc),
     .stall(fetch_stall), .fetch_data(instr_buff_data),
     // INSTR MEM I/O
@@ -40,27 +50,15 @@ rv32_fetch_stage fetch_stage(
 );
 
 // DECODE STAGE
-decoded_buffer_data_t decode_stage_output;
-
-// Decode logic
-rv32_instr_decoder decoder(
-    .instr(instr_buff_data.instr),
-    .decoded_instr(decode_stage_output.decoded_instr)
-);
-
-// Register file
-rv32_register_file rf(
+rv32_decode_stage decode_stage(
     .clk(clk), .resetn(resetn),
-    .r1(instr_buff_data.instr.rs1), .o1(decode_stage_output.reg1),
-    .r2(instr_buff_data.instr.rs2), .o2(decode_stage_output.reg2),
-    .write(0), .d(0), .rw(0)
+    // Pipeline I/O
+    .instr_data(instr_buff_data),
+    .decode_data(decoded_buff_data),
+    // Register file read I/O
+    .rs1(rs1), .rs2(rs2),
+    .reg1(reg1), .reg2(reg2)
 );
-
-always_comb begin
-    decode_stage_output.instr = instr_buff_data.instr;
-    decode_stage_output.pc = instr_buff_data.pc;
-    decoded_buff_data = decode_stage_output;
-end
 
 // EXECUTION STAGE
 /*

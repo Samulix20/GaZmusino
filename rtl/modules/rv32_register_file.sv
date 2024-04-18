@@ -2,7 +2,7 @@
 
 module rv32_register_file (
     input   logic write, clk, resetn,
-    input   reg_id_t r1, r2, rw,
+    input   rv_reg_id_t r1, r2, rw,
     input   rv32_word d,
     output  rv32_word o1, o2
 );
