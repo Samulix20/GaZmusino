@@ -21,14 +21,7 @@ end
 
 always_comb begin
     // Default NOP Setup add x0, x0, 0;
-    decoded_instr.t = INSTR_R_TYPE;
-    decoded_instr.branch_op = OP_NOP;
-    decoded_instr.int_alu_op = ALU_OP_ADD;
-    decoded_instr.invalid = 0;
-    decoded_instr.int_alu_i1 = ALU_IN_ZERO;
-    decoded_instr.int_alu_i2 = ALU_IN_ZERO;
-    decoded_instr.register_wb = 0;
-    decoded_instr.wb_result_src = WB_INT_ALU;
+    decoded_instr = create_nop_ctrl();
 
     if(~set_nop) begin
         case(instr.opcode)

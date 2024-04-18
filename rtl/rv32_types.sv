@@ -106,6 +106,20 @@ typedef struct packed {
     logic register_wb;
 } decoded_instr_t /*verilator public*/;
 
+// Used for NOP generation
+function automatic decoded_instr_t create_nop_ctrl();
+    decoded_instr_t instr;
+    instr.t = INSTR_R_TYPE;
+    instr.branch_op = OP_NOP;
+    instr.int_alu_op = ALU_OP_ADD;
+    instr.invalid = 0;
+    instr.int_alu_i1 = ALU_IN_ZERO;
+    instr.int_alu_i2 = ALU_IN_ZERO;
+    instr.register_wb = 0;
+    instr.wb_result_src = WB_INT_ALU;
+    return instr;
+endfunction
+
 typedef struct packed {
     rv_instr_t instr;
     rv32_word pc;

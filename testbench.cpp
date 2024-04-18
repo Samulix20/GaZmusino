@@ -12,7 +12,7 @@
 
 #include "rv32_test_utils.h"
 
-#define MAX_SIM_TIME 20
+#define MAX_SIM_TIME 50
 vluint64_t sim_time = 0;
 
 int main(int argc, char** argv) {
@@ -33,6 +33,10 @@ int main(int argc, char** argv) {
     uint8_t* program_code = read_rv32_elf("build/mainrv.elf");
     uint32_t raw_instr = 0;
     uint32_t pc = 0;
+
+    uint32_t v = printf("|%-19s|%-19s|%-19s|%-19s|%-19s|\n", 
+        " Fetch", " Decode", " Execution", " Memory", " Writeback");
+    printf("%s\n", std::string(v-1, '=').c_str());
 
     // Testbench simulation loop
     while (sim_time < MAX_SIM_TIME) {
@@ -71,13 +75,12 @@ int main(int argc, char** argv) {
 
         // Only on high clk and after reset
         if (dut->clk == 0 && sim_time >= 5) {
-            printf("%u ", (sim_time - 5) / 2);
-            printf("PC %08x %08x ", dut->pc, raw_instr);
-            printf("F %08x %08x ", ibd.pc, ibd.instr.get());
-            printf("D %08x %08x ", dbd.pc, dbd.instr.get());
-            printf("E %08x %08x ", ebd.pc, ebd.instr.get());
-            printf("M %08x %08x ", mbd.pc, mbd.instr.get());
-            printf("\n");
+            printf("| %08x %08x ", dut->pc, raw_instr);
+            printf("| %08x %08x ", ibd.pc, ibd.instr.get());
+            printf("| %08x %08x ", dbd.pc, dbd.instr.get());
+            printf("| %08x %08x ", ebd.pc, ebd.instr.get());
+            printf("| %08x %08x ", mbd.pc, mbd.instr.get());
+            printf("| %u\n", (sim_time - 5) / 2);
         }
 
         // Trace waveform

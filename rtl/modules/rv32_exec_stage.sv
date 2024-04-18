@@ -99,6 +99,12 @@ always_comb begin
         WB_INT_ALU: internal_data.wb_result = int_alu_result;
         default internal_data.wb_result = 0;
     endcase
+
+    if(!resetn) begin
+        internal_data.instr = `RV_NOP;
+        internal_data.pc = 0;
+        internal_data.decoded_instr = create_nop_ctrl();
+    end
 end
 
 always_ff @(posedge clk) begin
