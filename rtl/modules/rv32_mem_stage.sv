@@ -12,7 +12,7 @@ module rv32_mem_stage(
     // TODO Data Mem I/O
 );
 
-mem_buffer_data_t internal_data;
+mem_buffer_data_t internal_data /*verilator public*/;
 
 always_comb begin
     internal_data.instr = exec_data.instr;

@@ -54,8 +54,12 @@ int main(int argc, char** argv) {
         // Simulate signals
         dut->eval();
 
+        get_decode_stage_data(dut);
+        get_exec_stage_data(dut);
+        get_mem_stage_data(dut);
+
         // Debug
-        
+        /*
         Vrv32_core_fetch_buffer_data_t__struct__0 ibd;
         ibd.set(dut->instr_buff_data);
         Vrv32_core_decoded_buffer_data_t__struct__0 dbd;
@@ -74,6 +78,7 @@ int main(int argc, char** argv) {
             printf("| %08x %08x ", mbd.pc, mbd.instr.get());
             printf("| %u\n", (sim_time - 5) / 2);
         }
+        */
 
         // Trace waveform
         m_trace->dump(sim_time);

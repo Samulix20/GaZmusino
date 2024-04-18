@@ -14,7 +14,7 @@ module rv32_decode_stage (
     input rv32_word reg1, reg2
 );
 
-decoded_buffer_data_t internal_data;
+decoded_buffer_data_t internal_data /*verilator public*/;
 
 // Decode logic
 rv32_instr_decoder decoder(

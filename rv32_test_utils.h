@@ -9,20 +9,67 @@
 
 #include <memory>
 #include <fstream>
+#include <unordered_map>
 
 // Device under test header
 #include "Vrv32_core.h"
+#include "Vrv32_core_rv32_core.h"
+#include "Vrv32_core_rv32_decode_stage.h"
+#include "Vrv32_core_rv32_exec_stage.h"
+#include "Vrv32_core_rv32_mem_stage.h"
 #include "Vrv32_core___024unit.h"
 
 uint32_t read_rv32_instr(const uint8_t* code, const uint32_t addr) {
     return *reinterpret_cast<const uint32_t*>(code + addr);
 }
 
+using decode_data_t = Vrv32_core_decoded_buffer_data_t__struct__0;
+using exec_data_t = Vrv32_core_exec_buffer_data_t__struct__0;
+using mem_data_t = Vrv32_core_mem_buffer_data_t__struct__0;
+
 using rv_instr_t = Vrv32_core_rv_instr_t__struct__0;
 using RV32Arch = Vrv32_core___024unit;
 
+void get_decode_stage_data(Vrv32_core* rvcore) {
+    decode_data_t d;
+    d.set(rvcore->rv32_core->decode_stage->internal_data);
+    printf("%08x\n", d.pc);
+}
+
+void get_exec_stage_data(Vrv32_core* rvcore) {
+    exec_data_t d;
+    d.set(rvcore->rv32_core->exec_stage->internal_data);
+    printf("%08x\n", d.pc);
+}
+
+void get_mem_stage_data(Vrv32_core* rvcore) {
+    mem_data_t d;
+    d.set(rvcore->rv32_core->mem_stage->internal_data);
+    printf("%08x\n", d.pc);
+}
+
 std::string rv_instr_str(rv_instr_t instr) {
     std::string str;
+
+    static const std::unordered_map<RV32Arch::valid_opcodes_t, std::string> opcode_str_map = {
+        {RV32Arch::OPCODE_LUI, "LUI"},
+        {RV32Arch::OPCODE_AUIPC, "AUIPC"},
+        {RV32Arch::OPCODE_JAL, "JAL"},
+        {RV32Arch::OPCODE_JALR, "JALR"},
+        {RV32Arch::OPCODE_BRANCH, "BRANCH"},
+        {RV32Arch::OPCODE_LOAD, "LOAD"},
+        {RV32Arch::OPCODE_STORE, "STORE"},
+        {RV32Arch::OPCODE_INTEGER_IMM, "INT IMM"},
+        {RV32Arch::OPCODE_INTEGER_REG, "INT REG"},
+        {RV32Arch::OPCODE_ZICSR, "ZICSR"},
+        {RV32Arch::OPCODE_BARRIER, "BARRIER"}
+    };
+
+    auto it = opcode_str_map.find(static_cast<RV32Arch::valid_opcodes_t>(instr.opcode));
+    if (it != opcode_str_map.end()) str = it->second;
+    else str = "???";
+
+
 
     return str;
 }

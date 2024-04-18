@@ -9,15 +9,14 @@ module rv32_core (
     // Instructions memory port
     output rv32_word instr_addr,
     input rv_instr_t instr_bus,
-    input logic instr_ready,
-
-    // Debug ports
-    output rv32_word pc,
-    output fetch_buffer_data_t instr_buff_data,
-    output decoded_buffer_data_t decoded_buff_data,
-    output exec_buffer_data_t exec_buff_data,
-    output mem_buffer_data_t mem_buff_data
+    input logic instr_ready
 );
+
+rv32_word pc;
+fetch_buffer_data_t instr_buff_data;
+decoded_buffer_data_t decoded_buff_data;
+exec_buffer_data_t exec_buff_data;
+mem_buffer_data_t mem_buff_data;
 
 // PC logic
 logic exec_jump;

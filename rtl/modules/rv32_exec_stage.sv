@@ -40,7 +40,7 @@ function automatic rv32_word alu_input_sel(
     return out;
 endfunction
 
-exec_buffer_data_t internal_data;
+exec_buffer_data_t internal_data /*verilator public*/;
 
 // TODO Bypass logic
 rv32_word reg1, reg2;
