@@ -118,6 +118,7 @@ std::string alu_op_str(rv_decoded_instr_t instr) {
     return str;
 }
 
+// If jump != NOP "[BRANCH_OP]"
 std::string branch_op_str(rv_decoded_instr_t instr) {
     std::string str;
     static const std::unordered_map<RV32Core::branch_op_t, std::string> str_map = {
@@ -137,6 +138,7 @@ std::string branch_op_str(rv_decoded_instr_t instr) {
     return str;
 }
 
+// If writeback "[WB_SRC] -> x[rd]"
 std::string wb_src_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
     std::string s = "";
 
@@ -158,6 +160,7 @@ std::string wb_src_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
     return s;
 }
 
+// If writeback "x[rd] <- [wb_result]"
 std::string wb_write_str(wb_data_t wbd) {
     std::string s = "";
     if (wbd.decoded_instr.register_wb) {
