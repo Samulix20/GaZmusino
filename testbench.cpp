@@ -8,7 +8,7 @@
 
 #include "rv32_test_utils.h"
 
-#define MAX_SIM_TIME 50
+#define MAX_SIM_TIME 20
 vluint64_t sim_time = 0;
 
 int main(int argc, char** argv) {
@@ -57,12 +57,7 @@ int main(int argc, char** argv) {
         // Debug
         // Only on high clk and after reset
         if (dut->clk == 0 && sim_time >= 5) {
-            printf("PC %08x | ", pc);
-            rv32_test::get_decode_stage_data(dut);
-            rv32_test::get_exec_stage_data(dut);
-            rv32_test::get_mem_stage_data(dut);
-            rv32_test::get_wb_stage_data(dut);
-            printf("\n");
+            rv32_test::trace_stages(dut);
         }
 
         // Trace waveform

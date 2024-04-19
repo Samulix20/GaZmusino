@@ -9,7 +9,7 @@ verilate:
 	${VV} -I rtl/modules/* -Wall --top-module ${TOP_MODULE} \
 	--trace --trace-structs \
 	--x-assign unique --x-initial unique \
-	-cc rtl/${TOP_MODULE}.sv --exe testbench.cpp
+	--cc -CFLAGS "-std=c++20" --exe rtl/${TOP_MODULE}.sv testbench.cpp 
 
 clean:
 	rm -rf obj_dir waveform.vcd

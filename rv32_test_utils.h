@@ -10,6 +10,7 @@
 #include <memory>
 #include <fstream>
 #include <unordered_map>
+#include <format>
 
 // Device under test header
 #include "Vrv32_core.h"
@@ -51,6 +52,23 @@ std::string opcode_str(rv_instr_t instr) {
     return str;
 }
 
+std::string rename_imm_str(std::string op, rv_decoded_instr_t dec_instr) {
+    static const std::unordered_map<RV32Core::instr_type_t, std::string> str_map = {
+        {RV32Core::INSTR_R_TYPE, "???"},
+        {RV32Core::INSTR_I_TYPE, "I_IMM"},
+        {RV32Core::INSTR_S_TYPE, "S_IMM"},
+        {RV32Core::INSTR_B_TYPE, "B_IMM"},
+        {RV32Core::INSTR_U_TYPE, "U_IMM"},
+        {RV32Core::INSTR_J_TYPE, "J_IMM"}
+    };
+
+    if (op != "IMM") return op;
+
+    auto it = str_map.find(static_cast<RV32Core::instr_type_t>(dec_instr.t));
+    if (it != str_map.end()) op = it->second;
+    return op;
+}
+
 std::string alu_input_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
     std::string op1, op2;
     static const std::unordered_map<RV32Core::int_alu_input_t, std::string> str_map = {
@@ -73,6 +91,9 @@ std::string alu_input_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
 
     if(op2 == "R1") op2 = "rs1(x" + std::to_string(instr.rs1) + ")";
     else if(op2 == "R2") op2 = "rs2(x" + std::to_string(instr.rs2) + ")";
+
+    op1 = rename_imm_str(op1, dec_instr);
+    op2 = rename_imm_str(op2, dec_instr);
 
     return op1 + " " + op2;
 }
@@ -115,45 +136,119 @@ std::string branch_op_str(rv_decoded_instr_t instr) {
     return str;
 }
 
-std::string wb_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
+std::string wb_src_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
     std::string s = "";
+
+    static const std::unordered_map<RV32Core::wb_result_t, std::string> str_map = {
+        {RV32Core::WB_PC4, "PC4"},
+        {RV32Core::WB_INT_ALU, "ALU"},
+        {RV32Core::WB_MEM_DATA, "MEM"}
+    };
+    auto it = str_map.find(static_cast<RV32Core::wb_result_t>(dec_instr.wb_result_src));
+    if (it != str_map.end()) s = it->second;
+    else s = "???";
+
     if (dec_instr.register_wb) {
-        s = "x" + std::to_string(instr.rd) + " <- ";
+        s += " -> x" + std::to_string(instr.rd);
+    } else {
+        s = "";
+    }
+
+    return s;
+}
+
+std::string wb_write_str(wb_data_t wbd) {
+    std::string s = "";
+    if (wbd.decoded_instr.register_wb) {
+        s += "x" + std::to_string(wbd.instr.rd) + " <- " + std::format("{:<#10x}", wbd.wb_result);
     }
     return s;
 }
 
-void get_decode_stage_data(Vrv32_core* rvcore) {
+decode_data_t get_decode_stage_data(Vrv32_core* rvcore) {
     decode_data_t d;
     d.set(rvcore->rv32_core->decode_stage->internal_data);
-    std::string s = alu_op_str(d.decoded_instr) + " ";
-    s += alu_input_str(d.instr, d.decoded_instr);
-    printf("%s ALU {%s} BU {%s} %s|", 
-        opcode_str(d.instr).c_str(), 
-        s.c_str(), 
-        branch_op_str(d.decoded_instr).c_str(),
-        wb_str(d.instr, d.decoded_instr).c_str()
-    );
+    return d;
 }
 
-void get_exec_stage_data(Vrv32_core* rvcore) {
+exec_data_t get_exec_stage_data(Vrv32_core* rvcore) {
     exec_data_t d;
     d.set(rvcore->rv32_core->exec_stage->internal_data);
-    printf("%08x %08x | ", d.pc, d.instr);
+    return d;
 }
 
-void get_mem_stage_data(Vrv32_core* rvcore) {
+mem_data_t get_mem_stage_data(Vrv32_core* rvcore) {
     mem_data_t d;
     d.set(rvcore->rv32_core->mem_stage->internal_data);
-    printf("%08x %08x | ", d.pc, d.instr);
+    return d;
 }
 
-void get_wb_stage_data(Vrv32_core* rvcore) {
+wb_data_t get_wb_stage_data(Vrv32_core* rvcore) {
     wb_data_t d;
     d.set(rvcore->rv32_core->mem_buff_data);
-    if(d.wb_result) {
-        printf("x%u <- %08x", d.instr.rd, d.wb_result);
+    return d;
+}
+
+class TraceCanvas {
+  public:
+    uint32_t stages;
+    uint32_t lines;
+    std::vector<std::vector<std::string>> canvas;
+
+    TraceCanvas(uint32_t num_stages, uint32_t num_lines): stages(num_stages), lines(num_lines) {
+        for(uint32_t i = 0; i < stages; i++) {
+            auto s = std::vector<std::string>();
+            for(uint32_t j = 0; j < lines; j++) {
+                s.push_back("");
+            }
+            canvas.push_back(s);
+        }
     }
+
+    void print() {
+        std::string s = "";
+        for(uint32_t j = 0; j < lines; j++) {
+            for(uint32_t i = 0; i < stages; i++) {
+                s += std::format("|{:<25}", canvas[i][j]);
+            }
+            s += "|\n";
+        }
+
+        for(uint32_t i = 0; i < stages; i++) {
+            s += std::format("|{:=^25}", "");
+        }
+        s += "|\n";
+        printf("%s", s.c_str());
+    }
+};
+
+void trace_stages(Vrv32_core* rvcore) {
+    auto tc = TraceCanvas(5, 5);
+    tc.canvas[0][0] = "Fetch";
+    tc.canvas[0][1] = std::format("@ {:<#10x} I {:<#10x}", rvcore->instr_addr, rvcore->instr_bus);
+    
+    auto decode_data = get_decode_stage_data(rvcore);
+    tc.canvas[1][0] = "Decode";
+    tc.canvas[1][1] = std::format("@ {:<#10x} I {:<#10x}", decode_data.pc, decode_data.instr.get());
+    tc.canvas[1][2] = "Opcode " + opcode_str(decode_data.instr);
+    tc.canvas[1][3] = wb_src_str(decode_data.instr, decode_data.decoded_instr);
+
+    auto exec_data = get_exec_stage_data(rvcore);
+    tc.canvas[2][0] = "Execute";
+    tc.canvas[2][1] = std::format("@ {:<#10x} I {:<#10x}", exec_data.pc, exec_data.instr.get());
+    tc.canvas[2][2] = alu_op_str(exec_data.decoded_instr) + " ";
+    tc.canvas[2][2] += alu_input_str(exec_data.instr, exec_data.decoded_instr);
+    
+    auto mem_data = get_mem_stage_data(rvcore);
+    tc.canvas[3][0] = "Memory";
+    tc.canvas[3][1] = std::format("@ {:<#10x} I {:<#10x}", mem_data.pc, mem_data.instr.get());
+
+    auto wb_data = get_wb_stage_data(rvcore);
+    tc.canvas[4][0] = "Writeback";
+    tc.canvas[4][1] = std::format("@ {:<#10x} I {:<#10x}", wb_data.pc, wb_data.instr.get());
+    tc.canvas[4][2] = wb_write_str(wb_data);
+
+    tc.print();
 }
 
 
