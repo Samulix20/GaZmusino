@@ -44,7 +44,7 @@ int main(int argc, char** argv) {
             pc = dut->instr_addr;
             
             // Protect against mem array overflow
-            if (pc < 40) {
+            if (pc <= 0xedc8) {
                 raw_instr = rv32_test::read_instr(program_code, pc);
                 dut->instr_bus = raw_instr;
                 dut->instr_ready = 1;

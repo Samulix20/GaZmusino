@@ -18,20 +18,28 @@ decoded_buffer_data_t decoded_buff_data /*verilator public*/;
 exec_buffer_data_t exec_buff_data /*verilator public*/;
 mem_buffer_data_t mem_buff_data /*verilator public*/;
 
-// PC logic
-logic exec_jump;
-rv32_word exec_jump_addr;
+// PC/Jump logic
+logic exec_jump, jump_set_nop;
+rv32_word exec_jump_addr, jump_nop_pc;
+rv32_word next_pc /*verilator public*/;
+always_comb begin
+    jump_set_nop = 0;
+    jump_nop_pc = decoded_buff_data.pc;
+
+    if(exec_jump) begin
+        next_pc = exec_jump_addr;
+        jump_set_nop = 1;
+    end else begin
+        next_pc = pc + 4;
+    end
+
+    if (!resetn) begin
+        next_pc = 0;
+    end
+end
 
 always_ff @(posedge clk) begin
-    if (!resetn) begin
-        pc <= 0;
-    end else begin
-        if(exec_jump) begin
-            pc <= exec_jump_addr;
-        end else begin
-            pc <= pc + 4;
-        end
-    end
+    pc <= next_pc;
 end
 
 // Register file
@@ -52,6 +60,8 @@ logic fetch_stall;
 rv32_fetch_stage fetch_stage(
     .clk(clk), .resetn(resetn),
     // Pipeline I/O
+    .set_nop(jump_set_nop),
+    .set_nop_pc(jump_nop_pc),
     .pc(pc),
     .stall(fetch_stall), .fetch_data(instr_buff_data),
     // INSTR MEM I/O
@@ -64,6 +74,8 @@ logic dec_stall;
 rv32_decode_stage decode_stage(
     .clk(clk), .resetn(resetn),
     // Pipeline I/O
+    .set_nop(jump_set_nop),
+    .set_nop_pc(jump_nop_pc),
     .instr_data(instr_buff_data),
     .decode_data(decoded_buff_data),
     .stall(dec_stall),

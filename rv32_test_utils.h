@@ -193,6 +193,10 @@ wb_data_t get_wb_stage_data(Vrv32_core* rvcore) {
     return d;
 }
 
+uint32_t get_next_pc(Vrv32_core* rvcore) {
+    return rvcore->rv32_core->next_pc;
+}
+
 class TraceCanvas {
   public:
     uint32_t stages;
@@ -222,14 +226,15 @@ class TraceCanvas {
             s += std::format("|{:=^25}", "");
         }
         s += "|\n";
-        printf("%s", s.c_str());
+        std::cout << s;
     }
 };
 
 void trace_stages(Vrv32_core* rvcore) {
     auto tc = TraceCanvas(5, 3);
     tc.canvas[0][0] = std::format("@ {:<#10x} I {:<#10x}", rvcore->instr_addr, rvcore->instr_bus);
-    
+    tc.canvas[0][1] = std::format("@ <- {:<#10x}", get_next_pc(rvcore));
+
     auto decode_data = get_decode_stage_data(rvcore);
     tc.canvas[1][0] = std::format("@ {:<#10x} I {:<#10x}", decode_data.pc, decode_data.instr.get());
     tc.canvas[1][1] = "Opcode " + opcode_str(decode_data.instr);
