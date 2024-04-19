@@ -55,7 +55,7 @@ always_comb begin
                 decoded_instr.int_alu_i1 = ALU_IN_PC;
                 decoded_instr.int_alu_i2 = ALU_IN_IMM;
                 decoded_instr.register_wb = 1;
-                decoded_instr.wb_result_src = WB_INT_ALU;
+                decoded_instr.wb_result_src = WB_PC4;
             end
 
             // Jump and link using register
@@ -68,7 +68,7 @@ always_comb begin
                 decoded_instr.int_alu_i1 = ALU_IN_REG_1;
                 decoded_instr.int_alu_i2 = ALU_IN_IMM;
                 decoded_instr.register_wb = 1;
-                decoded_instr.wb_result_src = WB_INT_ALU;
+                decoded_instr.wb_result_src = WB_PC4;
             end
 
             // Branch instruction

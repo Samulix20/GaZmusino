@@ -8,7 +8,7 @@
 
 #include "rv32_test_utils.h"
 
-#define MAX_SIM_TIME 20
+#define MAX_SIM_TIME 40
 vluint64_t sim_time = 0;
 
 int main(int argc, char** argv) {
