@@ -81,7 +81,9 @@ rv32_decode_stage decode_stage(
     .stall(dec_stall),
     // Register file read I/O
     .rs1(dec_rs1), .rs2(dec_rs2),
-    .reg1(dec_reg1), .reg2(dec_reg2)
+    .reg1(dec_reg1), .reg2(dec_reg2),
+    // Hazzard detection
+    .exec_buff(exec_buff_data)
 );
 
 // EXECUTION STAGE

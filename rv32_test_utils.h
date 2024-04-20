@@ -52,6 +52,39 @@ std::string opcode_str(rv_instr_t instr) {
     return str;
 }
 
+std::string bypass_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
+    static const std::unordered_map<RV32Core::bypass_t, std::string> str_map = {
+        {RV32Core::NO_BYPASS, "NO"},
+        {RV32Core::BYPASS_EXEC_BUFF, "EXEC"},
+        {RV32Core::BYPASS_MEM_BUFF, "MEM"}
+    };
+
+    std::string s = "";
+
+    for (uint32_t i = 0; i < 2; i++) {
+        RV32Core::bypass_t bypass;
+        std::string rs, b_op;
+        
+        if (i == 0) {
+            bypass = static_cast<RV32Core::bypass_t>(dec_instr.bypass_rs1);
+            rs = "rs1(x" + std::to_string(instr.rs1) + ")";
+        } else {
+            bypass = static_cast<RV32Core::bypass_t>(dec_instr.bypass_rs2);
+            rs = "rs2(x" + std::to_string(instr.rs2) + ")";
+        }
+
+        auto it = str_map.find(bypass);
+        if (it != str_map.end()) b_op = it->second;
+        else b_op = "NO";
+
+        if (b_op == "NO") continue;
+
+        s += "!" + b_op + " " + rs + " ";
+    }
+
+    return s;
+}
+
 std::string rename_imm_str(std::string op, rv_decoded_instr_t dec_instr) {
     static const std::unordered_map<RV32Core::instr_type_t, std::string> str_map = {
         {RV32Core::INSTR_R_TYPE, "???"},
@@ -66,6 +99,7 @@ std::string rename_imm_str(std::string op, rv_decoded_instr_t dec_instr) {
 
     auto it = str_map.find(static_cast<RV32Core::instr_type_t>(dec_instr.t));
     if (it != str_map.end()) op = it->second;
+    else op = "???";
     return op;
 }
 
@@ -231,7 +265,7 @@ class TraceCanvas {
 };
 
 void trace_stages(Vrv32_core* rvcore) {
-    auto tc = TraceCanvas(5, 3);
+    auto tc = TraceCanvas(5, 4);
     tc.canvas[0][0] = std::format("@ {:<#10x} I {:<#10x}", rvcore->instr_addr, rvcore->instr_bus);
     tc.canvas[0][1] = std::format("@ <- {:<#10x}", get_next_pc(rvcore));
 
@@ -239,6 +273,7 @@ void trace_stages(Vrv32_core* rvcore) {
     tc.canvas[1][0] = std::format("@ {:<#10x} I {:<#10x}", decode_data.pc, decode_data.instr.get());
     tc.canvas[1][1] = "Opcode " + opcode_str(decode_data.instr);
     tc.canvas[1][2] = wb_src_str(decode_data.instr, decode_data.decoded_instr);
+    tc.canvas[1][3] = bypass_str(decode_data.instr, decode_data.decoded_instr);
 
     auto exec_data = get_exec_stage_data(rvcore);
     tc.canvas[2][0] = std::format("@ {:<#10x} I {:<#10x}", exec_data.pc, exec_data.instr.get());

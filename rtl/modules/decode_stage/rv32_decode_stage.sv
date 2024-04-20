@@ -13,15 +13,31 @@ module rv32_decode_stage (
     output logic stall,
     // Register file read I/O
     output rv_reg_id_t rs1, rs2,
-    input rv32_word reg1, reg2
+    input rv32_word reg1, reg2,
+    // Hazzard detection I/O
+    input exec_buffer_data_t exec_buff
 );
 
 decoded_buffer_data_t internal_data /*verilator public*/;
 decoded_instr_t decoder_output;
 
+logic [1:0] use_rs;
+logic hazzard_stall;
+bypass_t bypass_rs[2];
+
 rv32_decoder decoder(
+    .use_rs(use_rs),
     .instr(instr_data.instr),
     .decoded_instr(decoder_output)
+);
+
+rv32_hazzard_detection_unit hazzard_detection(
+    .use_rs(use_rs),
+    .current_instr(instr_data.instr),
+    .decoded_buff(decode_data),
+    .exec_buff(exec_buff),
+    .stall(hazzard_stall),
+    .bypass_rs(bypass_rs)
 );
 
 // Decode logic
@@ -39,14 +55,16 @@ always_comb begin
     // Default decode
     internal_data.decoded_instr = decoder_output;
 
+    // Hazard detection
+    internal_data.decoded_instr.bypass_rs1 = bypass_rs[0];
+    internal_data.decoded_instr.bypass_rs2 = bypass_rs[1];
+    stall = hazzard_stall;
+
     if(set_nop | !resetn) begin
         internal_data.instr = `RV_NOP;
         internal_data.pc = set_nop_pc;
         internal_data.decoded_instr = create_nop_ctrl();
     end
-
-    // TODO make hazzard detection
-    stall = 0;
 end
 
 always_ff @(posedge clk) begin

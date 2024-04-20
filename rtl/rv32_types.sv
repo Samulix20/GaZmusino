@@ -85,6 +85,12 @@ typedef enum logic [2:0] {
     WB_MEM_DATA
 } wb_result_t /*verilator public*/;
 
+typedef enum logic [2:0] {
+    NO_BYPASS,
+    BYPASS_EXEC_BUFF,
+    BYPASS_MEM_BUFF
+} bypass_t /*verilator public*/;
+
 typedef struct packed {
     rv_instr_t instr;
     rv32_word pc;
@@ -94,6 +100,9 @@ typedef struct packed {
     logic invalid;
     // Immediate generation
     instr_type_t t;
+    // Bypass
+    bypass_t bypass_rs1;
+    bypass_t bypass_rs2;
     // Branch
     branch_op_t branch_op;
     // Alu
@@ -117,6 +126,8 @@ function automatic decoded_instr_t create_nop_ctrl();
     instr.int_alu_i2 = ALU_IN_ZERO;
     instr.register_wb = 0;
     instr.wb_result_src = WB_INT_ALU;
+    instr.bypass_rs1 = NO_BYPASS;
+    instr.bypass_rs2 = NO_BYPASS;
     return instr;
 endfunction
 

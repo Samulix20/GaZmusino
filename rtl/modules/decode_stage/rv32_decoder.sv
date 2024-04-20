@@ -4,12 +4,17 @@
 
 module rv32_decoder (
     input rv_instr_t instr,
-    output decoded_instr_t decoded_instr
+    output decoded_instr_t decoded_instr,
+    // Register use for dependecy detection
+    output logic [1:0] use_rs
 );
 
 always_comb begin
 // Default signals NOP Setup add x0, x0, 0;
     decoded_instr = create_nop_ctrl();
+
+    use_rs[0] = 0;
+    use_rs[1] = 0;
 
     case(instr.opcode)
         // Load upper imm
@@ -66,6 +71,8 @@ always_comb begin
             decoded_instr.branch_op = branch_op_t'({1'b0, instr.funct3});
             decoded_instr.int_alu_i1 = ALU_IN_PC;
             decoded_instr.int_alu_i2 = ALU_IN_IMM;
+            use_rs[0] = 1;
+            use_rs[1] = 1;
         end
 
         // Integer Immediate arithmetic
@@ -77,6 +84,7 @@ always_comb begin
             decoded_instr.int_alu_i1 = ALU_IN_REG_1;
             decoded_instr.int_alu_i2 = ALU_IN_IMM;
             decoded_instr.register_wb = 1;
+            use_rs[0] = 1;
         end
 
         // Integer register arithmetic
@@ -88,6 +96,8 @@ always_comb begin
             decoded_instr.int_alu_i1 = ALU_IN_REG_1;
             decoded_instr.int_alu_i2 = ALU_IN_REG_2;
             decoded_instr.register_wb = 1;
+            use_rs[0] = 1;
+            use_rs[1] = 1;
         end
 
         default: begin
