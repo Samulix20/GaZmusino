@@ -92,7 +92,8 @@ rv32_exec_stage exec_stage(
     .decoded_data(decoded_buff_data),
     .exec_data(exec_buff_data),
     .do_jump(exec_jump),
-    .jump_addr(exec_jump_addr)
+    .jump_addr(exec_jump_addr),
+    .mem_buff(mem_buff_data)
 );
 
 // MEMORY STAGE

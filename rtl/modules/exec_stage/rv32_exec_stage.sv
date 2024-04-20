@@ -10,7 +10,9 @@ module rv32_exec_stage (
     output exec_buffer_data_t exec_data,
     // Jump control signals
     output logic do_jump,
-    output rv32_word jump_addr
+    output rv32_word jump_addr,
+    // Bypass data
+    input mem_buffer_data_t mem_buff
 );
 
 function automatic rv32_word alu_input_sel(
@@ -42,11 +44,19 @@ endfunction
 
 exec_buffer_data_t internal_data /*verilator public*/;
 
-// TODO Bypass logic
 rv32_word reg1, reg2;
 always_comb begin
-    reg1 = decoded_data.reg1;
-    reg2 = decoded_data.reg2;
+    case (decoded_data.decoded_instr.bypass_rs1)
+        BYPASS_EXEC_BUFF: reg1 = exec_data.wb_result;
+        BYPASS_MEM_BUFF: reg1 = mem_buff.wb_result;
+        default: reg1 = decoded_data.reg1;
+    endcase
+
+    case (decoded_data.decoded_instr.bypass_rs2)
+        BYPASS_EXEC_BUFF: reg2 = exec_data.wb_result;
+        BYPASS_MEM_BUFF: reg2 = mem_buff.wb_result;
+        default: reg2 = decoded_data.reg2;
+    endcase
 end
 
 // Immediate creation logic

@@ -64,7 +64,7 @@ std::string bypass_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
     for (uint32_t i = 0; i < 2; i++) {
         RV32Core::bypass_t bypass;
         std::string rs, b_op;
-        
+
         if (i == 0) {
             bypass = static_cast<RV32Core::bypass_t>(dec_instr.bypass_rs1);
             rs = "rs1(x" + std::to_string(instr.rs1) + ")";
@@ -231,6 +231,15 @@ uint32_t get_next_pc(Vrv32_core* rvcore) {
     return rvcore->rv32_core->next_pc;
 }
 
+std::string decode_register_usage_str(Vrv32_core* rvcore) {
+    std::string s = "";
+    uint8_t usage = rvcore->rv32_core->decode_stage->use_rs;
+    rv_instr_t instr = get_decode_stage_data(rvcore).instr;
+    if(usage & 1) s += "rs1(x" + std::to_string(instr.rs1) + ") ";
+    if(usage & 2) s += "rs2(x" + std::to_string(instr.rs2) + ") ";
+    return s;
+}
+
 class TraceCanvas {
   public:
     uint32_t stages;
@@ -272,17 +281,19 @@ void trace_stages(Vrv32_core* rvcore) {
     auto decode_data = get_decode_stage_data(rvcore);
     tc.canvas[1][0] = std::format("@ {:<#10x} I {:<#10x}", decode_data.pc, decode_data.instr.get());
     tc.canvas[1][1] = "Opcode " + opcode_str(decode_data.instr);
-    tc.canvas[1][2] = wb_src_str(decode_data.instr, decode_data.decoded_instr);
+    tc.canvas[1][2] = decode_register_usage_str(rvcore);
     tc.canvas[1][3] = bypass_str(decode_data.instr, decode_data.decoded_instr);
 
     auto exec_data = get_exec_stage_data(rvcore);
     tc.canvas[2][0] = std::format("@ {:<#10x} I {:<#10x}", exec_data.pc, exec_data.instr.get());
-    tc.canvas[2][1] = alu_op_str(exec_data.decoded_instr) + " ";
-    tc.canvas[2][1] += alu_input_str(exec_data.instr, exec_data.decoded_instr);
-    tc.canvas[2][2] = branch_op_str(exec_data.decoded_instr);
+    tc.canvas[2][1] = wb_src_str(exec_data.instr, exec_data.decoded_instr);
+    tc.canvas[2][2] = alu_op_str(exec_data.decoded_instr) + " ";
+    tc.canvas[2][2] += alu_input_str(exec_data.instr, exec_data.decoded_instr);
+    tc.canvas[2][3] = branch_op_str(exec_data.decoded_instr);
     
     auto mem_data = get_mem_stage_data(rvcore);
     tc.canvas[3][0] = std::format("@ {:<#10x} I {:<#10x}", mem_data.pc, mem_data.instr.get());
+    tc.canvas[3][1] = wb_src_str(mem_data.instr, mem_data.decoded_instr);
 
     auto wb_data = get_wb_stage_data(rvcore);
     tc.canvas[4][0] = std::format("@ {:<#10x} I {:<#10x}", wb_data.pc, wb_data.instr.get());

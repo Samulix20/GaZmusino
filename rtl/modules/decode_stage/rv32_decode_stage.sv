@@ -21,7 +21,7 @@ module rv32_decode_stage (
 decoded_buffer_data_t internal_data /*verilator public*/;
 decoded_instr_t decoder_output;
 
-logic [1:0] use_rs;
+logic [1:0] use_rs /*verilator public*/;
 logic hazzard_stall;
 bypass_t bypass_rs[2];
 
