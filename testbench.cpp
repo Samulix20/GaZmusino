@@ -26,7 +26,7 @@ int main(int argc, char** argv) {
     dut->trace(m_trace, 5);
     m_trace->open("waveform.vcd");
 
-    uint8_t* program_code = rv32_test::read_elf("build/mainrv.elf");
+    uint8_t* program_code = rv32_test::read_elf("build/base/base.elf");
     uint32_t raw_instr = 0;
     uint32_t pc = 0;
 

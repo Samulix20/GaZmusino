@@ -237,6 +237,7 @@ std::string decode_register_usage_str(Vrv32_core* rvcore) {
     rv_instr_t instr = get_decode_stage_data(rvcore).instr;
     if(usage & 1) s += "rs1(x" + std::to_string(instr.rs1) + ") ";
     if(usage & 2) s += "rs2(x" + std::to_string(instr.rs2) + ") ";
+    if(s != "") s = "Uses " + s;
     return s;
 }
 
@@ -275,6 +276,7 @@ class TraceCanvas {
 
 void trace_stages(Vrv32_core* rvcore) {
     auto tc = TraceCanvas(5, 4);
+    
     tc.canvas[0][0] = std::format("@ {:<#10x} I {:<#10x}", rvcore->instr_addr, rvcore->instr_bus);
     tc.canvas[0][1] = std::format("@ <- {:<#10x}", get_next_pc(rvcore));
 
