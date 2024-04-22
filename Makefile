@@ -1,12 +1,10 @@
-RUN_PARAMS ?= -t -e build/rv32ui/jalr.elf
+RUN_PARAMS ?=
 
 VERILATOR_ROOT := /home/samuelpp/opt/verilator
 VV := ${VERILATOR_ROOT}/bin/verilator
 TOP_MODULE := rv32_core
 VERILATED_MODULE := V${TOP_MODULE}
 VERILOG_MODULES := $(shell find rtl/modules -name '*.sv')
-
-all: clean run
 
 obj_dir/${VERILATED_MODULE}: obj_dir/${VERILATED_MODULE}.mk
 	make -C obj_dir -f ${VERILATED_MODULE}.mk
@@ -15,10 +13,11 @@ obj_dir/${VERILATED_MODULE}.mk:
 	${VV} -I $(VERILOG_MODULES) -Wall --top-module ${TOP_MODULE} \
 	--trace --trace-structs \
 	--x-assign unique --x-initial unique \
-	--cc -CFLAGS "-std=c++20" --exe rtl/${TOP_MODULE}.sv testbench.cpp 
+	--cc -CFLAGS "-std=c++20" --exe rtl/${TOP_MODULE}.sv testbench/testbench.cpp 
 
 clean:
 	rm -rf obj_dir waveform.vcd
+
 wave:
 	gtkwave waveform.vcd >/dev/null 2>/dev/null &
 

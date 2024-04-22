@@ -9,15 +9,15 @@
 #include "rv32_test_utils.h"
 
 vluint64_t sim_time = 0;
+constexpr uint64_t max_sim_time = 10000;
 
 // Bsp defines config
-#include "bsp/riscv/config.h"
+#include "../bsp/riscv/config.h"
 
 int main(int argc, char** argv) {
 
     std::string rv_elf_executable = "";
     bool print_trace = false;
-    constexpr uint64_t max_sim_time = 10000;
 
     // Evaluate Verilator comand args
     Verilated::commandArgs(argc, argv);
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
     // Free device under test
     delete dut;
     // Exit end
-    std::cout << "Max sim time reached\n";
-    exit(-1);
+    std::cerr << "Max sim time reached\n";
+    exit(255);
 }
 

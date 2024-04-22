@@ -22,7 +22,7 @@ CFLAGS := \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S\
 	-Wall -O3\
 	-march=rv32g -mabi=ilp32 -mno-div\
-	-fopt-info-optimized=comp_report.txt\
+	-fopt-info-optimized=$(BUILD_DIR)/comp_report.txt\
 	-I $(BSP_DIR) $(INCLUDE_DIRS)\
 	-ffreestanding -nostartfiles -T $(BUILD_DIR)/linker.lds\
 	$(C_EXTRA_FLAGS)
