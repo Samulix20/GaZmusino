@@ -267,7 +267,7 @@ std::string mem_op_str(Vrv32_core* rvcore) {
 
     if (s == "NO MEM") s = "";
     else if (s[0] == 'S') {
-        s = std::format("[{:#x}] <- {:#x}", request.addr, 0);
+        s = std::format("{} [{:#x}] <- {:#x}", s, request.addr, request.data);
     }
 
     return s;

@@ -82,7 +82,8 @@ typedef enum logic [2:0] {
 typedef enum logic [2:0] {
     WB_PC4,
     WB_INT_ALU,
-    WB_MEM_DATA
+    WB_MEM_DATA,
+    WB_STORE
 } wb_result_t /*verilator public*/;
 
 typedef enum logic [3:0] {
@@ -129,30 +130,20 @@ typedef struct packed {
     logic register_wb;
 } decoded_instr_t /*verilator public*/;
 
-typedef struct packed {
-    rv32_word addr;
-    mem_op_t op;
-} memory_request_t /*verilator public*/;
-
-typedef struct packed {
-    rv32_word data;
-    logic ready;
-} memory_response_t /*verilator public*/;
-
 // Used for NOP generation
 function automatic decoded_instr_t create_nop_ctrl();
     decoded_instr_t instr;
-    instr.t = INSTR_R_TYPE;
-    instr.branch_op = OP_NOP;
-    instr.int_alu_op = ALU_OP_ADD;
     instr.invalid = 0;
-    instr.int_alu_i1 = ALU_IN_ZERO;
-    instr.int_alu_i2 = ALU_IN_ZERO;
-    instr.register_wb = 0;
-    instr.wb_result_src = WB_INT_ALU;
+    instr.t = INSTR_R_TYPE;
     instr.bypass_rs1 = NO_BYPASS;
     instr.bypass_rs2 = NO_BYPASS;
+    instr.branch_op = OP_NOP;
+    instr.int_alu_op = ALU_OP_ADD;
+    instr.int_alu_i1 = ALU_IN_ZERO;
+    instr.int_alu_i2 = ALU_IN_ZERO;
     instr.mem_op = MEM_NOP;
+    instr.wb_result_src = WB_INT_ALU;
+    instr.register_wb = 0;
     return instr;
 endfunction
 
@@ -178,5 +169,16 @@ typedef struct packed {
     decoded_instr_t decoded_instr;
     rv32_word wb_result;
 } mem_buffer_data_t /*verilator public*/;
+
+typedef struct packed {
+    rv32_word addr;
+    rv32_word data;
+    mem_op_t op;
+} memory_request_t /*verilator public*/;
+
+typedef struct packed {
+    rv32_word data;
+    logic ready;
+} memory_response_t /*verilator public*/;
 
 `endif

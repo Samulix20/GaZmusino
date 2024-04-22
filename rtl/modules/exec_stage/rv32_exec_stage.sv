@@ -107,6 +107,7 @@ always_comb begin
     case(decoded_data.decoded_instr.wb_result_src)
         WB_PC4: internal_data.wb_result = decoded_data.pc + 4;
         WB_INT_ALU: internal_data.wb_result = int_alu_result;
+        WB_STORE: internal_data.wb_result = reg2;
         default internal_data.wb_result = 0;
     endcase
 

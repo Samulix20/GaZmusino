@@ -24,6 +24,7 @@ fetch_buffer_data_t internal_data;
 always_comb begin
     instr_request.addr = pc;
     instr_request.op = MEM_LW;
+    instr_request.data = 0;
 
     stall = ~instr_response.ready;
 

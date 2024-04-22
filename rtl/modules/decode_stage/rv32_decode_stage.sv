@@ -62,8 +62,9 @@ always_comb begin
 
     if(set_nop | !resetn) begin
         internal_data.instr = `RV_NOP;
-        internal_data.pc = set_nop_pc;
         internal_data.decoded_instr = create_nop_ctrl();
+        if (!resetn) internal_data.pc = 0;
+        else internal_data.pc = set_nop_pc;
     end
 end
 

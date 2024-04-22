@@ -14,6 +14,7 @@ always_comb begin
     // TODO make ready logic and signed/unsigned load logic
     data_request.addr = exec_data.mem_addr;
     data_request.op = exec_data.decoded_instr.mem_op;
+    data_request.data = exec_data.wb_result;
 
     response = data_response;
 end

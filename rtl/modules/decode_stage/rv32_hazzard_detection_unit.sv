@@ -34,7 +34,7 @@ always_comb begin
                 bypass_rs[idx] = BYPASS_MEM_BUFF;
 
         // No dependency
-        if (!use_rs[idx] || rs == 0) bypass_rs[idx] = NO_BYPASS;
+        if (!use_rs[idx]) bypass_rs[idx] = NO_BYPASS;
     end
 
 end

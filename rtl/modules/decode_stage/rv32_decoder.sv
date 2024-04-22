@@ -108,6 +108,7 @@ always_comb begin
             decoded_instr.int_alu_i1 = ALU_IN_REG_1;
             decoded_instr.int_alu_i2 = ALU_IN_IMM;
             decoded_instr.mem_op = mem_op_t'({1'b1, instr.funct3});
+            decoded_instr.wb_result_src = WB_STORE;
             use_rs[0] = 1;
             use_rs[1] = 1;
         end
@@ -117,6 +118,8 @@ always_comb begin
             decoded_instr.invalid = 1;
         end
     endcase
+
+    if (instr.rd == 0) decoded_instr.register_wb = 0;
 end
 
 

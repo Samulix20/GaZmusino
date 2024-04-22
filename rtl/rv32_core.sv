@@ -104,6 +104,7 @@ rv32_mem_stage mem_stage(
     .exec_data(exec_buff_data),
     .mem_data(mem_buff_data),
     .stall(mem_stall),
+    // Data Memory I/O
     .data_request(data_request),
     .data_response(data_response)
 );
