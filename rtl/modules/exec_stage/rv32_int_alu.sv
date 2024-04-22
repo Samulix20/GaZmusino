@@ -37,7 +37,7 @@ always_comb begin
             result = $signed(op1) >>> op2;
         end
         ALU_OP_SUB: begin
-            result = op1 - op2;
+            result = $signed(op1) - $signed(op2);
         end
         default: result = 0;
     endcase

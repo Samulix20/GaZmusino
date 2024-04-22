@@ -16,6 +16,7 @@ vluint64_t sim_time = 0;
 int main(int argc, char** argv) {
 
     std::string rv_elf_executable = "";
+    bool print_trace = false;
 
     // Evaluate Verilator comand args
     Verilated::commandArgs(argc, argv);
@@ -27,6 +28,7 @@ int main(int argc, char** argv) {
             i++;
             rv_elf_executable = argv[i];
         }
+        else if (arg == "-t") print_trace = true;
     }
 
     // Create device under test
@@ -71,7 +73,7 @@ int main(int argc, char** argv) {
             data_req.set(dut->data_request);
 
             if (data_req.addr == EXIT_STATUS_ADDR && data_req.op == rv32_test::RV32Core::MEM_SW) {
-                rv32_test::trace_stages(dut);
+                if (print_trace) rv32_test::trace_stages(dut);
                 std::cout << "Exit status " << data_req.data << '\n';
                 exit(data_req.data);
             }
@@ -82,7 +84,7 @@ int main(int argc, char** argv) {
 
         // Debug
         // Only on high clk and after reset
-        if (!reset_on && dut->clk == 0) {
+        if (print_trace && !reset_on && dut->clk == 0) {
             rv32_test::trace_stages(dut);
         }
 

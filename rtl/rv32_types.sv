@@ -47,8 +47,8 @@ typedef enum logic [3:0] {
     ALU_OP_SRL  = 4'b0101,
     ALU_OP_OR   = 4'b0110,
     ALU_OP_AND  = 4'b0111,
-    ALU_OP_SRA  = 4'b1000,
-    ALU_OP_SUB  = 4'b1001
+    ALU_OP_SUB  = 4'b1000,
+    ALU_OP_SRA  = 4'b1101
 } int_alu_op_t /*verilator public*/;
 
 typedef enum logic [3:0] {

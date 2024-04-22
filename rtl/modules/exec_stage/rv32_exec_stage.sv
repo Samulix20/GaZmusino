@@ -26,7 +26,7 @@ function automatic rv32_word alu_input_sel(
     int_alu_input_t opsel;
     rv32_word out;
 
-    if (input_sel) begin
+    if (input_sel == 0) begin
         opsel = db.decoded_instr.int_alu_i1;
     end else begin
         opsel = db.decoded_instr.int_alu_i2;
