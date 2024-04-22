@@ -18,7 +18,7 @@ CFLAGS := \
 	-I macros -I $(BSP_DIR)\
 	-ffreestanding -nostartfiles -T linker.lds
 
-all: clean $(TEST_BUILD).dump
+all: clean $(TEST_BUILD).elf
 
 $(TEST_BUILD).dump: $(TEST_BUILD).elf
 	$(DUMP) -D $< > $(TEST_BUILD).dump
