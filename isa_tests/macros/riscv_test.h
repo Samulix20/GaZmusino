@@ -65,14 +65,14 @@ _start: \
 #define TESTNUM gp
 
 #define RVTEST_PASS \
-li x1, PRINT_REG_ADDR; \
+li x1, EXIT_STATUS_ADDR; \
 li TESTNUM, 0; \
 sw TESTNUM, 0(x1); \
 pass_loop: \
         j pass_loop;
 
 #define RVTEST_FAIL \
-li x1, PRINT_REG_ADDR; \
+li x1, EXIT_STATUS_ADDR; \
 sw TESTNUM, 0(x1); \
 fail_loop: \
         j fail_loop;

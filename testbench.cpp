@@ -31,38 +31,43 @@ int main(int argc, char** argv) {
 
     uint8_t* program_code = rv32_test::read_elf("build/base/base.elf");
     uint32_t raw_instr = 0;
-    uint32_t pc = 0;
 
     // Testbench simulation loop
     while (sim_time < MAX_SIM_TIME) {
+
         // Clk signal
         dut->clk ^= 1;
-        
 
         // Reset signal
-        if(sim_time > 0 && sim_time < 5){
-            dut->resetn = 0;
-        } else {
-            dut->resetn = 1;
-            
+        bool reset_on = sim_time > 0 && sim_time < 5;
+        dut->resetn = static_cast<uint8_t>(!reset_on);
+
+        // I/O Singnals
+        if(!reset_on) {
+            // Instr
             rv32_test::memory_request_t instr_req;
             instr_req.set(dut->instr_request);
-            pc = instr_req.addr;
-            
             // Protect against mem array overflow
-            if (pc <= 0xedc8) {
-                raw_instr = rv32_test::read_instr(program_code, pc);
-
+            if (instr_req.addr <= 0xedc8) {
+                raw_instr = rv32_test::read_instr(program_code, instr_req.addr);
                 rv32_test::memory_response_t instr_res;
                 instr_res.data = raw_instr;
                 instr_res.ready = 1;
-
                 dut->instr_response = instr_res.get();
             }
 
+            // Data
+            rv32_test::memory_request_t data_req;
+            data_req.set(dut->data_request);
+
+            if (data_req.addr == EXIT_STATUS_ADDR && data_req.op == rv32_test::RV32Core::MEM_SW) {
+                rv32_test::trace_stages(dut);
+                std::cout << "Exit status " << data_req.data << '\n';
+                exit(data_req.data);
+            }
         }
 
-        // Simulate signals
+        // Update signals
         dut->eval();
 
         // Debug
