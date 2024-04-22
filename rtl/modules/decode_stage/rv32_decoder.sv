@@ -10,7 +10,10 @@ module rv32_decoder (
 );
 
 always_comb begin
-// Default signals NOP Setup add x0, x0, 0;
+    // Logic for detecting SRAI instruction
+    logic is_srai = 0;
+
+    // Default signals NOP Setup add x0, x0, 0;
     decoded_instr = create_nop_ctrl();
 
     use_rs[0] = 0;
@@ -80,8 +83,10 @@ always_comb begin
         // ALU: R1, I_IMM
         // RD = ALU
         OPCODE_INTEGER_IMM: begin
+            // SRAI instr is the only that sets alu_op to 1xxx
+            if (instr.funct3 == 3'b101 && instr.funct7[5]) is_srai = 1;
             decoded_instr.t = INSTR_I_TYPE;
-            decoded_instr.int_alu_op = int_alu_op_t'({1'b0, instr.funct3});
+            decoded_instr.int_alu_op = int_alu_op_t'({is_srai, instr.funct3});
             decoded_instr.int_alu_i1 = ALU_IN_REG_1;
             decoded_instr.int_alu_i2 = ALU_IN_IMM;
             decoded_instr.register_wb = 1;

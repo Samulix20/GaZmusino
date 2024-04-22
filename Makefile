@@ -11,16 +11,17 @@ VERILOG_HEADERS := rtl/rv_immediates.sv rtl/rv32_types.sv
 CPP_SRC := $(shell find testbench -name '*.cpp')
 CPP_HDR := $(shell find testbench -name '*.h')
 
-obj_dir/${VERILATED_MODULE}: obj_dir/${VERILATED_MODULE}.mk
+obj_dir/${VERILATED_MODULE}: obj_dir/.verilator.stamp
 	make -C obj_dir -f ${VERILATED_MODULE}.mk
 
-obj_dir/${VERILATED_MODULE}.mk: \
+obj_dir/.verilator.stamp: \
 	$(CPP_SRC) $(CPP_HDR) ${TOP_MODULE_SRC} $(VERILOG_MODULES) $(VERILOG_HEADERS)
 
 	${VV} -I $(VERILOG_MODULES) -Wall --top-module ${TOP_MODULE} \
 	--trace --trace-structs \
 	--x-assign unique --x-initial unique \
 	--cc -CFLAGS "-std=c++20" --exe ${TOP_MODULE_SRC} $(CPP_SRC)
+	@touch obj_dir/.verilator.stamp
 
 clean:
 	rm -rf obj_dir waveform.vcd

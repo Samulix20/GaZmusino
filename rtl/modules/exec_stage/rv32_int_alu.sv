@@ -13,7 +13,7 @@ always_comb begin
             result = op1 + op2;
         end
         ALU_OP_SLL: begin
-            result = op1 << op2;
+            result = op1 << op2[4:0];
         end
         ALU_OP_SLT: begin
             result = '{0: $signed(op1) < $signed(op2), default: 0};
@@ -25,7 +25,7 @@ always_comb begin
             result = op1 ^ op2;
         end
         ALU_OP_SRL: begin
-            result = op1 >> op2;
+            result = op1 >> op2[4:0];
         end
         ALU_OP_OR: begin
             result = op1 | op2;
@@ -34,7 +34,7 @@ always_comb begin
             result = op1 & op2;
         end
         ALU_OP_SRA: begin
-            result = $signed(op1) >>> op2;
+            result = $signed(op1) >>> op2[4:0];
         end
         ALU_OP_SUB: begin
             result = $signed(op1) - $signed(op2);

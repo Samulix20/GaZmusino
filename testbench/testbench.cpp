@@ -101,7 +101,6 @@ int main(int argc, char** argv) {
     // Free device under test
     delete dut;
     // Exit end
-    std::cerr << "Max sim time reached\n";
-    exit(255);
+    std::cerr << "Max sim time reached" << "\n";
+    exit(255); 
 }
-
