@@ -26,6 +26,8 @@ using decode_data_t = Vrv32_core_decoded_buffer_data_t__struct__0;
 using exec_data_t = Vrv32_core_exec_buffer_data_t__struct__0;
 using mem_data_t = Vrv32_core_mem_buffer_data_t__struct__0;
 using wb_data_t = mem_data_t;
+using memory_request_t = Vrv32_core_memory_request_t__struct__0;
+using memory_response_t = Vrv32_core_memory_response_t__struct__0;
 
 using rv_instr_t = Vrv32_core_rv_instr_t__struct__0;
 using rv_decoded_instr_t = Vrv32_core_decoded_instr_t__struct__0;
@@ -277,7 +279,12 @@ class TraceCanvas {
 void trace_stages(Vrv32_core* rvcore) {
     auto tc = TraceCanvas(5, 4);
     
-    tc.canvas[0][0] = std::format("@ {:<#10x} I {:<#10x}", rvcore->instr_addr, rvcore->instr_bus);
+    memory_request_t instr_request;
+    instr_request.set(rvcore->instr_request);
+    memory_response_t instr_response;
+    instr_response.set(rvcore->instr_response);
+
+    tc.canvas[0][0] = std::format("@ {:<#10x} I {:<#10x}", instr_request.addr, instr_response.data);
     tc.canvas[0][1] = std::format("@ <- {:<#10x}", get_next_pc(rvcore));
 
     auto decode_data = get_decode_stage_data(rvcore);

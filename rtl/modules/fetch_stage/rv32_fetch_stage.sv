@@ -15,24 +15,26 @@ module rv32_fetch_stage (
     output fetch_buffer_data_t fetch_data,
 
     // Bus I/O
-    output rv32_word addr,
-    input rv_instr_t instr,
-    input logic ready
+    output memory_request_t instr_request,
+    input memory_response_t instr_response
 );
 
 fetch_buffer_data_t internal_data;
 
 always_comb begin
-    addr = pc;
-    stall = ~ready;
+    instr_request.addr = pc;
+    instr_request.op = MEM_LW;
 
+    stall = ~instr_response.ready;
+
+    // Default
     internal_data = fetch_data;
     internal_data.instr = `RV_NOP;
 
     // New instruction fetched
-    if (ready) begin
+    if (instr_response.ready) begin
         internal_data.pc = pc;
-        internal_data.instr = instr;
+        internal_data.instr = instr_response.data;
     end
 
     if (set_nop) begin

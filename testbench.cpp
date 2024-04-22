@@ -8,8 +8,11 @@
 
 #include "rv32_test_utils.h"
 
-#define MAX_SIM_TIME 40
+#define MAX_SIM_TIME 90
 vluint64_t sim_time = 0;
+
+// Bsp defines config
+#include "bsp/riscv/config.h"
 
 int main(int argc, char** argv) {
 
@@ -41,14 +44,25 @@ int main(int argc, char** argv) {
             dut->resetn = 0;
         } else {
             dut->resetn = 1;
-            pc = dut->instr_addr;
+            
+            rv32_test::memory_request_t instr_req;
+            instr_req.set(dut->instr_request);
+            pc = instr_req.addr;
             
             // Protect against mem array overflow
             if (pc <= 0xedc8) {
                 raw_instr = rv32_test::read_instr(program_code, pc);
-                dut->instr_bus = raw_instr;
-                dut->instr_ready = 1;
+
+                rv32_test::memory_response_t instr_res;
+                instr_res.data = raw_instr;
+                instr_res.ready = 1;
+
+                dut->instr_response = instr_res.get();
             }
+
+
+            // Memory data request
+            
         }
 
         // Simulate signals
@@ -58,6 +72,10 @@ int main(int argc, char** argv) {
         // Only on high clk and after reset
         if (dut->clk == 0 && sim_time >= 5) {
             rv32_test::trace_stages(dut);
+        }
+
+        if (dut->clk == 0 && sim_time >= 5) {
+            
         }
 
         // Trace waveform

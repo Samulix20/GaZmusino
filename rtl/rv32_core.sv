@@ -5,11 +5,12 @@
 module rv32_core (
     // Clk, Reset signals
     input logic clk, resetn,
-
     // Instructions memory port
-    output rv32_word instr_addr,
-    input rv_instr_t instr_bus,
-    input logic instr_ready
+    output memory_request_t instr_request,
+    input memory_response_t instr_response,
+    // Data memory port
+    output memory_request_t data_request,
+    input memory_response_t data_response
 );
 
 rv32_word pc;
@@ -65,8 +66,8 @@ rv32_fetch_stage fetch_stage(
     .pc(pc),
     .stall(fetch_stall), .fetch_data(instr_buff_data),
     // INSTR MEM I/O
-    .addr(instr_addr), .instr(instr_bus),
-    .ready(instr_ready)
+    .instr_request(instr_request),
+    .instr_response(instr_response)
 );
 
 // DECODE STAGE
@@ -102,7 +103,9 @@ rv32_mem_stage mem_stage(
     .clk(clk), .resetn(resetn),
     .exec_data(exec_buff_data),
     .mem_data(mem_buff_data),
-    .stall(mem_stall)
+    .stall(mem_stall),
+    .data_request(data_request),
+    .data_response(data_response)
 );
 
 // WRITEBACK STAGE

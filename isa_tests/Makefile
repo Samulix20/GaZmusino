@@ -1,5 +1,6 @@
 TEST_TARGET ?= base/base
 BUILD_DIR ?= ../build
+BSP_DIR ?= ../bsp
 
 CROSS := riscv32-unknown-elf-
 CC := $(CROSS)gcc
@@ -12,7 +13,7 @@ CFLAGS := \
 	-Wall\
 	-march=rv32g -mabi=ilp32 -mno-div\
 	-fopt-info-optimized=comp_report.txt\
-	-I macros\
+	-I macros -I $(BSP_DIR)\
 	-ffreestanding -nostartfiles -T linker.lds
 
 all: clean $(TEST_BUILD).dump

@@ -3,9 +3,8 @@
 
 #define __riscv_xlen 32
 
-#define PRINT_REG 0x00090000
-#define IO_REG 0x00080000
-#define MTIMER_BASE 0x00050000
+#include <riscv/config.h>
+#define MTIMER_BASE MTIMER_BASE_ADDR
 
 #define CAUSE_MISALIGNED_FETCH 0x0
 #define CAUSE_FETCH_ACCESS 0x1
@@ -64,7 +63,7 @@ _start: \
   li x31, 0;
 
 #define RVTEST_PASS \
-li x1, PRINT_REG; \
+li x1, PRINT_REG_ADDR; \
 li TESTNUM, 0; \
 sw TESTNUM, 0(x1); \
 pass_loop: \
@@ -73,7 +72,7 @@ pass_loop: \
 #define TESTNUM gp
 
 #define RVTEST_FAIL \
-li x1, PRINT_REG; \
+li x1, PRINT_REG_ADDR; \
 sw TESTNUM, 0(x1); \
 fail_loop: \
         j fail_loop;

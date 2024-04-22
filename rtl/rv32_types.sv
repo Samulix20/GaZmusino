@@ -85,6 +85,18 @@ typedef enum logic [2:0] {
     WB_MEM_DATA
 } wb_result_t /*verilator public*/;
 
+typedef enum logic [3:0] {
+    MEM_LB = 4'b0000,
+    MEM_LH = 4'b0001,
+    MEM_LW = 4'b0010,
+    MEM_LBU = 4'b0100,
+    MEM_LHU = 4'b0101,
+    MEM_SB = 4'b1000,
+    MEM_SH = 4'b1001,
+    MEM_SW = 4'b1010,
+    MEM_NOP = 4'b1111
+} mem_op_t /*verilator public*/;
+
 typedef enum logic [2:0] {
     NO_BYPASS,
     BYPASS_EXEC_BUFF,
@@ -109,11 +121,23 @@ typedef struct packed {
     int_alu_op_t int_alu_op;
     int_alu_input_t int_alu_i1;
     int_alu_input_t int_alu_i2;
+    // Memory
+    mem_op_t mem_op;
     // Writeback source
     wb_result_t wb_result_src;
     // Final Writeback
     logic register_wb;
 } decoded_instr_t /*verilator public*/;
+
+typedef struct packed {
+    rv32_word addr;
+    mem_op_t op;
+} memory_request_t /*verilator public*/;
+
+typedef struct packed {
+    rv32_word data;
+    logic ready;
+} memory_response_t /*verilator public*/;
 
 // Used for NOP generation
 function automatic decoded_instr_t create_nop_ctrl();
@@ -128,6 +152,7 @@ function automatic decoded_instr_t create_nop_ctrl();
     instr.wb_result_src = WB_INT_ALU;
     instr.bypass_rs1 = NO_BYPASS;
     instr.bypass_rs2 = NO_BYPASS;
+    instr.mem_op = MEM_NOP;
     return instr;
 endfunction
 
