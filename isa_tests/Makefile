@@ -1,12 +1,14 @@
-TEST_TARGET ?= base/base
+TEST_TARGET ?= base/base.S
 BUILD_DIR ?= ../build
 BSP_DIR ?= ../bsp
+
+TEST_BASENAME = $(basename $(TEST_TARGET))
 
 CROSS := riscv32-unknown-elf-
 CC := $(CROSS)gcc
 DUMP := $(CROSS)objdump
 
-TEST_BUILD := $(BUILD_DIR)/$(TEST_TARGET)
+TEST_BUILD := $(BUILD_DIR)/$(TEST_BASENAME)
 
 CFLAGS := \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S\
@@ -24,7 +26,7 @@ $(TEST_BUILD).dump: $(TEST_BUILD).elf
 $(TEST_BUILD).elf: $(TEST_BUILD).o
 	$(CC) $(CFLAGS) $^ -o $@
 
-$(TEST_BUILD).o: $(TEST_TARGET).S
+$(TEST_BUILD).o: $(TEST_BASENAME).S
 	mkdir -p $(@D)
 	$(CC) $(CFLAGS) -c $^ -o $@
 

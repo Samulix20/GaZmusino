@@ -8,7 +8,6 @@
 
 #include "rv32_test_utils.h"
 
-#define MAX_SIM_TIME 90
 vluint64_t sim_time = 0;
 
 // Bsp defines config
@@ -16,8 +15,19 @@ vluint64_t sim_time = 0;
 
 int main(int argc, char** argv) {
 
+    std::string rv_elf_executable = "";
+
     // Evaluate Verilator comand args
     Verilated::commandArgs(argc, argv);
+
+    // Evaluate our command args
+    for(size_t i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if (arg == "-e") {
+            i++;
+            rv_elf_executable = argv[i];
+        }
+    }
 
     // Create device under test
     Vrv32_core *dut = new Vrv32_core;
@@ -29,11 +39,11 @@ int main(int argc, char** argv) {
     dut->trace(m_trace, 5);
     m_trace->open("waveform.vcd");
 
-    uint8_t* program_code = rv32_test::read_elf("build/base/base.elf");
+    uint8_t* program_code = rv32_test::read_elf(rv_elf_executable);
     uint32_t raw_instr = 0;
 
     // Testbench simulation loop
-    while (sim_time < MAX_SIM_TIME) {
+    while (1) {
 
         // Clk signal
         dut->clk ^= 1;
@@ -72,7 +82,7 @@ int main(int argc, char** argv) {
 
         // Debug
         // Only on high clk and after reset
-        if (dut->clk == 0 && sim_time >= 5) {
+        if (!reset_on && dut->clk == 0) {
             rv32_test::trace_stages(dut);
         }
 

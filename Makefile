@@ -1,12 +1,17 @@
-VERILATOR_ROOT = /home/samuelpp/opt/verilator
-VV = ${VERILATOR_ROOT}/bin/verilator
-TOP_MODULE = rv32_core
-VERILATED_MODULE = V${TOP_MODULE}
-VERILOG_MODULES = $(shell find rtl/modules -name '*.sv')
+RUN_PARAMS ?=
 
-run: clean verilate test
+VERILATOR_ROOT := /home/samuelpp/opt/verilator
+VV := ${VERILATOR_ROOT}/bin/verilator
+TOP_MODULE := rv32_core
+VERILATED_MODULE := V${TOP_MODULE}
+VERILOG_MODULES := $(shell find rtl/modules -name '*.sv')
 
-verilate:
+all: clean run
+
+obj_dir/${VERILATED_MODULE}: obj_dir/${VERILATED_MODULE}.mk
+	make -C obj_dir -f ${VERILATED_MODULE}.mk
+
+obj_dir/${VERILATED_MODULE}.mk:
 	${VV} -I $(VERILOG_MODULES) -Wall --top-module ${TOP_MODULE} \
 	--trace --trace-structs \
 	--x-assign unique --x-initial unique \
@@ -14,10 +19,11 @@ verilate:
 
 clean:
 	rm -rf obj_dir waveform.vcd
-
-test:
-	make -C obj_dir -f ${VERILATED_MODULE}.mk
-	./obj_dir/${VERILATED_MODULE} +verilator+rand+reset+2
-
 wave:
 	gtkwave waveform.vcd >/dev/null 2>/dev/null &
+
+run: obj_dir/${VERILATED_MODULE}
+	./obj_dir/${VERILATED_MODULE} +verilator+rand+reset+2 $(RUN_PARAMS)
+
+test:
+	cd isa_tests && bash test.sh

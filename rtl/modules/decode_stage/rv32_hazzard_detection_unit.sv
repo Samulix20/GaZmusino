@@ -21,6 +21,11 @@ always_comb begin
         if (idx == 0) rs = current_instr.rs1;
         else rs = current_instr.rs2;
 
+        // Check first mem cause it will get overwritten if required
+        // rs dependency with instr at mem
+        if(rs == exec_buff.instr.rd && exec_buff.decoded_instr.register_wb)
+                bypass_rs[idx] = BYPASS_MEM_BUFF;
+
         // rs dependency with instr at exec
         if (rs == decoded_buff.instr.rd && decoded_buff.decoded_instr.register_wb) begin
             bypass_rs[idx] = BYPASS_EXEC_BUFF;
@@ -28,10 +33,6 @@ always_comb begin
             if (decoded_buff.decoded_instr.wb_result_src == WB_MEM_DATA)
                 stall = 1;
         end
-
-        // rs dependency with instr at mem
-        if(rs == exec_buff.instr.rd && exec_buff.decoded_instr.register_wb)
-                bypass_rs[idx] = BYPASS_MEM_BUFF;
 
         // No dependency
         if (!use_rs[idx]) bypass_rs[idx] = NO_BYPASS;

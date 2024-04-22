@@ -347,7 +347,7 @@ uint32_t read_instr(const uint8_t* code, const uint32_t addr) {
     return *reinterpret_cast<const uint32_t*>(code + addr);
 }
 
-uint8_t* read_elf(const char* filename) {
+uint8_t* read_elf(std::string filename) {
     std::ifstream f(filename, std::ios::binary);
     // Check file is open
     assert(f.is_open());
