@@ -100,6 +100,18 @@ always_comb begin
             use_rs[1] = 1;
         end
 
+        // Store
+        // ALU: R1 + S_IMM
+        // MEM <- R2
+        OPCODE_STORE: begin
+            decoded_instr.t = INSTR_S_TYPE;
+            decoded_instr.int_alu_i1 = ALU_IN_REG_1;
+            decoded_instr.int_alu_i2 = ALU_IN_IMM;
+            decoded_instr.mem_op = mem_op_t'({1'b1, instr.funct3});
+            use_rs[0] = 1;
+            use_rs[1] = 1;
+        end
+
         default: begin
             // Invalid instruction detection
             decoded_instr.invalid = 1;
