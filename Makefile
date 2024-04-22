@@ -1,4 +1,4 @@
-RUN_PARAMS ?=
+RUN_PARAMS ?= -t -e build/rv32ui/jalr.elf
 
 VERILATOR_ROOT := /home/samuelpp/opt/verilator
 VV := ${VERILATOR_ROOT}/bin/verilator
@@ -25,5 +25,5 @@ wave:
 run: obj_dir/${VERILATED_MODULE}
 	./obj_dir/${VERILATED_MODULE} +verilator+rand+reset+2 $(RUN_PARAMS)
 
-test:
+test: obj_dir/${VERILATED_MODULE}
 	cd isa_tests && bash test.sh

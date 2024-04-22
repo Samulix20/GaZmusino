@@ -15,6 +15,7 @@ module rv32_exec_stage (
     input mem_buffer_data_t mem_buff
 );
 
+// TODO Setup as a loop
 function automatic rv32_word alu_input_sel(
     input logic input_sel,
     input rv32_word imm,

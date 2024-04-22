@@ -54,12 +54,13 @@ always_comb begin
         // PC = ALU
         // RD = PC + 4
         OPCODE_JALR: begin
-            decoded_instr.t = INSTR_R_TYPE;
+            decoded_instr.t = INSTR_I_TYPE;
             decoded_instr.branch_op = OP_J;
             decoded_instr.int_alu_i1 = ALU_IN_REG_1;
             decoded_instr.int_alu_i2 = ALU_IN_IMM;
             decoded_instr.register_wb = 1;
             decoded_instr.wb_result_src = WB_PC4;
+            use_rs[0] = 1;
         end
 
         // Branch instruction
@@ -118,6 +119,8 @@ always_comb begin
             decoded_instr.invalid = 1;
         end
     endcase
+
+    // Todo make register use check with automatic with code
 
     if (instr.rd == 0) decoded_instr.register_wb = 0;
 end

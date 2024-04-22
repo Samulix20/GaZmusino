@@ -17,6 +17,7 @@ int main(int argc, char** argv) {
 
     std::string rv_elf_executable = "";
     bool print_trace = false;
+    constexpr uint64_t max_sim_time = 10000;
 
     // Evaluate Verilator comand args
     Verilated::commandArgs(argc, argv);
@@ -45,7 +46,7 @@ int main(int argc, char** argv) {
     uint32_t raw_instr = 0;
 
     // Testbench simulation loop
-    while (1) {
+    while (sim_time < max_sim_time) {
 
         // Clk signal
         dut->clk ^= 1;
@@ -100,6 +101,7 @@ int main(int argc, char** argv) {
     // Free device under test
     delete dut;
     // Exit end
-    exit(EXIT_SUCCESS);
+    std::cout << "Max sim time reached\n";
+    exit(-1);
 }
 
