@@ -31,7 +31,7 @@ endfunction
 function automatic rv32_word decode_u_imm(input rv32_word instr);
     rv32_word imm;
     imm[31:12] = instr[31:12];
-    imm[11:0] = '{default: instr[0]};
+    imm[11:0] = '{default: 0};
     return imm;
 endfunction
 

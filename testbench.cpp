@@ -71,10 +71,6 @@ int main(int argc, char** argv) {
             rv32_test::trace_stages(dut);
         }
 
-        if (dut->clk == 0 && sim_time >= 5) {
-            
-        }
-
         // Trace waveform
         m_trace->dump(sim_time);
         

@@ -22,7 +22,7 @@ always_comb begin
         else rs = current_instr.rs2;
 
         // rs dependency with instr at exec
-        if (rs != 0 && rs == decoded_buff.instr.rd) begin
+        if (rs == decoded_buff.instr.rd && decoded_buff.decoded_instr.register_wb) begin
             bypass_rs[idx] = BYPASS_EXEC_BUFF;
             // Load use generates one nop bubble always
             if (decoded_buff.decoded_instr.wb_result_src == WB_MEM_DATA)
@@ -30,12 +30,11 @@ always_comb begin
         end
 
         // rs dependency with instr at mem
-        if(rs == exec_buff.instr.rd &&
-            decoded_buff.decoded_instr.wb_result_src == WB_MEM_DATA)
+        if(rs == exec_buff.instr.rd && exec_buff.decoded_instr.register_wb)
                 bypass_rs[idx] = BYPASS_MEM_BUFF;
 
         // No dependency
-        if (!use_rs[idx]) bypass_rs[idx] = NO_BYPASS;
+        if (!use_rs[idx] || rs == 0) bypass_rs[idx] = NO_BYPASS;
     end
 
 end
