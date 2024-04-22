@@ -3,17 +3,24 @@ RUN_PARAMS ?=
 VERILATOR_ROOT := /home/samuelpp/opt/verilator
 VV := ${VERILATOR_ROOT}/bin/verilator
 TOP_MODULE := rv32_core
+TOP_MODULE_SRC := rtl/${TOP_MODULE}.sv
 VERILATED_MODULE := V${TOP_MODULE}
 VERILOG_MODULES := $(shell find rtl/modules -name '*.sv')
+VERILOG_HEADERS := rtl/rv_immediates.sv rtl/rv32_types.sv
+
+CPP_SRC := $(shell find testbench -name '*.cpp')
+CPP_HDR := $(shell find testbench -name '*.h')
 
 obj_dir/${VERILATED_MODULE}: obj_dir/${VERILATED_MODULE}.mk
 	make -C obj_dir -f ${VERILATED_MODULE}.mk
 
-obj_dir/${VERILATED_MODULE}.mk:
+obj_dir/${VERILATED_MODULE}.mk: \
+	$(CPP_SRC) $(CPP_HDR) ${TOP_MODULE_SRC} $(VERILOG_MODULES) $(VERILOG_HEADERS)
+
 	${VV} -I $(VERILOG_MODULES) -Wall --top-module ${TOP_MODULE} \
 	--trace --trace-structs \
 	--x-assign unique --x-initial unique \
-	--cc -CFLAGS "-std=c++20" --exe rtl/${TOP_MODULE}.sv testbench/testbench.cpp 
+	--cc -CFLAGS "-std=c++20" --exe ${TOP_MODULE_SRC} $(CPP_SRC)
 
 clean:
 	rm -rf obj_dir waveform.vcd
