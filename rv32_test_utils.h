@@ -205,6 +205,25 @@ std::string wb_write_str(wb_data_t wbd) {
     return s;
 }
 
+std::string mem_op_str(rv_decoded_instr_t dec_instr) {
+    std::string s = "";
+    static const std::unordered_map<RV32Core::mem_op_t, std::string> str_map = {
+        {RV32Core::MEM_LB, "LB"},
+        {RV32Core::MEM_LH, "LH"},
+        {RV32Core::MEM_LW, "LW"},
+        {RV32Core::MEM_LBU, "LBU"},
+        {RV32Core::MEM_LHU, "LHU"},
+        {RV32Core::MEM_SB, "SB"},
+        {RV32Core::MEM_SH, "SH"},
+        {RV32Core::MEM_SW, "SW"},
+        {RV32Core::MEM_NOP, "NO MEM"}
+    };
+    auto it = str_map.find(static_cast<RV32Core::mem_op_t>(dec_instr.mem_op));
+    if (it != str_map.end()) s = it->second;
+    else s = "???";
+    return s;
+}
+
 decode_data_t get_decode_stage_data(Vrv32_core* rvcore) {
     decode_data_t d;
     d.set(rvcore->rv32_core->decode_stage->internal_data);
@@ -303,6 +322,7 @@ void trace_stages(Vrv32_core* rvcore) {
     auto mem_data = get_mem_stage_data(rvcore);
     tc.canvas[3][0] = std::format("@ {:<#10x} I {:<#10x}", mem_data.pc, mem_data.instr.get());
     tc.canvas[3][1] = wb_src_str(mem_data.instr, mem_data.decoded_instr);
+    tc.canvas[3][2] = mem_op_str(mem_data.decoded_instr);
 
     auto wb_data = get_wb_stage_data(rvcore);
     tc.canvas[4][0] = std::format("@ {:<#10x} I {:<#10x}", wb_data.pc, wb_data.instr.get());

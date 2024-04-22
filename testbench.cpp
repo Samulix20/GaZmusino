@@ -60,9 +60,6 @@ int main(int argc, char** argv) {
                 dut->instr_response = instr_res.get();
             }
 
-
-            // Memory data request
-            
         }
 
         // Simulate signals
