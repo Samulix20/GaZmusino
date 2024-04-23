@@ -78,6 +78,16 @@ int main(int argc, char** argv) {
                 std::cout << "Exit status " << data_req.data << '\n';
                 exit(data_req.data);
             }
+
+            if (data_req.addr <= 0xedc8) {
+                rv32_test::memory_response_t data_res;
+                switch(data_req.op) {
+                    default:
+                        data_res.data = rv32_test::read_instr(program_code, data_req.addr);
+                        break;
+                }
+                dut->data_response = data_res.get();
+            }
         }
 
         // Update signals

@@ -344,7 +344,7 @@ void trace_stages(Vrv32_core* rvcore) {
 
 
 uint32_t read_instr(const uint8_t* code, const uint32_t addr) {
-    return *reinterpret_cast<const uint32_t*>(code + addr);
+    return *reinterpret_cast<const uint32_t*>(code + (addr & (~3)));
 }
 
 uint8_t* read_elf(std::string filename) {

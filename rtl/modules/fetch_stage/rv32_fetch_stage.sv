@@ -8,6 +8,7 @@ module rv32_fetch_stage (
 
     // Core I/O
     input logic set_nop,
+    input logic stop,
     input rv32_word set_nop_pc,
 
     input rv32_word pc,
@@ -36,6 +37,10 @@ always_comb begin
     if (instr_response.ready) begin
         internal_data.pc = pc;
         internal_data.instr = instr_response.data;
+    end
+
+    if (stop) begin
+        internal_data = fetch_data;
     end
 
     if (set_nop) begin

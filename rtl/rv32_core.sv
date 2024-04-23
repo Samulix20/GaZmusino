@@ -30,10 +30,13 @@ always_comb begin
     if(exec_jump) begin
         next_pc = exec_jump_addr;
         jump_set_nop = 1;
-    end else begin
+    end
+    else if (dec_stall) begin
+        next_pc = pc;
+    end
+    else begin
         next_pc = pc + 4;
     end
-
     if (!resetn) begin
         next_pc = 0;
     end
@@ -61,6 +64,7 @@ logic fetch_stall;
 rv32_fetch_stage fetch_stage(
     .clk(clk), .resetn(resetn),
     // Pipeline I/O
+    .stop(dec_stall),
     .set_nop(jump_set_nop),
     .set_nop_pc(jump_nop_pc),
     .pc(pc),

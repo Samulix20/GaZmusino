@@ -119,6 +119,19 @@ always_comb begin
             use_rs[1] = 1;
         end
 
+        // Load
+        // ALU: R1 + I_IMM
+        // RD = MEM
+        OPCODE_LOAD: begin
+            decoded_instr.t = INSTR_I_TYPE;
+            decoded_instr.int_alu_i1 = ALU_IN_REG_1;
+            decoded_instr.int_alu_i2 = ALU_IN_IMM;
+            decoded_instr.mem_op = mem_op_t'({1'b0, instr.funct3});
+            decoded_instr.wb_result_src = WB_MEM_DATA;
+            decoded_instr.register_wb = 1;
+            use_rs[0] = 1;
+        end
+
         default: begin
             // Invalid instruction detection
             decoded_instr.invalid = 1;

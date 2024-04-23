@@ -21,7 +21,7 @@ do
         exit "$make_status"
     fi
 
-    test_res=$(../obj_dir/Vrv32_core +verilator+rand+reset+2 -e ../build/${test%.S}.elf)
+    test_res=$(../obj_dir/Vrv32_core +verilator+rand+reset+2 -e ../build/${test%.S}.elf 2>&1)
     test_status=$?
 
     if [ $test_status -ne 0 ]; then
