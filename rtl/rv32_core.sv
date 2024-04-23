@@ -26,17 +26,18 @@ rv32_word next_pc /*verilator public*/;
 always_comb begin
     jump_set_nop = 0;
     jump_nop_pc = decoded_buff_data.pc;
+    // Default pc increase
+    next_pc = pc + 4;
 
+    // A instruction is stalling
+    if (dec_stall) next_pc = pc;
+
+    // Jump instruction
     if(exec_jump) begin
         next_pc = exec_jump_addr;
         jump_set_nop = 1;
     end
-    else if (dec_stall) begin
-        next_pc = pc;
-    end
-    else begin
-        next_pc = pc + 4;
-    end
+
     if (!resetn) begin
         next_pc = 0;
     end

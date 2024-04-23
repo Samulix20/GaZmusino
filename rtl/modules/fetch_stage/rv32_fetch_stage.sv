@@ -26,7 +26,9 @@ always_comb begin
     instr_request.addr = pc;
     instr_request.op = MEM_LW;
     instr_request.data = 0;
+end
 
+always_comb begin
     stall = ~instr_response.ready;
 
     // Default
@@ -39,10 +41,12 @@ always_comb begin
         internal_data.instr = instr_response.data;
     end
 
+    // Some instruction further in the pipeline is stalling
     if (stop) begin
         internal_data = fetch_data;
     end
 
+    // Output a NOP
     if (set_nop) begin
         internal_data.pc = set_nop_pc;
         internal_data.instr = `RV_NOP;
