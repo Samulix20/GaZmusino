@@ -9,7 +9,7 @@
 #include "rv32_test_utils.h"
 
 vluint64_t sim_time = 0;
-constexpr uint64_t max_sim_time = 10000;
+constexpr uint64_t max_sim_time = 100000;
 
 // Bsp defines config
 #include "../bsp/riscv/config.h"
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
             rv32_test::memory_request_t instr_req;
             instr_req.set(dut->instr_request);
             // Protect against mem array overflow
-            if (instr_req.addr <= 0xedc8) {
+            if (instr_req.addr <= (0xee88 + 0x2808)) {
                 raw_instr = rv32_test::read_instr(program_code, instr_req.addr);
                 rv32_test::memory_response_t instr_res;
                 instr_res.data = raw_instr;
@@ -73,22 +73,26 @@ int main(int argc, char** argv) {
             rv32_test::memory_request_t data_req;
             data_req.set(dut->data_request);
 
-            if (data_req.addr == EXIT_STATUS_ADDR && data_req.op == rv32_test::RV32Core::MEM_SW) {
+            if (dut->clk == 1 && data_req.addr == EXIT_STATUS_ADDR && data_req.op == rv32_test::RV32Core::MEM_SW) {
                 if (print_trace) rv32_test::trace_stages(dut);
                 std::cout << "Exit status " << data_req.data << '\n';
                 exit(data_req.data);
             }
 
-            if (data_req.addr <= 0xedc8) {
+            else if (dut->clk == 1 && data_req.addr == PRINT_REG_ADDR && data_req.op == rv32_test::RV32Core::MEM_SW) {
+                std::cout << static_cast<char>(data_req.data);
+            }
+
+            else if (data_req.addr <= (0xee88 + 0x2808)) {
                 rv32_test::memory_response_t data_res;
                 switch(data_req.op) {
-                    case 8:
+                    case rv32_test::RV32Core::MEM_SB:
                         *reinterpret_cast<uint8_t*>(program_code + data_req.addr) = static_cast<uint8_t>(data_req.data);
                         break;
-                    case 9:
+                    case rv32_test::RV32Core::MEM_SH:
                         *reinterpret_cast<uint16_t*>(program_code + data_req.addr) = static_cast<uint16_t>(data_req.data);
                         break;
-                    case 10:
+                    case rv32_test::RV32Core::MEM_SW:
                         *reinterpret_cast<uint32_t*>(program_code + data_req.addr) = static_cast<uint32_t>(data_req.data);
                         break;
                     default:
