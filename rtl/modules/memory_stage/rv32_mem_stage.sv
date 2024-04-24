@@ -39,6 +39,7 @@ always_comb begin
 
     //stall = ~ld_st_res.ready;
     stall = 0;
+
     if(!resetn | stall) begin
         internal_data.instr = `RV_NOP;
         internal_data.pc = 0;

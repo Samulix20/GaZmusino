@@ -308,7 +308,7 @@ class TraceCanvas {
 
 void trace_stages(Vrv32_core* rvcore) {
     auto tc = TraceCanvas(5, 4);
-    
+
     memory_request_t instr_request;
     instr_request.set(rvcore->instr_request);
     memory_response_t instr_response;
@@ -329,7 +329,7 @@ void trace_stages(Vrv32_core* rvcore) {
     tc.canvas[2][2] = alu_op_str(exec_data.decoded_instr) + " ";
     tc.canvas[2][2] += alu_input_str(exec_data.instr, exec_data.decoded_instr);
     tc.canvas[2][3] = branch_op_str(exec_data.decoded_instr);
-    
+
     auto mem_data = get_mem_stage_data(rvcore);
     tc.canvas[3][0] = std::format("@ {:<#10x} I {:<#10x}", mem_data.pc, mem_data.instr.get());
     tc.canvas[3][1] = wb_src_str(mem_data.instr, mem_data.decoded_instr);

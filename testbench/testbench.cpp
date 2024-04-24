@@ -82,6 +82,15 @@ int main(int argc, char** argv) {
             if (data_req.addr <= 0xedc8) {
                 rv32_test::memory_response_t data_res;
                 switch(data_req.op) {
+                    case 8:
+                        *reinterpret_cast<uint8_t*>(program_code + data_req.addr) = static_cast<uint8_t>(data_req.data);
+                        break;
+                    case 9:
+                        *reinterpret_cast<uint16_t*>(program_code + data_req.addr) = static_cast<uint16_t>(data_req.data);
+                        break;
+                    case 10:
+                        *reinterpret_cast<uint32_t*>(program_code + data_req.addr) = static_cast<uint32_t>(data_req.data);
+                        break;
                     default:
                         data_res.data = rv32_test::read_instr(program_code, data_req.addr);
                         break;
