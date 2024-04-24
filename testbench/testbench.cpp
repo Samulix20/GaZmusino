@@ -9,7 +9,7 @@
 #include "rv32_test_utils.h"
 
 vluint64_t sim_time = 0;
-constexpr uint64_t max_sim_time = 100000;
+constexpr uint64_t max_sim_time = 10000;
 
 // Bsp defines config
 #include "../bsp/riscv/config.h"

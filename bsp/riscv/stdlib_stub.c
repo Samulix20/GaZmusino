@@ -7,10 +7,7 @@
 // Most of this functions do nothing
 
 void exit(int status) {
-    if (status != 0) {
-        rv_printf("Exit called, status %i\n", status);
-    }
-    PRINT_REG = TERM_CHAR;
+    EXIT_STATUS_REG = status;
     while(1) {}
 }
 

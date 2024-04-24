@@ -17,8 +17,7 @@ _start:
     jal     bss_init
     # Jump to main function
     jal     main
-    # Call exit 0
-    li      a0, 0
+    # Call exit with return from main
     jal     exit
 
 __trap_handler:
