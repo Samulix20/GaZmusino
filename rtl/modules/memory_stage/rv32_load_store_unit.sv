@@ -11,7 +11,7 @@ module rv32_load_store_unit (
 );
 
 always_comb begin
-    // TODO make ready logic and signed/unsigned load logic
+    // TODO make ready logic
     data_request.addr = exec_data.mem_addr;
     data_request.op = exec_data.decoded_instr.mem_op;
     data_request.data = exec_data.wb_result;
@@ -22,6 +22,7 @@ always_comb begin
     case (exec_data.decoded_instr.mem_op)
         MEM_LW: begin
             response.data = data_response.data;
+            response.ready = data_response.ready;
         end
         MEM_LB: begin
             case(exec_data.mem_addr[1:0])
@@ -32,6 +33,7 @@ always_comb begin
                 default: response.data[7:0] = 0;
             endcase
             response.data[31:8] = '{default: response.data[7]};
+            response.ready = data_response.ready;
         end
         MEM_LH: begin
             case(exec_data.mem_addr[1:0])
@@ -40,6 +42,7 @@ always_comb begin
                 default: response.data[15:0] = 0;
             endcase
             response.data[31:16] = '{default: response.data[15]};
+            response.ready = data_response.ready;
         end
         MEM_LBU: begin
             case(exec_data.mem_addr[1:0])
@@ -50,6 +53,7 @@ always_comb begin
                 default: response.data[7:0] = 0;
             endcase
             response.data[31:8] = 0;
+            response.ready = data_response.ready;
         end
         MEM_LHU: begin
             case(exec_data.mem_addr[1:0])
@@ -58,11 +62,13 @@ always_comb begin
                 default: response.data[15:0] = 0;
             endcase
             response.data[31:16] = 0;
+            response.ready = data_response.ready;
         end
-        default: response.data = 0;
+        default: begin
+            response.data = 0;
+            response.ready = 1;
+        end
     endcase
-
-    response.ready = 1;
 end
 
 endmodule

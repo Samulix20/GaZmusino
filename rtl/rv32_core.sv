@@ -30,7 +30,7 @@ always_comb begin
     next_pc = pc + 4;
 
     // A instruction is stalling
-    if (dec_stall) next_pc = pc;
+    if (dec_stall | mem_stall) next_pc = pc;
 
     // Jump instruction
     if(exec_jump) begin
@@ -65,7 +65,7 @@ logic fetch_stall;
 rv32_fetch_stage fetch_stage(
     .clk(clk), .resetn(resetn),
     // Pipeline I/O
-    .stop(dec_stall),
+    .stop(dec_stall | mem_stall),
     .set_nop(jump_set_nop),
     .set_nop_pc(jump_nop_pc),
     .pc(pc),
@@ -85,6 +85,7 @@ rv32_decode_stage decode_stage(
     .instr_data(instr_buff_data),
     .decode_data(decoded_buff_data),
     .stall(dec_stall),
+    .stop(mem_stall),
     // Register file read I/O
     .rs1(dec_rs1), .rs2(dec_rs2),
     .reg1(dec_reg1), .reg2(dec_reg2),
@@ -97,6 +98,7 @@ rv32_exec_stage exec_stage(
     .clk(clk), .resetn(resetn),
     .decoded_data(decoded_buff_data),
     .exec_data(exec_buff_data),
+    .stop(mem_stall),
     .do_jump(exec_jump),
     .jump_addr(exec_jump_addr),
     .mem_buff(mem_buff_data)

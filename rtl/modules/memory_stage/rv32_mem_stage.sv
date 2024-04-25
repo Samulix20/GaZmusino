@@ -37,8 +37,7 @@ always_comb begin
         default: internal_data.wb_result = exec_data.wb_result;
     endcase
 
-    //stall = ~ld_st_res.ready;
-    stall = 0;
+    stall = ~ld_st_res.ready;
 
     if(!resetn | stall) begin
         internal_data.instr = `RV_NOP;

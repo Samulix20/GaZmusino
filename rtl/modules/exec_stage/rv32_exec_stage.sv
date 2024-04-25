@@ -8,6 +8,7 @@ module rv32_exec_stage (
     // Pipeline I/O
     input decoded_buffer_data_t decoded_data,
     output exec_buffer_data_t exec_data,
+    input logic stop,
     // Jump control signals
     output logic do_jump,
     output rv32_word jump_addr,
@@ -108,6 +109,8 @@ always_comb begin
         WB_STORE: internal_data.wb_result = reg2;
         default internal_data.wb_result = 0;
     endcase
+
+    if(stop) internal_data = exec_data;
 
     if(!resetn) begin
         internal_data.instr = `RV_NOP;

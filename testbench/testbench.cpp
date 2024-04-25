@@ -73,6 +73,9 @@ int main(int argc, char** argv) {
             rv32_test::memory_request_t data_req;
             data_req.set(dut->data_request);
 
+            rv32_test::memory_response_t data_res;
+            data_res.ready = 0;
+
             if (dut->clk == 1 && data_req.addr == EXIT_STATUS_ADDR && data_req.op == rv32_test::RV32Core::MEM_SW) {
                 if (print_trace) rv32_test::trace_stages(dut);
                 std::cout << "Exit status " << data_req.data << '\n';
@@ -84,7 +87,7 @@ int main(int argc, char** argv) {
             }
 
             else if (data_req.addr <= (0xee88 + 0x2808)) {
-                rv32_test::memory_response_t data_res;
+                data_res.ready = 1;
                 switch(data_req.op) {
                     case rv32_test::RV32Core::MEM_SB:
                         *reinterpret_cast<uint8_t*>(program_code + data_req.addr) = static_cast<uint8_t>(data_req.data);
@@ -99,8 +102,9 @@ int main(int argc, char** argv) {
                         data_res.data = rv32_test::read_instr(program_code, data_req.addr);
                         break;
                 }
-                dut->data_response = data_res.get();
             }
+
+            dut->data_response = data_res.get();
         }
 
         // Update signals

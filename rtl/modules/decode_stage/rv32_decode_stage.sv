@@ -6,7 +6,7 @@ module rv32_decode_stage (
     // Clk, Reset signals
     input logic clk, resetn,
     // Pipeline I/O
-    input logic set_nop,
+    input logic set_nop, stop,
     input rv32_word set_nop_pc,
     input fetch_buffer_data_t instr_data,
     output decoded_buffer_data_t decode_data,
@@ -60,11 +60,18 @@ always_comb begin
     internal_data.decoded_instr.bypass_rs2 = bypass_rs[1];
     stall = hazzard_stall;
 
-    if (stall | set_nop | !resetn) begin
+    if (stall | set_nop) begin
         internal_data.instr = `RV_NOP;
         internal_data.decoded_instr = create_nop_ctrl();
-        if (!resetn) internal_data.pc = 0;
-        else if (set_nop) internal_data.pc = set_nop_pc;
+        if (set_nop) internal_data.pc = set_nop_pc;
+    end
+
+    if (stop) internal_data = decode_data;
+
+    if(!resetn) begin
+        internal_data.instr = `RV_NOP;
+        internal_data.decoded_instr = create_nop_ctrl();
+        internal_data.pc = 0;
     end
 end
 
