@@ -26,11 +26,9 @@ rv32_word next_pc /*verilator public*/;
 always_comb begin
     jump_set_nop = 0;
     jump_nop_pc = decode_exec_buff.pc;
+
     // Default pc increase
     next_pc = pc + 4;
-
-    // A instruction is stalling
-    if (dec_stall | mem_stall) next_pc = pc;
 
     // Jump instruction
     if(exec_jump) begin
@@ -38,13 +36,13 @@ always_comb begin
         jump_set_nop = 1;
     end
 
-    if (!resetn) begin
-        next_pc = 0;
-    end
+    // A instruction is stalling
+    else if (dec_stall | mem_stall) next_pc = pc;
 end
 
 always_ff @(posedge clk) begin
-    pc <= next_pc;
+    if (!resetn) pc <= 0;
+    else pc <= next_pc;
 end
 
 // Register file
