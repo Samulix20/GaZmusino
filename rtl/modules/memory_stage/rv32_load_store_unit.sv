@@ -11,7 +11,6 @@ module rv32_load_store_unit (
 );
 
 always_comb begin
-    // TODO make ready logic
     data_request.addr = exec_data.mem_addr;
     data_request.op = exec_data.decoded_instr.mem_op;
     data_request.data = exec_data.wb_result;
@@ -64,9 +63,13 @@ always_comb begin
             response.data[31:16] = 0;
             response.ready = data_response.ready;
         end
+        MEM_NOP: begin
+            response.ready = 1;
+            response.data = 0;
+        end
         default: begin
             response.data = 0;
-            response.ready = 1;
+            response.ready = data_response.ready;
         end
     endcase
 end

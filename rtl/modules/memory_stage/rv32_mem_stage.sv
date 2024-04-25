@@ -15,6 +15,7 @@ module rv32_mem_stage(
 );
 
 mem_buffer_data_t internal_data /*verilator public*/;
+mem_buffer_data_t output_internal_data;
 
 memory_response_t ld_st_res;
 
@@ -38,17 +39,21 @@ always_comb begin
     endcase
 
     stall = ~ld_st_res.ready;
+end
+
+always_comb begin
+    output_internal_data = internal_data;
 
     if(!resetn | stall) begin
-        internal_data.instr = `RV_NOP;
-        internal_data.pc = 0;
-        internal_data.decoded_instr = create_nop_ctrl();
+        output_internal_data.instr = `RV_NOP;
+        output_internal_data.pc = exec_data.pc;
+        output_internal_data.decoded_instr = create_nop_ctrl();
+        if (!resetn) output_internal_data.pc = 0;
     end
-
 end
 
 always_ff @(posedge clk) begin
-    mem_data <= internal_data;
+    mem_data <= output_internal_data;
 end
 
 endmodule

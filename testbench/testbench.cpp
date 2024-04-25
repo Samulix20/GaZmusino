@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
         dut->clk ^= 1;
 
         // Reset signal
-        bool reset_on = sim_time > 0 && sim_time < 5;
+        bool reset_on = sim_time >= 0 && sim_time < 5;
         dut->resetn = static_cast<uint8_t>(!reset_on);
 
         // I/O Singnals
@@ -86,22 +86,36 @@ int main(int argc, char** argv) {
                 std::cout << static_cast<char>(data_req.data);
             }
 
-            else if (data_req.addr <= (0xee88 + 0x2808)) {
-                data_res.ready = 1;
-                switch(data_req.op) {
-                    case rv32_test::RV32Core::MEM_SB:
-                        *reinterpret_cast<uint8_t*>(program_code + data_req.addr) = static_cast<uint8_t>(data_req.data);
-                        break;
-                    case rv32_test::RV32Core::MEM_SH:
-                        *reinterpret_cast<uint16_t*>(program_code + data_req.addr) = static_cast<uint16_t>(data_req.data);
-                        break;
-                    case rv32_test::RV32Core::MEM_SW:
-                        *reinterpret_cast<uint32_t*>(program_code + data_req.addr) = static_cast<uint32_t>(data_req.data);
-                        break;
-                    default:
-                        data_res.data = rv32_test::read_instr(program_code, data_req.addr);
-                        break;
+            else if (dut->clk == 1 && data_req.addr <= (0xee88 + 0x2808)) {
+                uint32_t mem_stall = rand() % 2;
+                if(mem_stall == 1) {
+                    data_res.ready = 0;
+                } else {
+                    data_res.ready = 1;
+                    switch(data_req.op) {
+                        case rv32_test::RV32Core::MEM_SB:
+                            *reinterpret_cast<uint8_t*>(program_code + data_req.addr) = static_cast<uint8_t>(data_req.data);
+                            break;
+                        case rv32_test::RV32Core::MEM_SH:
+                            *reinterpret_cast<uint16_t*>(program_code + data_req.addr) = static_cast<uint16_t>(data_req.data);
+                            break;
+                        case rv32_test::RV32Core::MEM_SW:
+                            *reinterpret_cast<uint32_t*>(program_code + data_req.addr) = static_cast<uint32_t>(data_req.data);
+                            break;
+                        default:
+                            data_res.data = rv32_test::read_instr(program_code, data_req.addr);
+                            break;
+                    }
                 }
+            }
+
+            else if(dut->clk == 1 && data_req.op != rv32_test::RV32Core::MEM_NOP && data_req.addr > (0xee88 + 0x2808)) {
+                std::cout << std::format("clk {} op {} {:<#10x} out of bounds request\n", sim_time, data_req.op, data_req.addr);
+                exit(254);
+            }
+
+            if (dut->clk == 1) {
+                std::cout << std::format("{:<#10x}", data_req.addr) << " " << static_cast<uint32_t>(data_res.ready) << '\n';
             }
 
             dut->data_response = data_res.get();
@@ -112,7 +126,7 @@ int main(int argc, char** argv) {
 
         // Debug
         // Only on high clk and after reset
-        if (print_trace && !reset_on && dut->clk == 0) {
+        if (print_trace && !reset_on && dut->clk == 1) {
             rv32_test::trace_stages(dut);
         }
 

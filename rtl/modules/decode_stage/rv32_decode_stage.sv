@@ -19,6 +19,7 @@ module rv32_decode_stage (
 );
 
 decoded_buffer_data_t internal_data /*verilator public*/;
+decoded_buffer_data_t output_internal_data /*verilator public*/;
 decoded_instr_t decoder_output;
 
 logic [1:0] use_rs /*verilator public*/;
@@ -59,24 +60,28 @@ always_comb begin
     internal_data.decoded_instr.bypass_rs1 = bypass_rs[0];
     internal_data.decoded_instr.bypass_rs2 = bypass_rs[1];
     stall = hazzard_stall;
+end
+
+always_comb begin
+    output_internal_data = internal_data;
 
     if (stall | set_nop) begin
-        internal_data.instr = `RV_NOP;
-        internal_data.decoded_instr = create_nop_ctrl();
-        if (set_nop) internal_data.pc = set_nop_pc;
+        output_internal_data.instr = `RV_NOP;
+        output_internal_data.decoded_instr = create_nop_ctrl();
+        if (set_nop) output_internal_data.pc = set_nop_pc;
     end
 
-    if (stop) internal_data = decode_data;
+    if (stop) output_internal_data = decode_data;
 
     if(!resetn) begin
-        internal_data.instr = `RV_NOP;
-        internal_data.decoded_instr = create_nop_ctrl();
-        internal_data.pc = 0;
+        output_internal_data.instr = `RV_NOP;
+        output_internal_data.decoded_instr = create_nop_ctrl();
+        output_internal_data.pc = 0;
     end
 end
 
 always_ff @(posedge clk) begin
-    decode_data <= internal_data;
+    decode_data <= output_internal_data;
 end
 
 endmodule

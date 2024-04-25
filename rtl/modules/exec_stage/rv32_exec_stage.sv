@@ -42,6 +42,7 @@ function automatic rv32_word alu_input_sel(
 endfunction
 
 exec_buffer_data_t internal_data /*verilator public*/;
+exec_buffer_data_t output_internal_data;
 
 rv32_word reg1, reg2;
 always_comb begin
@@ -107,20 +108,24 @@ always_comb begin
         WB_PC4: internal_data.wb_result = decoded_data.pc + 4;
         WB_INT_ALU: internal_data.wb_result = int_alu_result;
         WB_STORE: internal_data.wb_result = reg2;
-        default internal_data.wb_result = 0;
+        default: internal_data.wb_result = 0;
     endcase
+end
 
-    if(stop) internal_data = exec_data;
+always_comb begin
+    output_internal_data = internal_data;
+
+    if(stop) output_internal_data = exec_data;
 
     if(!resetn) begin
-        internal_data.instr = `RV_NOP;
-        internal_data.pc = 0;
-        internal_data.decoded_instr = create_nop_ctrl();
+        output_internal_data.instr = `RV_NOP;
+        output_internal_data.pc = 0;
+        output_internal_data.decoded_instr = create_nop_ctrl();
     end
 end
 
 always_ff @(posedge clk) begin
-    exec_data <= internal_data;
+    exec_data <= output_internal_data;
 end
 
 endmodule;
