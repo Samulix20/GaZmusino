@@ -83,6 +83,7 @@ int main(int argc, char** argv) {
 
             else if (dut->clk == 1 && data_req.addr == PRINT_REG_ADDR && data_req.op == rv32_test::RV32Core::MEM_SW) {
                 std::cout << static_cast<char>(data_req.data);
+                data_res.ready = 1;
             }
 
             else if (dut->clk == 1 && data_req.addr <= (0xee88 + 0x2808)) {
