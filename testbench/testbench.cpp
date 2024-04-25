@@ -113,10 +113,6 @@ int main(int argc, char** argv) {
                 exit(254);
             }
 
-            if (dut->clk == 1) {
-                std::cout << std::format("{:<#10x}", data_req.addr) << " " << static_cast<uint32_t>(data_res.ready) << '\n';
-            }
-
             dut->data_response = data_res.get();
         }
 

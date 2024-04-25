@@ -43,17 +43,16 @@ end
 
 always_comb begin
     output_internal_data = internal_data;
-
-    if(!resetn | stall) begin
-        output_internal_data.instr = `RV_NOP;
-        output_internal_data.pc = exec_data.pc;
-        output_internal_data.decoded_instr = create_nop_ctrl();
-        if (!resetn) output_internal_data.pc = 0;
-    end
 end
 
 always_ff @(posedge clk) begin
-    mem_data <= output_internal_data;
+    if(!resetn) begin
+        mem_data.instr <= `RV_NOP;
+        mem_data.decoded_instr <= create_nop_ctrl();
+        mem_data.pc <= 0;
+    end
+
+    else if (!stall) mem_data <= output_internal_data;
 end
 
 endmodule

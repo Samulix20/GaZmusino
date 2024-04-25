@@ -12,7 +12,9 @@ module rv32_hazzard_detection_unit (
 );
 
 always_comb begin
-    stall = 0;
+    logic stall_vec [2];
+    stall_vec[0] = 0;
+    stall_vec[1] = 0;
 
     for(int idx = 0; idx < 2; idx = idx + 1) begin
         rv_reg_id_t rs;
@@ -20,11 +22,6 @@ always_comb begin
 
         if (idx == 0) rs = current_instr.rs1;
         else rs = current_instr.rs2;
-
-        // Mem instructions always generate a bubble, structural hazzard
-        if (decoded_buff.decoded_instr.mem_op != MEM_NOP) begin
-            stall = 1;
-        end
 
         // Check first mem cause it will get overwritten if required
         // rs dependency with instr at mem
@@ -34,13 +31,19 @@ always_comb begin
         // rs dependency with instr at exec
         if (rs == decoded_buff.instr.rd && decoded_buff.decoded_instr.register_wb) begin
             bypass_rs[idx] = BYPASS_EXEC_BUFF;
+            // Load use generates one nop bubble always
+            if (decoded_buff.decoded_instr.wb_result_src == WB_MEM_DATA)
+                stall_vec[idx] = 1;
         end
 
         // No dependency
         if (!use_rs[idx]) begin
             bypass_rs[idx] = NO_BYPASS;
+            stall_vec[idx] = 0;
         end
     end
+
+    stall = stall_vec[0] | stall_vec[1];
 end
 
 endmodule
