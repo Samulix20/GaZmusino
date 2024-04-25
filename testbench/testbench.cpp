@@ -77,7 +77,6 @@ int main(int argc, char** argv) {
             data_res.ready = 0;
 
             if (dut->clk == 1 && data_req.addr == EXIT_STATUS_ADDR && data_req.op == rv32_test::RV32Core::MEM_SW) {
-                if (print_trace) rv32_test::trace_stages(dut);
                 std::cout << "Exit status " << data_req.data << '\n';
                 exit(data_req.data);
             }

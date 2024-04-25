@@ -71,17 +71,17 @@ always_comb begin
         if (set_nop) output_internal_data.pc = set_nop_pc;
     end
 
-    if (stop) output_internal_data = decode_data;
-
-    if(!resetn) begin
-        output_internal_data.instr = `RV_NOP;
-        output_internal_data.decoded_instr = create_nop_ctrl();
-        output_internal_data.pc = 0;
-    end
 end
 
 always_ff @(posedge clk) begin
-    decode_data <= output_internal_data;
+    if (!resetn) begin
+        decode_data.instr <= `RV_NOP;
+        decode_data.decoded_instr <= create_nop_ctrl();
+        decode_data.pc <= 0;
+    end
+    else if (!stop) begin
+        decode_data <= output_internal_data;
+    end
 end
 
 endmodule
