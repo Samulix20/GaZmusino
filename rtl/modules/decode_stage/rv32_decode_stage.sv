@@ -8,18 +8,18 @@ module rv32_decode_stage (
     // Pipeline I/O
     input logic set_nop, stop,
     input rv32_word set_nop_pc,
-    input fetch_buffer_data_t instr_data,
-    output decoded_buffer_data_t decode_data,
+    input fetch_decode_buffer_t fetch_decode_buff,
+    output decode_exec_buffer_t decode_exec_buff,
     output logic stall,
     // Register file read I/O
     output rv_reg_id_t rs1, rs2,
     input rv32_word reg1, reg2,
     // Hazzard detection I/O
-    input exec_buffer_data_t exec_buff
+    input exec_mem_buffer_t exec_mem_buff
 );
 
-decoded_buffer_data_t internal_data /*verilator public*/;
-decoded_buffer_data_t output_internal_data /*verilator public*/;
+decode_exec_buffer_t internal_data /*verilator public*/;
+decode_exec_buffer_t output_internal_data /*verilator public*/;
 decoded_instr_t decoder_output;
 
 logic [1:0] use_rs /*verilator public*/;
@@ -28,15 +28,15 @@ bypass_t bypass_rs[2];
 
 rv32_decoder decoder(
     .use_rs(use_rs),
-    .instr(instr_data.instr),
+    .instr(fetch_decode_buff.instr),
     .decoded_instr(decoder_output)
 );
 
 rv32_hazzard_detection_unit hazzard_detection(
     .use_rs(use_rs),
-    .current_instr(instr_data.instr),
-    .decoded_buff(decode_data),
-    .exec_buff(exec_buff),
+    .current_instr(fetch_decode_buff.instr),
+    .decode_exec_buff(decode_exec_buff),
+    .exec_mem_buff(exec_mem_buff),
     .stall(hazzard_stall),
     .bypass_rs(bypass_rs)
 );
@@ -44,12 +44,12 @@ rv32_hazzard_detection_unit hazzard_detection(
 // Decode logic
 always_comb begin
     // Forward signals
-    internal_data.pc = instr_data.pc;
-    internal_data.instr = instr_data.instr;
+    internal_data.pc = fetch_decode_buff.pc;
+    internal_data.instr = fetch_decode_buff.instr;
 
     // Register file data
-    rs1 = instr_data.instr.rs1;
-    rs2 = instr_data.instr.rs2;
+    rs1 = fetch_decode_buff.instr.rs1;
+    rs2 = fetch_decode_buff.instr.rs2;
     internal_data.reg1 = reg1;
     internal_data.reg2 = reg2;
 
@@ -75,12 +75,12 @@ end
 
 always_ff @(posedge clk) begin
     if (!resetn) begin
-        decode_data.instr <= `RV_NOP;
-        decode_data.decoded_instr <= create_nop_ctrl();
-        decode_data.pc <= 0;
+        decode_exec_buff.instr <= `RV_NOP;
+        decode_exec_buff.decoded_instr <= create_nop_ctrl();
+        decode_exec_buff.pc <= 0;
     end
     else if (!stop) begin
-        decode_data <= output_internal_data;
+        decode_exec_buff <= output_internal_data;
     end
 end
 

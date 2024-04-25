@@ -6,14 +6,14 @@ module rv32_exec_stage (
     // Clk, Reset signals
     input logic clk, resetn,
     // Pipeline I/O
-    input decoded_buffer_data_t decoded_data,
-    output exec_buffer_data_t exec_data,
+    input decode_exec_buffer_t decode_exec_buff,
+    output exec_mem_buffer_t exec_mem_buff,
     input logic stop,
     // Jump control signals
     output logic do_jump,
     output rv32_word jump_addr,
     // Bypass data
-    input mem_buffer_data_t mem_buff
+    input mem_wb_buffer_t mem_wb_buff
 );
 
 // TODO Setup as a loop
@@ -23,7 +23,7 @@ function automatic rv32_word alu_input_sel(
     input rv32_word exec_pc,
     input rv32_word reg1,
     input rv32_word reg2,
-    input decoded_buffer_data_t db
+    input decode_exec_buffer_t db
 );
     int_alu_input_t opsel;
     rv32_word out;
@@ -41,33 +41,33 @@ function automatic rv32_word alu_input_sel(
     return out;
 endfunction
 
-exec_buffer_data_t internal_data /*verilator public*/;
-exec_buffer_data_t output_internal_data;
+exec_mem_buffer_t internal_data /*verilator public*/;
+exec_mem_buffer_t output_internal_data;
 
 rv32_word reg1, reg2;
 always_comb begin
-    case (decoded_data.decoded_instr.bypass_rs1)
-        BYPASS_EXEC_BUFF: reg1 = exec_data.wb_result;
-        BYPASS_MEM_BUFF: reg1 = mem_buff.wb_result;
-        default: reg1 = decoded_data.reg1;
+    case (decode_exec_buff.decoded_instr.bypass_rs1)
+        BYPASS_EXEC_BUFF: reg1 = exec_mem_buff.wb_result;
+        BYPASS_MEM_BUFF: reg1 = mem_wb_buff.wb_result;
+        default: reg1 = decode_exec_buff.reg1;
     endcase
 
-    case (decoded_data.decoded_instr.bypass_rs2)
-        BYPASS_EXEC_BUFF: reg2 = exec_data.wb_result;
-        BYPASS_MEM_BUFF: reg2 = mem_buff.wb_result;
-        default: reg2 = decoded_data.reg2;
+    case (decode_exec_buff.decoded_instr.bypass_rs2)
+        BYPASS_EXEC_BUFF: reg2 = exec_mem_buff.wb_result;
+        BYPASS_MEM_BUFF: reg2 = mem_wb_buff.wb_result;
+        default: reg2 = decode_exec_buff.reg2;
     endcase
 end
 
 // Immediate creation logic
 rv32_word imm;
 always_comb begin
-    case (decoded_data.decoded_instr.t)
-        INSTR_I_TYPE: imm = decode_i_imm(decoded_data.instr);
-        INSTR_S_TYPE: imm = decode_s_imm(decoded_data.instr);
-        INSTR_B_TYPE: imm = decode_b_imm(decoded_data.instr);
-        INSTR_U_TYPE: imm = decode_u_imm(decoded_data.instr);
-        INSTR_J_TYPE: imm = decode_j_imm(decoded_data.instr);
+    case (decode_exec_buff.decoded_instr.t)
+        INSTR_I_TYPE: imm = decode_i_imm(decode_exec_buff.instr);
+        INSTR_S_TYPE: imm = decode_s_imm(decode_exec_buff.instr);
+        INSTR_B_TYPE: imm = decode_b_imm(decode_exec_buff.instr);
+        INSTR_U_TYPE: imm = decode_u_imm(decode_exec_buff.instr);
+        INSTR_J_TYPE: imm = decode_j_imm(decode_exec_buff.instr);
         default: imm = 0;
     endcase
 end
@@ -75,22 +75,22 @@ end
 rv32_word alu_op1, alu_op2;
 always_comb begin
     // Alu inputs setup
-    alu_op1 = alu_input_sel(0, imm, decoded_data.pc, reg1, reg2, decoded_data);
-    alu_op2 = alu_input_sel(1, imm, decoded_data.pc, reg1, reg2, decoded_data);
+    alu_op1 = alu_input_sel(0, imm, decode_exec_buff.pc, reg1, reg2, decode_exec_buff);
+    alu_op2 = alu_input_sel(1, imm, decode_exec_buff.pc, reg1, reg2, decode_exec_buff);
 end
 
 // Int ALU
 rv32_word int_alu_result;
 rv32_int_alu int_alu (
     .op1(alu_op1), .op2(alu_op2),
-    .opsel(decoded_data.decoded_instr.int_alu_op),
+    .opsel(decode_exec_buff.decoded_instr.int_alu_op),
     .result(int_alu_result)
 );
 
 // Branch unit
 rv32_branch_unit branch_unit (
     .op1(reg1), .op2(reg2),
-    .branch_op(decoded_data.decoded_instr.branch_op),
+    .branch_op(decode_exec_buff.decoded_instr.branch_op),
     .do_branch(do_jump)
 );
 always_comb begin
@@ -98,14 +98,14 @@ always_comb begin
 end
 
 always_comb begin
-    internal_data.instr = decoded_data.instr;
-    internal_data.pc = decoded_data.pc;
-    internal_data.decoded_instr = decoded_data.decoded_instr;
+    internal_data.instr = decode_exec_buff.instr;
+    internal_data.pc = decode_exec_buff.pc;
+    internal_data.decoded_instr = decode_exec_buff.decoded_instr;
     internal_data.mem_addr = int_alu_result;
 
     // Setup data for bypass
-    case(decoded_data.decoded_instr.wb_result_src)
-        WB_PC4: internal_data.wb_result = decoded_data.pc + 4;
+    case(decode_exec_buff.decoded_instr.wb_result_src)
+        WB_PC4: internal_data.wb_result = decode_exec_buff.pc + 4;
         WB_INT_ALU: internal_data.wb_result = int_alu_result;
         WB_STORE: internal_data.wb_result = reg2;
         default: internal_data.wb_result = 0;
@@ -115,7 +115,7 @@ end
 always_comb begin
     output_internal_data = internal_data;
 
-    if(stop) output_internal_data = exec_data;
+    if(stop) output_internal_data = exec_mem_buff;
 
     if(!resetn) begin
         output_internal_data.instr = `RV_NOP;
@@ -125,7 +125,7 @@ always_comb begin
 end
 
 always_ff @(posedge clk) begin
-    exec_data <= output_internal_data;
+    exec_mem_buff <= output_internal_data;
 end
 
 endmodule;

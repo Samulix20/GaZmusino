@@ -4,7 +4,7 @@
 
 module rv32_wb_stage(
     // Pipeline I/O
-    input mem_buffer_data_t mem_data,
+    input mem_wb_buffer_t mem_wb_buff,
     // Register File I/O
     output logic reg_write,
     output rv_reg_id_t rd,
@@ -12,9 +12,9 @@ module rv32_wb_stage(
 );
 
 always_comb begin
-    reg_write = mem_data.decoded_instr.register_wb;
-    rd = mem_data.instr.rd;
-    wb_data = mem_data.wb_result;
+    reg_write = mem_wb_buff.decoded_instr.register_wb;
+    rd = mem_wb_buff.instr.rd;
+    wb_data = mem_wb_buff.wb_result;
 end
 
 endmodule

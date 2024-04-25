@@ -105,11 +105,6 @@ typedef enum logic [2:0] {
 } bypass_t /*verilator public*/;
 
 typedef struct packed {
-    rv_instr_t instr;
-    rv32_word pc;
-} fetch_buffer_data_t /*verilator public*/;
-
-typedef struct packed {
     logic invalid;
     // Immediate generation
     instr_type_t t;
@@ -150,10 +145,15 @@ endfunction
 typedef struct packed {
     rv_instr_t instr;
     rv32_word pc;
+} fetch_decode_buffer_t /*verilator public*/;
+
+typedef struct packed {
+    rv_instr_t instr;
+    rv32_word pc;
     decoded_instr_t decoded_instr;
     rv32_word reg1;
     rv32_word reg2;
-} decoded_buffer_data_t /*verilator public*/;
+} decode_exec_buffer_t /*verilator public*/;
 
 typedef struct packed {
     rv_instr_t instr;
@@ -161,14 +161,14 @@ typedef struct packed {
     decoded_instr_t decoded_instr;
     rv32_word mem_addr;
     rv32_word wb_result;
-} exec_buffer_data_t /*verilator public*/;
+} exec_mem_buffer_t /*verilator public*/;
 
 typedef struct packed {
     rv_instr_t instr;
     rv32_word pc;
     decoded_instr_t decoded_instr;
     rv32_word wb_result;
-} mem_buffer_data_t /*verilator public*/;
+} mem_wb_buffer_t /*verilator public*/;
 
 typedef struct packed {
     rv32_word addr;

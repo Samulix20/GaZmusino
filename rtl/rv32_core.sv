@@ -14,10 +14,10 @@ module rv32_core (
 );
 
 rv32_word pc;
-fetch_buffer_data_t instr_buff_data /*verilator public*/;
-decoded_buffer_data_t decoded_buff_data /*verilator public*/;
-exec_buffer_data_t exec_buff_data /*verilator public*/;
-mem_buffer_data_t mem_buff_data /*verilator public*/;
+fetch_decode_buffer_t fetch_decode_buff /*verilator public*/;
+decode_exec_buffer_t decode_exec_buff /*verilator public*/;
+exec_mem_buffer_t exec_mem_buff /*verilator public*/;
+mem_wb_buffer_t mem_wb_buff /*verilator public*/;
 
 // PC/Jump logic
 logic exec_jump, jump_set_nop;
@@ -25,7 +25,7 @@ rv32_word exec_jump_addr, jump_nop_pc;
 rv32_word next_pc /*verilator public*/;
 always_comb begin
     jump_set_nop = 0;
-    jump_nop_pc = decoded_buff_data.pc;
+    jump_nop_pc = decode_exec_buff.pc;
     // Default pc increase
     next_pc = pc + 4;
 
@@ -69,7 +69,8 @@ rv32_fetch_stage fetch_stage(
     .set_nop(jump_set_nop),
     .set_nop_pc(jump_nop_pc),
     .pc(pc),
-    .stall(fetch_stall), .fetch_data(instr_buff_data),
+    .stall(fetch_stall),
+    .fetch_decode_buff(fetch_decode_buff),
     // INSTR MEM I/O
     .instr_request(instr_request),
     .instr_response(instr_response)
@@ -82,34 +83,34 @@ rv32_decode_stage decode_stage(
     // Pipeline I/O
     .set_nop(jump_set_nop),
     .set_nop_pc(jump_nop_pc),
-    .instr_data(instr_buff_data),
-    .decode_data(decoded_buff_data),
+    .fetch_decode_buff(fetch_decode_buff),
+    .decode_exec_buff(decode_exec_buff),
     .stall(dec_stall),
     .stop(mem_stall),
     // Register file read I/O
     .rs1(dec_rs1), .rs2(dec_rs2),
     .reg1(dec_reg1), .reg2(dec_reg2),
     // Hazzard detection
-    .exec_buff(exec_buff_data)
+    .exec_mem_buff(exec_mem_buff)
 );
 
 // EXECUTION STAGE
 rv32_exec_stage exec_stage(
     .clk(clk), .resetn(resetn),
-    .decoded_data(decoded_buff_data),
-    .exec_data(exec_buff_data),
+    .decode_exec_buff(decode_exec_buff),
+    .exec_mem_buff(exec_mem_buff),
     .stop(mem_stall),
     .do_jump(exec_jump),
     .jump_addr(exec_jump_addr),
-    .mem_buff(mem_buff_data)
+    .mem_wb_buff(mem_wb_buff)
 );
 
 // MEMORY STAGE
 logic mem_stall;
 rv32_mem_stage mem_stage(
     .clk(clk), .resetn(resetn),
-    .exec_data(exec_buff_data),
-    .mem_data(mem_buff_data),
+    .exec_mem_buff(exec_mem_buff),
+    .mem_wb_buff(mem_wb_buff),
     .stall(mem_stall),
     // Data Memory I/O
     .data_request(data_request),
@@ -118,7 +119,7 @@ rv32_mem_stage mem_stage(
 
 // WRITEBACK STAGE
 rv32_wb_stage wb_stage(
-    .mem_data(mem_buff_data),
+    .mem_wb_buff(mem_wb_buff),
     .reg_write(wb_we), .rd(wb_rd), .wb_data(wb_data)
 );
 

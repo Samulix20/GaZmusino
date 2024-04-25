@@ -5,8 +5,8 @@
 module rv32_hazzard_detection_unit (
     input logic[1:0] use_rs,
     input rv_instr_t current_instr,
-    input decoded_buffer_data_t decoded_buff,
-    input exec_buffer_data_t exec_buff,
+    input decode_exec_buffer_t decode_exec_buff,
+    input exec_mem_buffer_t exec_mem_buff,
     output logic stall,
     output bypass_t bypass_rs[2]
 );
@@ -25,14 +25,16 @@ always_comb begin
 
         // Check first mem cause it will get overwritten if required
         // rs dependency with instr at mem
-        if(rs == exec_buff.instr.rd && exec_buff.decoded_instr.register_wb)
+        if(rs == exec_mem_buff.instr.rd && exec_mem_buff.decoded_instr.register_wb)
             bypass_rs[idx] = BYPASS_MEM_BUFF;
 
         // rs dependency with instr at exec
-        if (rs == decoded_buff.instr.rd && decoded_buff.decoded_instr.register_wb) begin
+        if (rs == decode_exec_buff.instr.rd &&
+            decode_exec_buff.decoded_instr.register_wb) begin
+
             bypass_rs[idx] = BYPASS_EXEC_BUFF;
             // Load use generates one nop bubble always
-            if (decoded_buff.decoded_instr.wb_result_src == WB_MEM_DATA)
+            if (decode_exec_buff.decoded_instr.wb_result_src == WB_MEM_DATA)
                 stall_vec[idx] = 1;
         end
 

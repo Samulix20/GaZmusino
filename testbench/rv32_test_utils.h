@@ -22,9 +22,9 @@
 
 namespace rv32_test {
 
-using decode_data_t = Vrv32_core_decoded_buffer_data_t__struct__0;
-using exec_data_t = Vrv32_core_exec_buffer_data_t__struct__0;
-using mem_data_t = Vrv32_core_mem_buffer_data_t__struct__0;
+using decode_data_t = Vrv32_core_decode_exec_buffer_t__struct__0;
+using exec_data_t = Vrv32_core_exec_mem_buffer_t__struct__0;
+using mem_data_t = Vrv32_core_mem_wb_buffer_t__struct__0;
 using wb_data_t = mem_data_t;
 using memory_request_t = Vrv32_core_memory_request_t__struct__0;
 using memory_response_t = Vrv32_core_memory_response_t__struct__0;
@@ -225,7 +225,7 @@ mem_data_t get_mem_stage_data(Vrv32_core* rvcore) {
 
 wb_data_t get_wb_stage_data(Vrv32_core* rvcore) {
     wb_data_t d;
-    d.set(rvcore->rv32_core->mem_buff_data);
+    d.set(rvcore->rv32_core->mem_wb_buff);
     return d;
 }
 

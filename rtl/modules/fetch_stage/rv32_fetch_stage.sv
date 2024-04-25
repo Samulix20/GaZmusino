@@ -13,14 +13,14 @@ module rv32_fetch_stage (
 
     input rv32_word pc,
     output logic stall,
-    output fetch_buffer_data_t fetch_data,
+    output fetch_decode_buffer_t fetch_decode_buff,
 
     // Bus I/O
     output memory_request_t instr_request,
     input memory_response_t instr_response
 );
 
-fetch_buffer_data_t internal_data;
+fetch_decode_buffer_t internal_data;
 
 always_comb begin
     instr_request.addr = pc;
@@ -32,7 +32,7 @@ always_comb begin
     stall = ~instr_response.ready;
 
     // Default
-    internal_data = fetch_data;
+    internal_data = fetch_decode_buff;
     internal_data.instr = `RV_NOP;
 
     // New instruction fetched
@@ -43,7 +43,7 @@ always_comb begin
 
     // Some instruction further in the pipeline is stalling
     if (stop) begin
-        internal_data = fetch_data;
+        internal_data = fetch_decode_buff;
     end
 
     // Output a NOP
@@ -60,7 +60,7 @@ always_comb begin
 end
 
 always_ff @(posedge clk) begin
-    fetch_data <= internal_data;
+    fetch_decode_buff <= internal_data;
 end
 
 endmodule
