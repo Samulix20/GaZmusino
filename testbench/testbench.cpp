@@ -38,8 +38,7 @@ int main(int argc, char** argv) {
     dut->trace(m_trace, 5);
     m_trace->open("waveform.vcd");
 
-    rv32_test::RVMemory memory;
-    memory.load_elf(rv_elf_executable);
+    rv32_test::RVMemory memory(rv_elf_executable);
     vluint64_t sim_time = 0;
 
     // Testbench simulation loop

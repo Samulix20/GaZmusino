@@ -362,16 +362,21 @@ void trace_stages(Vrv32_core* rvcore) {
 #include "../bsp/riscv/config.h"
 
 class RVMemory {
-  public:
-
+  private:
     uint8_t* memory = nullptr;
     uint32_t max_addr = 0;
 
+  public:
     // Default constructor
     RVMemory() {}
+    
+    // load elf constructor
+    RVMemory(const std::string filename) {
+        load_elf(filename);
+    }
 
     ~RVMemory() {
-        // Free if alloc
+        // Free if allocated
         if (memory != nullptr) delete memory;
     }
 
@@ -399,6 +404,7 @@ class RVMemory {
         assert(phdr->p_type == PT_LOAD);
 
         // Allocate memory of size in memory
+        if (memory != nullptr) delete memory;
         memory = new uint8_t[phdr->p_memsz];
         max_addr = phdr->p_memsz;
         // Go to the segment data and read
@@ -408,11 +414,20 @@ class RVMemory {
         f.close();
     }
 
-    uint32_t read_aligned_word(const uint32_t addr) {
+    static uint32_t read_aligned_word(
+        const uint8_t* memory, const uint32_t addr) {
+
         return *reinterpret_cast<const uint32_t*>(memory + (addr & (~3)));
     }
 
-    MemoryResponse handle_request(MemoryRequest request) {
+    template<typename T>
+    static void memory_write(
+        uint8_t* memory, const uint32_t addr, const uint32_t data) {
+
+        *reinterpret_cast<T*>(memory + addr) = static_cast<T>(data);
+    }
+
+    MemoryResponse handle_request(const MemoryRequest request) {
         MemoryResponse response;
         response.data = 0;
         response.ready = 1;
@@ -427,7 +442,6 @@ class RVMemory {
                 exit(request.data);
             }
         }
-
         // MMIO Print
         if (request.addr == PRINT_REG_ADDR) {
             if (request.op == RV32Core::MEM_SW) {
@@ -435,25 +449,22 @@ class RVMemory {
                 return response;
             }
         }
-        
+
         // Check addr
         assert(request.addr < max_addr);
-    
+
         switch(request.op) {
             case RV32Core::MEM_SB:
-                *reinterpret_cast<uint8_t*>(memory + request.addr) =
-                    static_cast<uint8_t>(request.data);
+                memory_write<uint8_t>(memory, request.addr, request.data);
                 break;
             case RV32Core::MEM_SH:
-                *reinterpret_cast<uint16_t*>(memory + request.addr) =
-                    static_cast<uint16_t>(request.data);
+                memory_write<uint16_t>(memory, request.addr, request.data);
                 break;
             case RV32Core::MEM_SW:
-                *reinterpret_cast<uint32_t*>(memory + request.addr) =
-                    static_cast<uint32_t>(request.data);
+                memory_write<uint32_t>(memory, request.addr, request.data);
                 break;
             default:
-                response.data = this->read_aligned_word(request.addr);
+                response.data = read_aligned_word(memory, request.addr);
                 break;
         }
 
