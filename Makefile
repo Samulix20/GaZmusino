@@ -27,7 +27,7 @@ obj_dir/.verilator.stamp: \
 	@touch obj_dir/.verilator.stamp
 
 clean:
-	rm -rf obj_dir waveform.vcd
+	rm -rf obj_dir build waveform.vcd
 
 wave:
 	gtkwave waveform.vcd >/dev/null 2>/dev/null &
