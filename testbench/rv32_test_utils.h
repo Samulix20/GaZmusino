@@ -12,7 +12,7 @@
 #include <unordered_map>
 #include <format>
 
-// Device under test header
+// Device under test headers
 #include "Vrv32_core.h"
 #include "Vrv32_core_rv32_core.h"
 #include "Vrv32_core_rv32_decode_stage.h"
@@ -22,6 +22,7 @@
 
 namespace rv32_test {
 
+// Utilty using statements
 using decode_data_t = Vrv32_core_decode_exec_buffer_t__struct__0;
 using exec_data_t = Vrv32_core_exec_mem_buffer_t__struct__0;
 using mem_data_t = Vrv32_core_mem_wb_buffer_t__struct__0;
@@ -32,6 +33,35 @@ using memory_response_t = Vrv32_core_memory_response_t__struct__0;
 using rv_instr_t = Vrv32_core_rv_instr_t__struct__0;
 using rv_decoded_instr_t = Vrv32_core_decoded_instr_t__struct__0;
 using RV32Core = Vrv32_core___024unit;
+
+// Getters core internal data
+decode_data_t get_decode_stage_data(Vrv32_core* rvcore) {
+    decode_data_t d;
+    d.set(rvcore->rv32_core->decode_stage->internal_data);
+    return d;
+}
+
+exec_data_t get_exec_stage_data(Vrv32_core* rvcore) {
+    exec_data_t d;
+    d.set(rvcore->rv32_core->exec_stage->internal_data);
+    return d;
+}
+
+mem_data_t get_mem_stage_data(Vrv32_core* rvcore) {
+    mem_data_t d;
+    d.set(rvcore->rv32_core->mem_stage->internal_data);
+    return d;
+}
+
+wb_data_t get_wb_stage_data(Vrv32_core* rvcore) {
+    wb_data_t d;
+    d.set(rvcore->rv32_core->mem_wb_buff);
+    return d;
+}
+
+uint32_t get_next_pc(Vrv32_core* rvcore) {
+    return rvcore->rv32_core->next_pc;
+}
 
 std::string opcode_str(rv_instr_t instr) {
     std::string str;
@@ -205,34 +235,6 @@ std::string wb_write_str(wb_data_t wbd) {
     return s;
 }
 
-decode_data_t get_decode_stage_data(Vrv32_core* rvcore) {
-    decode_data_t d;
-    d.set(rvcore->rv32_core->decode_stage->internal_data);
-    return d;
-}
-
-exec_data_t get_exec_stage_data(Vrv32_core* rvcore) {
-    exec_data_t d;
-    d.set(rvcore->rv32_core->exec_stage->internal_data);
-    return d;
-}
-
-mem_data_t get_mem_stage_data(Vrv32_core* rvcore) {
-    mem_data_t d;
-    d.set(rvcore->rv32_core->mem_stage->internal_data);
-    return d;
-}
-
-wb_data_t get_wb_stage_data(Vrv32_core* rvcore) {
-    wb_data_t d;
-    d.set(rvcore->rv32_core->mem_wb_buff);
-    return d;
-}
-
-uint32_t get_next_pc(Vrv32_core* rvcore) {
-    return rvcore->rv32_core->next_pc;
-}
-
 std::string decode_register_usage_str(Vrv32_core* rvcore) {
     std::string s = "";
     uint8_t usage = rvcore->rv32_core->decode_stage->use_rs;
@@ -342,44 +344,105 @@ void trace_stages(Vrv32_core* rvcore) {
     tc.print();
 }
 
+// Bsp defines config
+#include "../bsp/riscv/config.h"
 
-uint32_t read_instr(const uint8_t* code, const uint32_t addr) {
-    return *reinterpret_cast<const uint32_t*>(code + (addr & (~3)));
-}
+class RVMemory {
+  public:
 
-uint8_t* read_elf(std::string filename) {
-    std::ifstream f(filename, std::ios::binary);
-    // Check file is open
-    assert(f.is_open());
+    uint8_t* memory = nullptr;
+    uint32_t max_addr = 0;
 
-    // Read header
-    Elf32_Ehdr* ehdr = new Elf32_Ehdr;
-    f.read(reinterpret_cast<char*>(ehdr), sizeof(*ehdr));
+    // Default constructor
+    RVMemory() {}
 
-    // Check is a 32 bit elf file
-    assert(ehdr->e_ident[EI_CLASS] == 1);
-    // Check is for RISC-V
-    assert(ehdr->e_machine == EM_RISCV);
+    ~RVMemory() {
+        // Free if alloc
+        if (memory != nullptr) delete memory;
+    }
 
-    // Set fd to read program header
-    // Seek and read segment 1 cause segment 0 is used for RV attributes
-    Elf32_Phdr* phdr = new Elf32_Phdr;
-    f.seekg(ehdr->e_phoff + sizeof(*phdr));
-    f.read(reinterpret_cast<char*>(phdr), sizeof(*phdr));
+    void load_elf(const std::string filename) {
+        std::ifstream f(filename, std::ios::binary);
+        // Check file is open
+        assert(f.is_open());
+
+        // Read header
+        Elf32_Ehdr* ehdr = new Elf32_Ehdr;
+        f.read(reinterpret_cast<char*>(ehdr), sizeof(*ehdr));
+
+        // Check is a 32 bit elf file
+        assert(ehdr->e_ident[EI_CLASS] == 1);
+        // Check is for RISC-V
+        assert(ehdr->e_machine == EM_RISCV);
+
+        // Set fd to read program header
+        // Seek and read segment 1 cause segment 0 is used for RV attributes
+        Elf32_Phdr* phdr = new Elf32_Phdr;
+        f.seekg(ehdr->e_phoff + sizeof(*phdr));
+        f.read(reinterpret_cast<char*>(phdr), sizeof(*phdr));
+        
+        // Make sure its loadable
+        assert(phdr->p_type == PT_LOAD);
+
+        // Allocate memory of size in memory
+        memory = new uint8_t[phdr->p_memsz];
+        max_addr = phdr->p_memsz;
+        // Go to the segment data and read
+        f.seekg(phdr->p_offset);
+        // Copy only the data present in the ELF file
+        f.read(reinterpret_cast<char*>(memory), phdr->p_filesz);
+        f.close();
+    }
+
+    uint32_t read_aligned_word(const uint32_t addr) {
+        return *reinterpret_cast<const uint32_t*>(memory + (addr & (~3)));
+    }
+
+    memory_response_t handle_request(memory_request_t request) {
+        memory_response_t response;
+        response.data = 0;
+        response.ready = 1;
+
+        // Check request
+        if (request.op == RV32Core::MEM_NOP) return response;
+        
+        // MMIO Exit
+        if (request.addr == EXIT_STATUS_ADDR) {
+            if (request.op == RV32Core::MEM_SW) {
+                std::cout << "Exit status " << request.data << '\n';
+                exit(request.data);
+            }
+        }
+
+        // MMIO Print
+        if (request.addr == PRINT_REG_ADDR) {
+            if (request.op == RV32Core::MEM_SW) {
+                std::cout << static_cast<char>(request.data);
+                return response;
+            }
+        }
+        
+        // Check addr
+        assert(request.addr < max_addr);
     
-    // Make sure its loadable
-    assert(phdr->p_type == PT_LOAD);
+        switch(request.op) {
+            case RV32Core::MEM_SB:
+                *reinterpret_cast<uint8_t*>(memory + request.addr) = static_cast<uint8_t>(request.data);
+                break;
+            case RV32Core::MEM_SH:
+                *reinterpret_cast<uint16_t*>(memory + request.addr) = static_cast<uint16_t>(request.data);
+                break;
+            case RV32Core::MEM_SW:
+                *reinterpret_cast<uint32_t*>(memory + request.addr) = static_cast<uint32_t>(request.data);
+                break;
+            default:
+                response.data = this->read_aligned_word(request.addr);
+                break;
+        }
 
-    // Allocate memory of size in memory
-    uint8_t* rv_program = new uint8_t[phdr->p_memsz];
-    // Go to the segment data and read
-    f.seekg(phdr->p_offset);
-    // Copy only the data present in the ELF file
-    f.read(reinterpret_cast<char*>(rv_program), phdr->p_filesz);
-    f.close();
-
-    return rv_program;
-}
+        return response;
+    }
+};
 
 }
 

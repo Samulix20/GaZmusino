@@ -20,7 +20,7 @@ obj_dir/.verilator.stamp: \
 	${VV} -I $(VERILOG_MODULES) -Wall --top-module ${TOP_MODULE} \
 	--trace --trace-structs \
 	--x-assign unique --x-initial unique \
-	--cc -CFLAGS "-std=c++20" --exe ${TOP_MODULE_SRC} $(CPP_SRC)
+	--cc -CFLAGS "-std=c++20 -Wall" --exe ${TOP_MODULE_SRC} $(CPP_SRC)
 	@touch obj_dir/.verilator.stamp
 
 clean:
