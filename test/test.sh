@@ -40,10 +40,30 @@ do
     i=$((i+1))
 done
 
-echo ""
 if [ $num_fail -ne 0 ]; then
     echo -e "${RED}$num_fail TEST FAILED${NC}"
     echo -e "${GREEN}$num_pass TEST PASSED${NC}"
 else
     echo -e "${GREEN}ALL TEST PASSED${NC}"
 fi
+
+make -s -C ../bsp -f bsp.mk BUILD_DIR=../build/bsp
+
+rv_tests=$(ls c_tests)
+for test in $rv_tests
+do
+    make -s -f ../bsp/c.mk\
+        CSRCS=$(find c_tests/$test -name '*.c')\
+        TARGET_NAME=c_tests/$test/main\
+        BUILD_DIR=../build\
+        BSP_SRC_DIR=../bsp\
+        BSP_BUILD_DIR=../build/bsp 2>/dev/null
+
+    test_res=$(../obj_dir/Vrv32_core +verilator+rand+reset+2 
+            -e ../build/c_tests/$test/main.elf 2>&1)
+    test_status=$?
+done
+
+
+
+

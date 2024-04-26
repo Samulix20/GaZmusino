@@ -1,64 +1,41 @@
 # Makefile for compilation of C programs for RISC-V platform
-INPUT_CSRCS ?= 
-INPUT_ASRCS ?= 
-BSP_DIR ?= ./bsp
+CSRCS ?= 
+ASRCS ?= 
+BUILD_DIR ?= build
 TARGET_NAME ?= main
+BSP_SRC_DIR ?= bsp
+BSP_BUILD_DIR ?= build/bsp
 
 # C Compiler definitions
 CROSS := riscv32-unknown-elf-
 CC := $(CROSS)gcc
 DUMP := $(CROSS)objdump
 
-# Dir definitions
-BUILD_DIR := build
-
-# Source and object file names
-CSRCS := $(shell find -wholename $(BSP_DIR)'/*.c') $(INPUT_CSRCS)
-ASRCS := $(shell find -wholename $(BSP_DIR)'/*.S') $(INPUT_ASRCS)
+# BSP must be compiled before
+BSP_OBJS := $(shell find $(BSP_BUILD_DIR) -name '*.o')
 OBJS := $(CSRCS:%.c=$(BUILD_DIR)/%.o) $(ASRCS:%.S=$(BUILD_DIR)/%.o)
 
 # Compiler flags
 CFLAGS := \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S\
-	-Wall -O3\
-	-march=rv32g -mabi=ilp32 -mno-div\
-	-fopt-info-optimized=$(BUILD_DIR)/comp_report.txt\
-	-I $(BSP_DIR) $(INCLUDE_DIRS)\
-	-ffreestanding -nostartfiles -T $(BUILD_DIR)/linker.lds\
+	-Wall -O3 -march=rv32g -mabi=ilp32 -mno-div\
+	-fopt-info-optimized=$(BUILD_DIR)/$(TARGET_NAME)_comp_report.txt\
+	-I $(BSP_SRC_DIR)\
+	-ffreestanding -nostartfiles -T $(BSP_BUILD_DIR)/linker.lds\
 	$(C_EXTRA_FLAGS)
 
-.PHONY: c_all c_libs c_info c_clean c_dump c_libs
-
-c_all: c_clean c_info c_dump
-
-c_libs: c_clean c_info $(OBJS) 
-
-c_info:
-	@echo "--- C Info ---"
-	@echo $(OBJS)
-	@echo "CFLAGS -> $(CFLAGS)"
-	@echo "--------------"
-
-c_clean:
-	@rm -rf $(BUILD_DIR)
-	@rm -rf $(TARGET_NAME).dump
-	@rm -rf comp_report.txt
-
-c_dump: $(BUILD_DIR)/$(TARGET_NAME).elf
-	@echo "DUMP $<"
+$(BUILD_DIR)/$(TARGET_NAME).dump: $(BUILD_DIR)/$(TARGET_NAME).elf
+	@mkdir -p $(@D)
 	@$(DUMP) -D $< > $(BUILD_DIR)/$(TARGET_NAME).dump
 
-$(BUILD_DIR)/$(TARGET_NAME).elf : $(OBJS)
-	@echo "LD $@"
-	@$(CC) -E -P -x c -I $(BSP_DIR) $(BSP_DIR)/linker.lds.in > $(BUILD_DIR)/linker.lds
-	$(CC) $(CFLAGS) $^ -o $@
+$(BUILD_DIR)/$(TARGET_NAME).elf: $(OBJS) $(BSP_OBJS)
+	@mkdir -p $(@D)
+	@$(CC) $(CFLAGS) $^ -o $@
 
 $(BUILD_DIR)/%.o: %.c
-	@echo "CC $<"
 	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: %.S
-	@echo "CASM $<"
 	@mkdir -p $(@D)
 	@$(CC) $(CFLAGS) -c $< -o $@
