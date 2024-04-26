@@ -23,38 +23,38 @@
 namespace rv32_test {
 
 // Utilty using statements
-using decode_data_t = Vrv32_core_decode_exec_buffer_t__struct__0;
-using exec_data_t = Vrv32_core_exec_mem_buffer_t__struct__0;
-using mem_data_t = Vrv32_core_mem_wb_buffer_t__struct__0;
-using wb_data_t = mem_data_t;
-using memory_request_t = Vrv32_core_memory_request_t__struct__0;
-using memory_response_t = Vrv32_core_memory_response_t__struct__0;
+using DecodeStageData = Vrv32_core_decode_exec_buffer_t__struct__0;
+using ExecutionStageData = Vrv32_core_exec_mem_buffer_t__struct__0;
+using MemoryStageData = Vrv32_core_mem_wb_buffer_t__struct__0;
+using WritebackStageData = MemoryStageData;
+using MemoryRequest = Vrv32_core_memory_request_t__struct__0;
+using MemoryResponse = Vrv32_core_memory_response_t__struct__0;
 
 using rv_instr_t = Vrv32_core_rv_instr_t__struct__0;
 using rv_decoded_instr_t = Vrv32_core_decoded_instr_t__struct__0;
 using RV32Core = Vrv32_core___024unit;
 
 // Getters core internal data
-decode_data_t get_decode_stage_data(Vrv32_core* rvcore) {
-    decode_data_t d;
+DecodeStageData get_decode_stage_data(Vrv32_core* rvcore) {
+    DecodeStageData d;
     d.set(rvcore->rv32_core->decode_stage->internal_data);
     return d;
 }
 
-exec_data_t get_exec_stage_data(Vrv32_core* rvcore) {
-    exec_data_t d;
+ExecutionStageData get_exec_stage_data(Vrv32_core* rvcore) {
+    ExecutionStageData d;
     d.set(rvcore->rv32_core->exec_stage->internal_data);
     return d;
 }
 
-mem_data_t get_mem_stage_data(Vrv32_core* rvcore) {
-    mem_data_t d;
+MemoryStageData get_mem_stage_data(Vrv32_core* rvcore) {
+    MemoryStageData d;
     d.set(rvcore->rv32_core->mem_stage->internal_data);
     return d;
 }
 
-wb_data_t get_wb_stage_data(Vrv32_core* rvcore) {
-    wb_data_t d;
+WritebackStageData get_wb_stage_data(Vrv32_core* rvcore) {
+    WritebackStageData d;
     d.set(rvcore->rv32_core->mem_wb_buff);
     return d;
 }
@@ -230,7 +230,7 @@ std::string wb_src_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
 }
 
 // If writeback "x[rd] <- [wb_result]"
-std::string wb_write_str(wb_data_t wbd) {
+std::string wb_write_str(WritebackStageData wbd) {
     std::string s = "";
     if (wbd.decoded_instr.register_wb) {
         s += "x" + std::to_string(wbd.instr.rd) + 
@@ -252,7 +252,7 @@ std::string decode_register_usage_str(Vrv32_core* rvcore) {
 std::string mem_op_str(Vrv32_core* rvcore) {
     auto mem_data = get_mem_stage_data(rvcore);
 
-    memory_request_t request;
+    MemoryRequest request;
     request.set(rvcore->data_request);
 
     std::string s = "";
@@ -317,9 +317,9 @@ class TraceCanvas {
 void trace_stages(Vrv32_core* rvcore) {
     auto tc = TraceCanvas(5, 4);
 
-    memory_request_t instr_request;
+    MemoryRequest instr_request;
     instr_request.set(rvcore->instr_request);
-    memory_response_t instr_response;
+    MemoryResponse instr_response;
     instr_response.set(rvcore->instr_response);
 
     tc.canvas[0][0] = 
@@ -412,8 +412,8 @@ class RVMemory {
         return *reinterpret_cast<const uint32_t*>(memory + (addr & (~3)));
     }
 
-    memory_response_t handle_request(memory_request_t request) {
-        memory_response_t response;
+    MemoryResponse handle_request(MemoryRequest request) {
+        MemoryResponse response;
         response.data = 0;
         response.ready = 1;
 

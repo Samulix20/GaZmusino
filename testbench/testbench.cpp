@@ -55,12 +55,12 @@ int main(int argc, char** argv) {
         // Memory bus signals
         if(!reset_on && dut->clk == 1) {
             // Instr
-            rv32_test::memory_request_t instr_req;
+            rv32_test::MemoryRequest instr_req;
             instr_req.set(dut->instr_request);
             dut->instr_response = memory.handle_request(instr_req).get();
 
             // Data
-            rv32_test::memory_request_t data_req;
+            rv32_test::MemoryRequest data_req;
             data_req.set(dut->data_request);
             dut->data_response = memory.handle_request(data_req).get();
         }
