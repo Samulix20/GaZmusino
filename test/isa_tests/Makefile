@@ -1,6 +1,6 @@
 TEST_TARGET ?= base/base.S
-BUILD_DIR ?= ../build
-BSP_DIR ?= ../bsp
+BUILD_DIR ?= ../../build/isa_tests
+BSP_DIR ?= ../../bsp
 
 TEST_BASENAME = $(basename $(TEST_TARGET))
 

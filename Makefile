@@ -11,6 +11,8 @@ VERILOG_HEADERS := rtl/rv_immediates.sv rtl/rv32_types.sv
 CPP_SRC := $(shell find testbench -name '*.cpp')
 CPP_HDR := $(shell find testbench -name '*.h')
 
+.PHONY: test
+
 obj_dir/${VERILATED_MODULE}: obj_dir/.verilator.stamp
 	make -C obj_dir -f ${VERILATED_MODULE}.mk
 
@@ -34,4 +36,4 @@ run: obj_dir/${VERILATED_MODULE}
 	./obj_dir/${VERILATED_MODULE} +verilator+rand+reset+2 $(RUN_PARAMS)
 
 test: obj_dir/${VERILATED_MODULE}
-	cd isa_tests && bash test.sh
+	@cd test && bash test.sh
