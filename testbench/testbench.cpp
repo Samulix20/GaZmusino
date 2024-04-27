@@ -7,6 +7,7 @@
 #include <verilated_vcd_c.h>
 
 #include "rv32_test_utils.h"
+#include "rv32_trace_stages.h"
 
 constexpr uint64_t max_sim_time = 10000;
 
