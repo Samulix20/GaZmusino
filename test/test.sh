@@ -2,6 +2,8 @@ RED='\e[31m'
 GREEN='\e[32m'
 NC='\e[0m'
 
+# ISA TEST SECTION
+
 cd isa_tests
 rv_tests=$(ls base/base.S rv32ui/*.S)
 cd ..
@@ -32,7 +34,6 @@ do
         echo -e "$test_res"
         num_fail=$((num_fail+1))
     else
-        #echo -e "$i/$num_tests\t $test\t ${GREEN}PASS ${NC}"
         num_pass=$((num_pass+1))
     fi
 
@@ -45,6 +46,8 @@ if [ $num_fail -ne 0 ]; then
 else
     echo -e "${GREEN}ALL TEST PASSED${NC}"
 fi
+
+# C TEST SECTION
 
 make -s -C ../bsp -f bsp.mk BUILD_DIR=../build/bsp
 
@@ -76,7 +79,6 @@ do
         echo -e "$test_res"
         num_fail=$((num_fail+1))
     else
-        #echo -e "$i/$num_tests\t $test\t ${GREEN}PASS ${NC}"
         num_pass=$((num_pass+1))
     fi
 

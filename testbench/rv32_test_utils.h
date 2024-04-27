@@ -30,40 +30,52 @@ using WritebackStageData = MemoryStageData;
 using MemoryRequest = Vrv32_core_memory_request_t__struct__0;
 using MemoryResponse = Vrv32_core_memory_response_t__struct__0;
 
-using rv_instr_t = Vrv32_core_rv_instr_t__struct__0;
-using rv_decoded_instr_t = Vrv32_core_decoded_instr_t__struct__0;
+using Instruction = Vrv32_core_rv_instr_t__struct__0;
+using DecodedInstruction = Vrv32_core_decoded_instr_t__struct__0;
 using RV32Core = Vrv32_core___024unit;
 
 // Getters core internal data
-DecodeStageData get_decode_stage_data(Vrv32_core* rvcore) {
+DecodeStageData get_decode_stage_data(const Vrv32_core* rvcore) {
     DecodeStageData d;
     d.set(rvcore->rv32_core->decode_stage->internal_data);
     return d;
 }
 
-ExecutionStageData get_exec_stage_data(Vrv32_core* rvcore) {
+ExecutionStageData get_exec_stage_data(const Vrv32_core* rvcore) {
     ExecutionStageData d;
     d.set(rvcore->rv32_core->exec_stage->internal_data);
     return d;
 }
 
-MemoryStageData get_mem_stage_data(Vrv32_core* rvcore) {
+MemoryStageData get_mem_stage_data(const Vrv32_core* rvcore) {
     MemoryStageData d;
     d.set(rvcore->rv32_core->mem_stage->internal_data);
     return d;
 }
 
-WritebackStageData get_wb_stage_data(Vrv32_core* rvcore) {
+WritebackStageData get_wb_stage_data(const Vrv32_core* rvcore) {
     WritebackStageData d;
     d.set(rvcore->rv32_core->mem_wb_buff);
     return d;
 }
 
-uint32_t get_next_pc(Vrv32_core* rvcore) {
+uint32_t get_next_pc(const Vrv32_core* rvcore) {
     return rvcore->rv32_core->next_pc;
 }
 
-std::string opcode_str(rv_instr_t instr) {
+MemoryRequest get_instruction_request(const Vrv32_core* rvcore) {
+    MemoryRequest instruction_request;
+    instruction_request.set(rvcore->instr_request);
+    return instruction_request;
+}
+
+MemoryRequest get_memory_request(const Vrv32_core* rvcore) {
+    MemoryRequest mem_request;
+    mem_request.set(rvcore->data_request);
+    return mem_request;
+}
+
+std::string opcode_str(Instruction instr) {
     std::string str;
     static const std::unordered_map<RV32Core::valid_opcodes_t, std::string> str_map = {
         {RV32Core::OPCODE_LUI, "LUI"},
@@ -84,7 +96,7 @@ std::string opcode_str(rv_instr_t instr) {
     return str;
 }
 
-std::string bypass_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
+std::string bypass_str(Instruction instr, DecodedInstruction dec_instr) {
     static const std::unordered_map<RV32Core::bypass_t, std::string> str_map = {
         {RV32Core::NO_BYPASS, "NO"},
         {RV32Core::BYPASS_EXEC_BUFF, "EXEC"},
@@ -117,7 +129,7 @@ std::string bypass_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
     return s;
 }
 
-std::string rename_imm_str(std::string op, rv_decoded_instr_t dec_instr) {
+std::string rename_imm_str(std::string op, DecodedInstruction dec_instr) {
     static const std::unordered_map<RV32Core::instr_type_t, std::string> str_map = {
         {RV32Core::INSTR_R_TYPE, "???"},
         {RV32Core::INSTR_I_TYPE, "I_IMM"},
@@ -135,7 +147,7 @@ std::string rename_imm_str(std::string op, rv_decoded_instr_t dec_instr) {
     return op;
 }
 
-std::string alu_input_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
+std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr) {
     std::string op1, op2;
     static const std::unordered_map<RV32Core::int_alu_input_t, std::string> str_map = {
         {RV32Core::ALU_IN_ZERO, "0"},
@@ -166,7 +178,7 @@ std::string alu_input_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
     return op1 + " " + op2;
 }
 
-std::string alu_op_str(rv_decoded_instr_t instr) {
+std::string alu_op_str(DecodedInstruction instr) {
     std::string str;
     static const std::unordered_map<RV32Core::int_alu_op_t, std::string> str_map = {
         {RV32Core::ALU_OP_ADD, "ADD"},
@@ -187,7 +199,7 @@ std::string alu_op_str(rv_decoded_instr_t instr) {
 }
 
 // If jump != NOP "[BRANCH_OP]"
-std::string branch_op_str(rv_decoded_instr_t instr) {
+std::string branch_op_str(DecodedInstruction instr) {
     std::string str;
     static const std::unordered_map<RV32Core::branch_op_t, std::string> str_map = {
         {RV32Core::OP_BEQ, "BEQ"},
@@ -207,7 +219,7 @@ std::string branch_op_str(rv_decoded_instr_t instr) {
 }
 
 // If writeback "[WB_SRC] -> x[rd]"
-std::string wb_src_str(rv_instr_t instr, rv_decoded_instr_t dec_instr) {
+std::string wb_src_str(Instruction instr, DecodedInstruction dec_instr) {
     std::string s = "";
 
     static const std::unordered_map<RV32Core::wb_result_t, std::string> str_map = {
@@ -242,7 +254,7 @@ std::string wb_write_str(WritebackStageData wbd) {
 std::string decode_register_usage_str(Vrv32_core* rvcore) {
     std::string s = "";
     uint8_t usage = rvcore->rv32_core->decode_stage->use_rs;
-    rv_instr_t instr = get_decode_stage_data(rvcore).instr;
+    Instruction instr = get_decode_stage_data(rvcore).instr;
     if(usage & 1) s += "rs1(x" + std::to_string(instr.rs1) + ") ";
     if(usage & 2) s += "rs2(x" + std::to_string(instr.rs2) + ") ";
     if(s != "") s = "Uses " + s;
