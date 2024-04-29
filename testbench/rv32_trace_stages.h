@@ -218,7 +218,7 @@ std::string mem_op_str(const Vrv32_top* rvtop) {
     else if (s[0] == 'S') {
         s = std::format("{} [{:#x}] <- {:#x}", s, request.addr, request.data);
     } else {
-        s += std::format(" addr {:#x}", request.addr);
+        s = std::format("{} [{:#x}]", s, request.addr);
     }
 
     return s;
@@ -260,7 +260,7 @@ class TraceCanvas {
 };
 
 void trace_stages(const Vrv32_top* rvtop) {
-    auto tc = TraceCanvas(5, 4);
+    auto tc = TraceCanvas(5, 5);
 
     auto instr_request = get_instruction_request(rvtop);
 
@@ -275,6 +275,7 @@ void trace_stages(const Vrv32_top* rvtop) {
     tc.canvas[1][1] = "Opcode " + opcode_str(decode_data.instr);
     tc.canvas[1][2] = decode_register_usage_str(rvtop);
     tc.canvas[1][3] = bypass_str(decode_data.instr, decode_data.decoded_instr);
+    tc.canvas[1][4] = get_decode_stall(rvtop) == 1 ? "STALL!" : "";
 
     auto exec_data = get_exec_stage_data(rvtop);
     tc.canvas[2][0] = 
@@ -284,12 +285,14 @@ void trace_stages(const Vrv32_top* rvtop) {
     tc.canvas[2][2] = alu_op_str(exec_data.decoded_instr) + " ";
     tc.canvas[2][2] += alu_input_str(exec_data.instr, exec_data.decoded_instr);
     tc.canvas[2][3] = branch_op_str(exec_data.decoded_instr);
+    tc.canvas[2][4] = get_exec_jump(rvtop) == 1 ? "JUMP!" : "";
 
     auto mem_data = get_mem_stage_data(rvtop);
     tc.canvas[3][0] = 
         std::format("@ {:<#10x} I {:<#10x}", mem_data.pc, mem_data.instr.get());
     tc.canvas[3][1] = wb_src_str(mem_data.instr, mem_data.decoded_instr);
     tc.canvas[3][2] = mem_op_str(rvtop);
+    tc.canvas[3][3] = get_memory_stall(rvtop) == 1 ? "STALL!" : "";
 
     auto wb_data = get_wb_stage_data(rvtop);
     tc.canvas[4][0] = 

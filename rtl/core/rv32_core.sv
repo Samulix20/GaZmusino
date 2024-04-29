@@ -7,6 +7,7 @@ module rv32_core (
     input logic clk, resetn,
     // Instructions memory port
     output memory_request_t instr_request,
+    output logic instr_read,
     input logic instr_request_done,
     input rv32_word instr,
     // Data memory port
@@ -23,7 +24,8 @@ mem_wb_buffer_t mem_wb_buff /*verilator public*/;
 rv32_word wb_bypass;
 
 // PC/Jump logic
-logic exec_jump, jump_set_nop;
+logic exec_jump /*verilator public*/;
+logic jump_set_nop;
 rv32_word exec_jump_addr, jump_nop_pc;
 
 
@@ -64,7 +66,7 @@ rv32_register_file rf(
 );
 
 // FETCH STAGE
-logic fetch_stall;
+logic fetch_stall /*verilator public*/;
 rv32_fetch_stage fetch_stage(
     .clk(clk), .resetn(resetn),
     // Pipeline I/O
@@ -78,11 +80,12 @@ rv32_fetch_stage fetch_stage(
     .set_nop_pc(jump_nop_pc),
     // INSTR MEM I/O
     .instr_request(instr_request),
-    .request_done(instr_request_done)
+    .request_done(instr_request_done),
+    .instr_read(instr_read)
 );
 
 // DECODE STAGE
-logic dec_stall;
+logic dec_stall /*verilator public*/;
 rv32_decode_stage decode_stage(
     .clk(clk), .resetn(resetn),
     // Pipeline I/O
@@ -118,7 +121,7 @@ rv32_exec_stage exec_stage(
 );
 
 // MEMORY STAGE
-logic mem_stall;
+logic mem_stall /*verilator public*/;
 rv32_mem_stage mem_stage(
     .clk(clk), .resetn(resetn),
     // Pipeline I/O

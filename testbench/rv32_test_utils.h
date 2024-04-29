@@ -80,6 +80,18 @@ inline uint32_t get_memory_response(const Vrv32_top* rvtop) {
     return rvtop->rv32_top->core_data;
 }
 
+inline uint8_t get_memory_stall(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->mem_stall;
+}
+
+inline uint8_t get_decode_stall(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->dec_stall;
+}
+
+inline uint8_t get_exec_jump(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->exec_jump;
+}
+
 // Bsp defines config
 #include "../bsp/riscv/config.h"
 
@@ -168,6 +180,7 @@ class RVMemory {
 
         // Check request
         if (request.op == RV32Core::MEM_NOP) return;
+        if (!rvtop->clk) return;
         
         // MMIO 0 Exit
         if (request.addr == EXIT_STATUS_ADDR) {

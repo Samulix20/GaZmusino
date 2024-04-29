@@ -10,6 +10,7 @@ module rv32_main_memory #(
     input logic clk, resetn,
     // PORT A
     input memory_request_t instr_request,
+    input logic instr_read,
     output logic instr_ready,
     output rv32_word instr,
     // PORT B
@@ -24,6 +25,7 @@ logic [3:0] we_b;
 bram #(.NUM_BYTES(NUM_WORDS)) b0(
     .clk(clk), .resetn(resetn),
     .addr_a(instr_request.addr[31:2]), .addr_b(data_request.addr[31:2]),
+    .read_a(instr_read), .read_b(1),
     .data_in_b(data_in_b[0]), .we_b(we_b[0]),
     .data_a(instr[7:0]), .data_b(data[7:0])
 );
@@ -31,6 +33,7 @@ bram #(.NUM_BYTES(NUM_WORDS)) b0(
 bram #(.NUM_BYTES(NUM_WORDS)) b1(
     .clk(clk), .resetn(resetn),
     .addr_a(instr_request.addr[31:2]), .addr_b(data_request.addr[31:2]),
+    .read_a(instr_read), .read_b(1),
     .data_in_b(data_in_b[1]), .we_b(we_b[1]),
     .data_a(instr[15:8]), .data_b(data[15:8])
 );
@@ -38,6 +41,7 @@ bram #(.NUM_BYTES(NUM_WORDS)) b1(
 bram #(.NUM_BYTES(NUM_WORDS)) b2(
     .clk(clk), .resetn(resetn),
     .addr_a(instr_request.addr[31:2]), .addr_b(data_request.addr[31:2]),
+    .read_a(instr_read), .read_b(1),
     .data_in_b(data_in_b[2]), .we_b(we_b[2]),
     .data_a(instr[23:16]), .data_b(data[23:16])
 );
@@ -45,6 +49,7 @@ bram #(.NUM_BYTES(NUM_WORDS)) b2(
 bram #(.NUM_BYTES(NUM_WORDS)) b3(
     .clk(clk), .resetn(resetn),
     .addr_a(instr_request.addr[31:2]), .addr_b(data_request.addr[31:2]),
+    .read_a(instr_read), .read_b(1),
     .data_in_b(data_in_b[3]), .we_b(we_b[3]),
     .data_a(instr[31:24]), .data_b(data[31:24])
 );

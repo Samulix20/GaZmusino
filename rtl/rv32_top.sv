@@ -1,7 +1,5 @@
 
-module rv32_top #(
-    parameter int NUM_MMIO = 2
-) (
+module rv32_top #(parameter int NUM_MMIO = 2) (
     input logic clk, resetn,
     // MMIO
     output memory_request_t mmio_data_request,
@@ -9,9 +7,10 @@ module rv32_top #(
     input rv32_word mmio_data [NUM_MMIO]
 );
 
-memory_request_t core_instr_request /* verilator public */;
 logic instr_request_done;
+memory_request_t core_instr_request /* verilator public */;
 rv32_word instr /* verilator public */;
+logic core_instr_read;
 
 rv32_word core_data /* verilator public */;
 logic core_data_ready;
@@ -21,6 +20,7 @@ rv32_core core (
     // Instruction
     .instr_request(core_instr_request),
     .instr_request_done(instr_request_done),
+    .instr_read(core_instr_read),
     .instr(instr),
     // Data
     .data_request(mmio_data_request),
@@ -36,6 +36,7 @@ rv32_main_memory memory (
 
     .instr_request(core_instr_request),
     .instr_ready(instr_request_done),
+    .instr_read(core_instr_read),
     .instr(instr),
 
     .data_request(mmio_data_request),
