@@ -1,5 +1,14 @@
-obj_dir
-waveform.vcd
+# IDE config
 .vscode
+.cache
+compile_commands.json
+
+# Python env
 pyenv
+
+# Build directories
+obj_dir
 build
+
+# Others
+waveform.vcd
