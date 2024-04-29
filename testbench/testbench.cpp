@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
         dut->clk ^= 1;
 
         // Reset signal
-        bool reset_on = sim_time >= 0 && sim_time < 5;
+        bool reset_on = sim_time < 5;
         dut->resetn = static_cast<uint8_t>(!reset_on);
 
         // Memory bus signals

@@ -4,6 +4,7 @@
 #include <elf.h>
 #include <cassert>
 #include <fstream>
+#include <iostream>
 
 // Device under test headers
 #include "Vrv32_core.h"
@@ -28,53 +29,53 @@ using DecodedInstruction = Vrv32_core_decoded_instr_t__struct__0;
 using RV32Core = Vrv32_core___024unit;
 
 // Getters core internal data
-DecodeStageData get_decode_stage_data(const Vrv32_core* rvcore) {
+inline DecodeStageData get_decode_stage_data(const Vrv32_core* rvcore) {
     DecodeStageData d;
     d.set(rvcore->rv32_core->decode_stage->internal_data);
     return d;
 }
 
-ExecutionStageData get_exec_stage_data(const Vrv32_core* rvcore) {
+inline ExecutionStageData get_exec_stage_data(const Vrv32_core* rvcore) {
     ExecutionStageData d;
     d.set(rvcore->rv32_core->exec_stage->internal_data);
     return d;
 }
 
-MemoryStageData get_mem_stage_data(const Vrv32_core* rvcore) {
+inline MemoryStageData get_mem_stage_data(const Vrv32_core* rvcore) {
     MemoryStageData d;
     d.set(rvcore->rv32_core->mem_stage->internal_data);
     return d;
 }
 
-WritebackStageData get_wb_stage_data(const Vrv32_core* rvcore) {
+inline WritebackStageData get_wb_stage_data(const Vrv32_core* rvcore) {
     WritebackStageData d;
     d.set(rvcore->rv32_core->mem_wb_buff);
     return d;
 }
 
-uint32_t get_next_pc(const Vrv32_core* rvcore) {
+inline uint32_t get_next_pc(const Vrv32_core* rvcore) {
     return rvcore->rv32_core->next_pc;
 }
 
-MemoryRequest get_instruction_request(const Vrv32_core* rvcore) {
+inline MemoryRequest get_instruction_request(const Vrv32_core* rvcore) {
     MemoryRequest instruction_request;
     instruction_request.set(rvcore->instr_request);
     return instruction_request;
 }
 
-MemoryResponse get_instruction_response(const Vrv32_core* rvcore) {
+inline MemoryResponse get_instruction_response(const Vrv32_core* rvcore) {
     MemoryResponse instruction_response;
     instruction_response.set(rvcore->instr_response);
     return instruction_response;
 }
 
-MemoryRequest get_memory_request(const Vrv32_core* rvcore) {
+inline MemoryRequest get_memory_request(const Vrv32_core* rvcore) {
     MemoryRequest mem_request;
     mem_request.set(rvcore->data_request);
     return mem_request;
 }
 
-MemoryResponse get_memory_response(const Vrv32_core* rvcore) {
+inline MemoryResponse get_memory_response(const Vrv32_core* rvcore) {
     MemoryResponse mem_response;
     mem_response.set(rvcore->data_response);
     return mem_response;

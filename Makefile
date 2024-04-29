@@ -23,7 +23,7 @@ obj_dir/.verilator.stamp: \
 	${VV} -I $(VERILOG_MODULES) -Wall --top-module ${TOP_MODULE} \
 	--trace --trace-structs \
 	--x-assign unique --x-initial unique \
-	--cc -CFLAGS "-std=c++20 -Wall" --exe ${TOP_MODULE_SRC} $(CPP_SRC)
+	--cc -CFLAGS "-std=c++20 -Wall -Wextra" --exe ${TOP_MODULE_SRC} $(CPP_SRC)
 	@touch obj_dir/.verilator.stamp
 
 clean:
@@ -37,3 +37,13 @@ run: obj_dir/${VERILATED_MODULE}
 
 test: obj_dir/${VERILATED_MODULE}
 	@cd test && bash test.sh
+
+memory:
+	${VV} -I rtl/fpga/bram.sv -Wall \
+	--top-module rv32_main_memory --trace --trace-structs \
+	--x-assign unique --x-initial unique \
+	--cc -CFLAGS "-std=c++20 -Wall -Wextra" rtl/fpga/rv32_main_memory.sv \
+	--exe testbench/memory_tb.cpp
+	make -C obj_dir -f Vrv32_main_memory.mk
+	./obj_dir/Vrv32_main_memory +verilator+rand+reset+2
+	gtkwave waveform.vcd >/dev/null 2>/dev/null &
