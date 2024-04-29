@@ -13,7 +13,7 @@ module rv32_exec_stage (
     output logic do_jump,
     output rv32_word jump_addr,
     // Bypass data
-    input mem_wb_buffer_t mem_wb_buff
+    input rv32_word wb_bypass
 );
 
 // TODO Setup as a loop
@@ -48,13 +48,12 @@ rv32_word reg1, reg2;
 always_comb begin
     case (decode_exec_buff.decoded_instr.bypass_rs1)
         BYPASS_EXEC_BUFF: reg1 = exec_mem_buff.wb_result;
-        BYPASS_MEM_BUFF: reg1 = mem_wb_buff.wb_result;
+        BYPASS_MEM_BUFF: reg1 = wb_bypass;
         default: reg1 = decode_exec_buff.reg1;
     endcase
-
     case (decode_exec_buff.decoded_instr.bypass_rs2)
         BYPASS_EXEC_BUFF: reg2 = exec_mem_buff.wb_result;
-        BYPASS_MEM_BUFF: reg2 = mem_wb_buff.wb_result;
+        BYPASS_MEM_BUFF: reg2 = wb_bypass;
         default: reg2 = decode_exec_buff.reg2;
     endcase
 end

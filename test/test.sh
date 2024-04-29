@@ -25,7 +25,7 @@ do
         exit "$make_status"
     fi
 
-    test_res=$(../obj_dir/Vrv32_core +verilator+rand+reset+2\
+    test_res=$(../obj_dir/Vrv32_top +verilator+rand+reset+2\
                 -e ../build/isa_tests/${test%.S}.elf 2>&1)
     test_status=$?
 
@@ -70,7 +70,7 @@ do
         BSP_SRC_DIR=../bsp\
         BSP_BUILD_DIR=../build/bsp 2>/dev/null
 
-    test_res=$(../obj_dir/Vrv32_core +verilator+rand+reset+2\
+    test_res=$(../obj_dir/Vrv32_top +verilator+rand+reset+2\
                 -e ../build/c_tests/$test/main.elf 2>&1)
     test_status=$?
     

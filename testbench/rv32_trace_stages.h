@@ -185,6 +185,7 @@ std::string wb_write_str(WritebackStageData wbd) {
     return s;
 }
 
+/*
 std::string decode_register_usage_str(const Vrv32_core* rvcore) {
     std::string s = "";
     uint8_t usage = rvcore->rv32_core->decode_stage->use_rs;
@@ -301,7 +302,7 @@ void trace_stages(const Vrv32_core* rvcore) {
 
     tc.print();
 }
-
+*/
 }
 
 #endif

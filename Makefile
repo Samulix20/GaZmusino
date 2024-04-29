@@ -2,10 +2,12 @@ RUN_PARAMS ?=
 
 VERILATOR_ROOT := /home/samuelpp/opt/verilator
 VV := ${VERILATOR_ROOT}/bin/verilator
-TOP_MODULE := rv32_core
+TOP_MODULE := rv32_top
 TOP_MODULE_SRC := rtl/${TOP_MODULE}.sv
 VERILATED_MODULE := V${TOP_MODULE}
-VERILOG_MODULES := $(shell find rtl/modules -name '*.sv')
+VERILOG_MODULES := \
+	$(shell find rtl/core -name '*.sv')\
+	$(shell find rtl/memory -name '*.sv')
 VERILOG_HEADERS := rtl/rv_immediates.sv rtl/rv32_types.sv
 
 CPP_SRC := $(shell find testbench -name '*.cpp')

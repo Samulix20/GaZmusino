@@ -143,8 +143,8 @@ function automatic decoded_instr_t create_nop_ctrl();
 endfunction
 
 typedef struct packed {
-    rv_instr_t instr;
     rv32_word pc;
+    logic generate_nop;
 } fetch_decode_buffer_t /*verilator public*/;
 
 typedef struct packed {
@@ -163,23 +163,13 @@ typedef struct packed {
     rv32_word wb_result;
 } exec_mem_buffer_t /*verilator public*/;
 
-typedef struct packed {
-    rv_instr_t instr;
-    rv32_word pc;
-    decoded_instr_t decoded_instr;
-    rv32_word wb_result;
-} mem_wb_buffer_t /*verilator public*/;
+typedef exec_mem_buffer_t mem_wb_buffer_t /*verilator public*/;
 
 typedef struct packed {
     rv32_word addr;
     rv32_word data;
     mem_op_t op;
 } memory_request_t /*verilator public*/;
-
-typedef struct packed {
-    rv32_word data;
-    logic ready;
-} memory_response_t /*verilator public*/;
 
 `endif
 

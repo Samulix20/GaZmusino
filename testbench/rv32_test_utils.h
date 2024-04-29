@@ -7,78 +7,74 @@
 #include <iostream>
 
 // Device under test headers
-#include "Vrv32_core.h"
-#include "Vrv32_core_rv32_core.h"
-#include "Vrv32_core_rv32_decode_stage.h"
-#include "Vrv32_core_rv32_exec_stage.h"
-#include "Vrv32_core_rv32_mem_stage.h"
-#include "Vrv32_core___024unit.h"
+#include "Vrv32_top.h"
+#include "Vrv32_top_rv32_top.h"
+#include "Vrv32_top_rv32_core.h"
+#include "Vrv32_top_rv32_decode_stage.h"
+#include "Vrv32_top_rv32_exec_stage.h"
+#include "Vrv32_top_rv32_mem_stage.h"
+#include "Vrv32_top___024unit.h"
 
 namespace rv32_test {
 
 // Utilty using statements
-using DecodeStageData = Vrv32_core_decode_exec_buffer_t__struct__0;
-using ExecutionStageData = Vrv32_core_exec_mem_buffer_t__struct__0;
-using MemoryStageData = Vrv32_core_mem_wb_buffer_t__struct__0;
+using DecodeStageData = Vrv32_top_decode_exec_buffer_t__struct__0;
+using ExecutionStageData = Vrv32_top_exec_mem_buffer_t__struct__0;
+using MemoryStageData = Vrv32_top_exec_mem_buffer_t__struct__0;
 using WritebackStageData = MemoryStageData;
-using MemoryRequest = Vrv32_core_memory_request_t__struct__0;
-using MemoryResponse = Vrv32_core_memory_response_t__struct__0;
+using MemoryRequest = Vrv32_top_memory_request_t__struct__0;
 
-using Instruction = Vrv32_core_rv_instr_t__struct__0;
-using DecodedInstruction = Vrv32_core_decoded_instr_t__struct__0;
-using RV32Core = Vrv32_core___024unit;
+using Instruction = Vrv32_top_rv_instr_t__struct__0;
+using DecodedInstruction = Vrv32_top_decoded_instr_t__struct__0;
+using RV32Core = Vrv32_top___024unit;
 
 // Getters core internal data
-inline DecodeStageData get_decode_stage_data(const Vrv32_core* rvcore) {
+inline DecodeStageData get_decode_stage_data(const Vrv32_top* rvtop) {
     DecodeStageData d;
-    d.set(rvcore->rv32_core->decode_stage->internal_data);
+    d.set(rvtop->rv32_top->core->decode_stage->internal_data);
     return d;
 }
 
-inline ExecutionStageData get_exec_stage_data(const Vrv32_core* rvcore) {
+inline ExecutionStageData get_exec_stage_data(const Vrv32_top* rvtop) {
     ExecutionStageData d;
-    d.set(rvcore->rv32_core->exec_stage->internal_data);
+    d.set(rvtop->rv32_top->core->exec_stage->internal_data);
     return d;
 }
 
-inline MemoryStageData get_mem_stage_data(const Vrv32_core* rvcore) {
+inline MemoryStageData get_mem_stage_data(const Vrv32_top* rvtop) {
     MemoryStageData d;
-    d.set(rvcore->rv32_core->mem_stage->internal_data);
+    d.set(rvtop->rv32_top->core->mem_stage->internal_data);
     return d;
 }
 
-inline WritebackStageData get_wb_stage_data(const Vrv32_core* rvcore) {
+inline WritebackStageData get_wb_stage_data(const Vrv32_top* rvtop) {
     WritebackStageData d;
-    d.set(rvcore->rv32_core->mem_wb_buff);
+    d.set(rvtop->rv32_top->core->mem_wb_buff);
     return d;
 }
 
-inline uint32_t get_next_pc(const Vrv32_core* rvcore) {
-    return rvcore->rv32_core->next_pc;
+inline uint32_t get_next_pc(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->next_pc;
 }
 
-inline MemoryRequest get_instruction_request(const Vrv32_core* rvcore) {
+inline MemoryRequest get_instruction_request(const Vrv32_top* rvtop) {
     MemoryRequest instruction_request;
-    instruction_request.set(rvcore->instr_request);
+    instruction_request.set(rvtop->rv32_top->core_instr_request);
     return instruction_request;
 }
 
-inline MemoryResponse get_instruction_response(const Vrv32_core* rvcore) {
-    MemoryResponse instruction_response;
-    instruction_response.set(rvcore->instr_response);
-    return instruction_response;
+inline uint32_t get_instruction_response(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->instr;
 }
 
-inline MemoryRequest get_memory_request(const Vrv32_core* rvcore) {
+inline MemoryRequest get_memory_request(const Vrv32_top* rvtop) {
     MemoryRequest mem_request;
-    mem_request.set(rvcore->data_request);
+    mem_request.set(rvtop->rv32_top->mmio_data_request);
     return mem_request;
 }
 
-inline MemoryResponse get_memory_response(const Vrv32_core* rvcore) {
-    MemoryResponse mem_response;
-    mem_response.set(rvcore->data_response);
-    return mem_response;
+inline uint32_t get_memory_response(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core_data;
 }
 
 // Bsp defines config
@@ -137,61 +133,27 @@ class RVMemory {
         f.close();
     }
 
-    static uint32_t read_aligned_word(
-        const uint8_t* memory, const uint32_t addr) {
-
-        return *reinterpret_cast<const uint32_t*>(memory + (addr & (~3)));
-    }
-
-    template<typename T>
-    static void memory_write(
-        uint8_t* memory, const uint32_t addr, const uint32_t data) {
-
-        *reinterpret_cast<T*>(memory + addr) = static_cast<T>(data);
-    }
-
-    MemoryResponse handle_request(const MemoryRequest request) {
-        MemoryResponse response;
-        response.data = 0;
-        response.ready = 1;
+    void handle_request(Vrv32_top* rvtop) {
+        MemoryRequest request = get_memory_request(rvtop);
 
         // Check request
-        if (request.op == RV32Core::MEM_NOP) return response;
+        if (request.op == RV32Core::MEM_NOP) return;
         
-        // MMIO Exit
+        // MMIO 0 Exit
         if (request.addr == EXIT_STATUS_ADDR) {
+            rvtop->mmio_data[0] = 1;
             if (request.op == RV32Core::MEM_SW) {
                 std::cout << "Exit status " << request.data << '\n';
                 exit(request.data);
             }
         }
-        // MMIO Print
+        // MMIO 1 Print
         if (request.addr == PRINT_REG_ADDR) {
+            rvtop->mmio_data[1] = 1;
             if (request.op == RV32Core::MEM_SW) {
                 std::cout << static_cast<char>(request.data);
-                return response;
             }
         }
-
-        // Check addr
-        assert(request.addr < max_addr);
-
-        switch(request.op) {
-            case RV32Core::MEM_SB:
-                memory_write<uint8_t>(memory, request.addr, request.data);
-                break;
-            case RV32Core::MEM_SH:
-                memory_write<uint16_t>(memory, request.addr, request.data);
-                break;
-            case RV32Core::MEM_SW:
-                memory_write<uint32_t>(memory, request.addr, request.data);
-                break;
-            default:
-                response.data = read_aligned_word(memory, request.addr);
-                break;
-        }
-
-        return response;
     }
 };
 

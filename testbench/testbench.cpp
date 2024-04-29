@@ -6,10 +6,11 @@
 #include <verilated.h>
 #include <verilated_vcd_c.h>
 
+#include "Vrv32_top.h"
 #include "rv32_test_utils.h"
 #include "rv32_trace_stages.h"
 
-constexpr uint64_t max_sim_time = 10000;
+constexpr uint64_t max_sim_time = 250;
 
 int main(int argc, char** argv) {
 
@@ -30,7 +31,7 @@ int main(int argc, char** argv) {
     }
 
     // Create device under test
-    Vrv32_core *dut = new Vrv32_core;
+    Vrv32_top *dut = new Vrv32_top;
 
     // Waveform tracing
     // trace signals 5 levels under dut
@@ -54,13 +55,6 @@ int main(int argc, char** argv) {
 
         // Memory bus signals
         if(!reset_on && dut->clk == 1) {
-            // Instr
-            dut->instr_response = memory.handle_request(
-                rv32_test::get_instruction_request(dut)).get();
-
-            // Data
-            dut->data_response = memory.handle_request(
-                rv32_test::get_memory_request(dut)).get();
         }
 
         // Update signals
@@ -69,7 +63,7 @@ int main(int argc, char** argv) {
         // Debug
         // Only on high clk and after reset
         if (print_trace && !reset_on && dut->clk == 1) {
-            rv32_test::trace_stages(dut);
+            //rv32_test::trace_stages(dut);
         }
 
         // Trace waveform

@@ -7,10 +7,12 @@ module rv32_core (
     input logic clk, resetn,
     // Instructions memory port
     output memory_request_t instr_request,
-    input memory_response_t instr_response,
+    input logic instr_request_done,
+    input rv32_word instr,
     // Data memory port
     output memory_request_t data_request,
-    input memory_response_t data_response
+    input logic data_request_done,
+    input rv32_word data
 );
 
 rv32_word pc;
@@ -18,10 +20,13 @@ fetch_decode_buffer_t fetch_decode_buff /*verilator public*/;
 decode_exec_buffer_t decode_exec_buff /*verilator public*/;
 exec_mem_buffer_t exec_mem_buff /*verilator public*/;
 mem_wb_buffer_t mem_wb_buff /*verilator public*/;
+rv32_word wb_bypass;
 
 // PC/Jump logic
 logic exec_jump, jump_set_nop;
 rv32_word exec_jump_addr, jump_nop_pc;
+
+
 rv32_word next_pc /*verilator public*/;
 always_comb begin
     jump_set_nop = 0;
@@ -63,15 +68,17 @@ logic fetch_stall;
 rv32_fetch_stage fetch_stage(
     .clk(clk), .resetn(resetn),
     // Pipeline I/O
+    .pc(pc),
+    .fetch_decode_buff(fetch_decode_buff),
+    // Control
+    .stall(fetch_stall),
     .stop(dec_stall | mem_stall),
+    // Jump signals
     .set_nop(jump_set_nop),
     .set_nop_pc(jump_nop_pc),
-    .pc(pc),
-    .stall(fetch_stall),
-    .fetch_decode_buff(fetch_decode_buff),
     // INSTR MEM I/O
     .instr_request(instr_request),
-    .instr_response(instr_response)
+    .request_done(instr_request_done)
 );
 
 // DECODE STAGE
@@ -79,12 +86,15 @@ logic dec_stall;
 rv32_decode_stage decode_stage(
     .clk(clk), .resetn(resetn),
     // Pipeline I/O
-    .set_nop(jump_set_nop),
-    .set_nop_pc(jump_nop_pc),
     .fetch_decode_buff(fetch_decode_buff),
+    .instr(instr),
     .decode_exec_buff(decode_exec_buff),
+    // Control
     .stall(dec_stall),
     .stop(mem_stall),
+    // Jump signals
+    .set_nop(jump_set_nop),
+    .set_nop_pc(jump_nop_pc),
     // Register file read I/O
     .rs1(dec_rs1), .rs2(dec_rs2),
     .reg1(dec_reg1), .reg2(dec_reg2),
@@ -95,29 +105,40 @@ rv32_decode_stage decode_stage(
 // EXECUTION STAGE
 rv32_exec_stage exec_stage(
     .clk(clk), .resetn(resetn),
+    // Pipeline I/O
     .decode_exec_buff(decode_exec_buff),
     .exec_mem_buff(exec_mem_buff),
+    // Control
     .stop(mem_stall),
+    // Jump signals
     .do_jump(exec_jump),
     .jump_addr(exec_jump_addr),
-    .mem_wb_buff(mem_wb_buff)
+    // Bypass
+    .wb_bypass(wb_bypass)
 );
 
 // MEMORY STAGE
 logic mem_stall;
 rv32_mem_stage mem_stage(
     .clk(clk), .resetn(resetn),
+    // Pipeline I/O
     .exec_mem_buff(exec_mem_buff),
     .mem_wb_buff(mem_wb_buff),
+    // Control
     .stall(mem_stall),
     // Data Memory I/O
     .data_request(data_request),
-    .data_response(data_response)
+    .request_done(data_request_done)
 );
 
 // WRITEBACK STAGE
 rv32_wb_stage wb_stage(
     .mem_wb_buff(mem_wb_buff),
+    // Memory I
+    .mem_data(data),
+    // Bypass O
+    .wb_bypass(wb_bypass),
+    // Register File O
     .reg_write(wb_we), .rd(wb_rd), .wb_data(wb_data)
 );
 

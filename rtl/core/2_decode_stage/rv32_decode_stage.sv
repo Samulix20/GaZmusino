@@ -11,6 +11,8 @@ module rv32_decode_stage (
     input fetch_decode_buffer_t fetch_decode_buff,
     output decode_exec_buffer_t decode_exec_buff,
     output logic stall,
+    // Memory I
+    input rv_instr_t instr,
     // Register file read I/O
     output rv_reg_id_t rs1, rs2,
     input rv32_word reg1, reg2,
@@ -22,19 +24,26 @@ decode_exec_buffer_t internal_data /*verilator public*/;
 decode_exec_buffer_t output_internal_data /*verilator public*/;
 decoded_instr_t decoder_output;
 
+// Small logic to support fetch bubbles
+rv_instr_t internal_instr;
+always_comb begin
+    if (fetch_decode_buff.generate_nop) internal_instr = `RV_NOP;
+    else internal_instr = instr;
+end
+
 logic [1:0] use_rs /*verilator public*/;
 logic hazzard_stall;
 bypass_t bypass_rs[2];
 
 rv32_decoder decoder(
     .use_rs(use_rs),
-    .instr(fetch_decode_buff.instr),
+    .instr(internal_instr),
     .decoded_instr(decoder_output)
 );
 
 rv32_hazzard_detection_unit hazzard_detection(
     .use_rs(use_rs),
-    .current_instr(fetch_decode_buff.instr),
+    .current_instr(internal_instr),
     .decode_exec_buff(decode_exec_buff),
     .exec_mem_buff(exec_mem_buff),
     .stall(hazzard_stall),
@@ -45,11 +54,11 @@ rv32_hazzard_detection_unit hazzard_detection(
 always_comb begin
     // Forward signals
     internal_data.pc = fetch_decode_buff.pc;
-    internal_data.instr = fetch_decode_buff.instr;
+    internal_data.instr = internal_instr;
 
     // Register file data
-    rs1 = fetch_decode_buff.instr.rs1;
-    rs2 = fetch_decode_buff.instr.rs2;
+    rs1 = instr.rs1;
+    rs2 = instr.rs2;
     internal_data.reg1 = reg1;
     internal_data.reg2 = reg2;
 
