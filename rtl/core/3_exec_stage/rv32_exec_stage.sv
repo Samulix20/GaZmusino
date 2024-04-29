@@ -111,18 +111,13 @@ always_comb begin
     endcase
 end
 
-// TODO remove
-always_comb begin
-    output_internal_data = internal_data;
-end
-
 always_ff @(posedge clk) begin
     if (!resetn) begin
         exec_mem_buff.instr <= `RV_NOP;
         exec_mem_buff.pc <= 0;
         exec_mem_buff.decoded_instr <= create_nop_ctrl();
     end
-    else if (!stop) exec_mem_buff <= output_internal_data;
+    else if (!stop) exec_mem_buff <= internal_data;
 end
 
 endmodule;

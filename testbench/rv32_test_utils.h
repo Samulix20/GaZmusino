@@ -71,9 +71,9 @@ inline uint32_t get_instruction_response(const Vrv32_top* rvtop) {
 }
 
 inline MemoryRequest get_memory_request(const Vrv32_top* rvtop) {
-    MemoryRequest mem_request;
-    mem_request.set(rvtop->rv32_top->mmio_data_request);
-    return mem_request;
+    MemoryRequest request;
+    request.set(rvtop->mmio_data_request);
+    return request;
 }
 
 inline uint32_t get_memory_response(const Vrv32_top* rvtop) {

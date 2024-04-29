@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     Verilated::commandArgs(argc, argv);
 
     // Evaluate our command args
-    for(size_t i = 1; i < argc; i++) {
+    for(int i = 1; i < argc; i++) {
         std::string arg = argv[i];
         if (arg == "-e") {
             i++;
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
         // Debug
         // Only on high clk and after reset
         if (print_trace && !reset_on && dut->clk == 1) {
-            //rv32_test::trace_stages(dut);
+            rv32_test::trace_stages(dut);
         }
 
         // Trace waveform
