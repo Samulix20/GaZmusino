@@ -1,3 +1,4 @@
+
 module rv32_top #(
     parameter int NUM_MMIO = 2
 ) (

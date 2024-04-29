@@ -3,8 +3,9 @@
 
 `include "rtl/rv32_types"
 
+// 1 MB 262144 words
 module rv32_main_memory #(
-    parameter int NUM_WORDS = 100
+    parameter int NUM_WORDS /*verilator public*/ = 262144
 ) (
     input logic clk, resetn,
     // PORT A

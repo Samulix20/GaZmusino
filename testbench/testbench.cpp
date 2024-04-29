@@ -10,7 +10,7 @@
 #include "rv32_test_utils.h"
 #include "rv32_trace_stages.h"
 
-constexpr uint64_t max_sim_time = 250;
+constexpr uint64_t max_sim_time = 10000;
 
 int main(int argc, char** argv) {
 
@@ -50,11 +50,17 @@ int main(int argc, char** argv) {
         dut->clk ^= 1;
 
         // Reset signal
-        bool reset_on = sim_time < 5;
+        bool reset_on = sim_time <= 4;
         dut->resetn = static_cast<uint8_t>(!reset_on);
 
+        if (sim_time == 5) {
+            // Set bram contents
+            memory.set_main_memory(dut);
+        }
+
         // Memory bus signals
-        if(!reset_on && dut->clk == 1) {
+        if(sim_time >= 5) {
+            memory.handle_request(dut);
         }
 
         // Update signals

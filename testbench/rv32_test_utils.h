@@ -1,6 +1,7 @@
 #ifndef RV32_TEST_UTILS
 #define RV32_TEST_UTILS
 
+#include <cstdint>
 #include <elf.h>
 #include <cassert>
 #include <fstream>
@@ -14,6 +15,8 @@
 #include "Vrv32_top_rv32_exec_stage.h"
 #include "Vrv32_top_rv32_mem_stage.h"
 #include "Vrv32_top___024unit.h"
+#include "Vrv32_top_rv32_main_memory.h"
+#include "Vrv32_top_bram__N40000.h"
 
 namespace rv32_test {
 
@@ -133,15 +136,42 @@ class RVMemory {
         f.close();
     }
 
+    void set_main_memory(Vrv32_top* rvtop) {
+        assert(rvtop->rv32_top->memory->NUM_WORDS >= (max_addr >> 2));
+
+        uint8_t bsel = 0;
+        for(uint32_t i = 0; i < max_addr; i++) {
+            switch (bsel) {
+                case 0: 
+                    rvtop->rv32_top->memory->b0->ram[i >> 2] = memory[i];
+                    break;
+                case 1:
+                    rvtop->rv32_top->memory->b1->ram[i >> 2] = memory[i];
+                    break;
+                case 2:
+                    rvtop->rv32_top->memory->b2->ram[i >> 2] = memory[i];
+                    break;
+                case 3:
+                    rvtop->rv32_top->memory->b3->ram[i >> 2] = memory[i];
+                    break;
+                default: break;
+            }
+            bsel = (bsel + 1) % 4;
+        }
+    }
+
     void handle_request(Vrv32_top* rvtop) {
         MemoryRequest request = get_memory_request(rvtop);
+
+        rvtop->mmio_request_done[0] = 0;
+        rvtop->mmio_request_done[1] = 0;
 
         // Check request
         if (request.op == RV32Core::MEM_NOP) return;
         
         // MMIO 0 Exit
         if (request.addr == EXIT_STATUS_ADDR) {
-            rvtop->mmio_data[0] = 1;
+            rvtop->mmio_request_done[0] = 1;
             if (request.op == RV32Core::MEM_SW) {
                 std::cout << "Exit status " << request.data << '\n';
                 exit(request.data);
@@ -149,7 +179,7 @@ class RVMemory {
         }
         // MMIO 1 Print
         if (request.addr == PRINT_REG_ADDR) {
-            rvtop->mmio_data[1] = 1;
+            rvtop->mmio_request_done[1] = 1;
             if (request.op == RV32Core::MEM_SW) {
                 std::cout << static_cast<char>(request.data);
             }

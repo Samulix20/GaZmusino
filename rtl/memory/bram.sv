@@ -15,7 +15,7 @@ module bram #(
     output logic[7:0] data_a, data_b
 );
 
-logic [7:0] ram [NUM_BYTES];
+logic [7:0] ram [NUM_BYTES] /* verilator public */;
 
 always_ff @(posedge clk) begin
     if (!resetn) begin
