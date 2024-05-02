@@ -53,6 +53,9 @@ int main(int argc, char** argv) {
         bool reset_on = sim_time <= 4;
         dut->resetn = static_cast<uint8_t>(!reset_on);
 
+        // Update signals
+        dut->eval();
+
         if (sim_time == 5) {
             // Set bram contents
             memory.set_main_memory(dut);

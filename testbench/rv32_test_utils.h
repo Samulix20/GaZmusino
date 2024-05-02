@@ -180,12 +180,11 @@ class RVMemory {
 
         // Check request
         if (request.op == RV32Core::MEM_NOP) return;
-        if (!rvtop->clk) return;
         
         // MMIO 0 Exit
         if (request.addr == EXIT_STATUS_ADDR) {
             rvtop->mmio_request_done[0] = 1;
-            if (request.op == RV32Core::MEM_SW) {
+            if (request.op == RV32Core::MEM_SW && rvtop->clk == 1) {
                 std::cout << "Exit status " << request.data << '\n';
                 exit(request.data);
             }
@@ -193,7 +192,7 @@ class RVMemory {
         // MMIO 1 Print
         if (request.addr == PRINT_REG_ADDR) {
             rvtop->mmio_request_done[1] = 1;
-            if (request.op == RV32Core::MEM_SW) {
+            if (request.op == RV32Core::MEM_SW && rvtop->clk == 1) {
                 std::cout << static_cast<char>(request.data);
             }
         }

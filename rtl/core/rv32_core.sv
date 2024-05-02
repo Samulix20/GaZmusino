@@ -7,7 +7,6 @@ module rv32_core (
     input logic clk, resetn,
     // Instructions memory port
     output memory_request_t instr_request,
-    output logic instr_read,
     input logic instr_request_done,
     input rv32_word instr,
     // Data memory port
@@ -80,8 +79,7 @@ rv32_fetch_stage fetch_stage(
     .set_nop_pc(jump_nop_pc),
     // INSTR MEM I/O
     .instr_request(instr_request),
-    .request_done(instr_request_done),
-    .instr_read(instr_read)
+    .request_done(instr_request_done)
 );
 
 // DECODE STAGE

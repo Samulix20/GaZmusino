@@ -15,20 +15,18 @@ module rv32_mem_stage(
 );
 
 mem_wb_buffer_t internal_data /*verilator public*/;
-mem_wb_buffer_t output_internal_data;
-logic ready;
 
-rv32_load_store_unit ld_st_unit(
-    .exec_mem_buff(exec_mem_buff),
-    .ready(ready),
-    .data_request(data_request),
-    .request_done(request_done)
-);
+always_comb begin
+    data_request.addr = exec_mem_buff.mem_addr;
+    data_request.op = exec_mem_buff.decoded_instr.mem_op;
+    data_request.data = exec_mem_buff.wb_result;
+end
 
 always_comb begin
     // Forward signals
     internal_data = exec_mem_buff;
-    stall = ~ready;
+    if (exec_mem_buff.decoded_instr.mem_op == MEM_NOP) stall = 0;
+    else stall = ~request_done;
 end
 
 always_ff @(posedge clk) begin

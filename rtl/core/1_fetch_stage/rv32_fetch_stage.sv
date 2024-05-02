@@ -17,19 +17,18 @@ module rv32_fetch_stage (
 
     // Bus I/O
     output memory_request_t instr_request,
-    output logic instr_read,
     input logic request_done
 );
 
 fetch_decode_buffer_t internal_data;
 
 always_comb begin
+    if (stop) instr_request.op = MEM_NOP;
+    else instr_request.op = MEM_LW;
+
     instr_request.addr = pc;
-    instr_request.op = MEM_LW;
     instr_request.data = 0;
-    instr_read = 1;
     stall = ~request_done;
-    if (stop) instr_read = 0;
 end
 
 always_ff @(posedge clk) begin

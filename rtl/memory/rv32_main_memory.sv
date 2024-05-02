@@ -10,7 +10,6 @@ module rv32_main_memory #(
     input logic clk, resetn,
     // PORT A
     input memory_request_t instr_request,
-    input logic instr_read,
     output logic instr_ready,
     output rv32_word instr,
     // PORT B
@@ -21,6 +20,12 @@ module rv32_main_memory #(
 
 logic [7:0] data_in_b [4];
 logic [3:0] we_b;
+
+logic instr_read;
+always_comb begin
+    if (instr_request.op == MEM_LW) instr_read = 1;
+    else instr_read = 0;
+end
 
 bram #(.NUM_BYTES(NUM_WORDS)) b0(
     .clk(clk), .resetn(resetn),
@@ -97,8 +102,6 @@ always_comb begin
         default: we_b = 0; // Dont write
     endcase
 end
-
-// TODO fix data ready for 1 cycle delay (I think its done)
 
 always_comb begin
     data_ready = 0;

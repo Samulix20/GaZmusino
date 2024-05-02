@@ -292,7 +292,8 @@ void trace_stages(const Vrv32_top* rvtop) {
         std::format("@ {:<#10x} I {:<#10x}", mem_data.pc, mem_data.instr.get());
     tc.canvas[3][1] = wb_src_str(mem_data.instr, mem_data.decoded_instr);
     tc.canvas[3][2] = mem_op_str(rvtop);
-    tc.canvas[3][3] = get_memory_stall(rvtop) == 1 ? "STALL!" : "";
+    tc.canvas[3][3] = std::format("{}, {}", rvtop->mmio_request_done[0], rvtop->mmio_request_done[1]);
+    tc.canvas[3][4] = get_memory_stall(rvtop) == 1 ? "STALL!" : "";
 
     auto wb_data = get_wb_stage_data(rvtop);
     tc.canvas[4][0] = 
