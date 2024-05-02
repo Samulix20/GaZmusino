@@ -7,8 +7,6 @@ module rv32_wb_stage(
     input mem_wb_buffer_t mem_wb_buff,
     // Mem data input
     input rv32_word mem_data,
-    // Bypass data output
-    output rv32_word wb_bypass,
     // Register File I/O
     output logic reg_write,
     output rv_reg_id_t rd,
@@ -33,8 +31,6 @@ always_comb begin
         WB_MEM_DATA: wb_data = fixed_load;
         default: wb_data = mem_wb_buff.wb_result;
     endcase
-
-    wb_bypass = wb_data;
 end
 
 endmodule

@@ -53,7 +53,8 @@ end
 
 // Register file
 rv_reg_id_t dec_rs1, dec_rs2, wb_rd;
-rv32_word dec_reg1, dec_reg2, wb_data;
+rv32_word dec_reg1, dec_reg2;
+rv32_word wb_data /*verilator public*/;
 logic wb_we;
 rv32_register_file rf(
     .clk(clk), .resetn(resetn),
@@ -115,7 +116,7 @@ rv32_exec_stage exec_stage(
     .do_jump(exec_jump),
     .jump_addr(exec_jump_addr),
     // Bypass
-    .wb_bypass(wb_bypass)
+    .wb_bypass(wb_data)
 );
 
 // MEMORY STAGE
@@ -137,8 +138,6 @@ rv32_wb_stage wb_stage(
     .mem_wb_buff(mem_wb_buff),
     // Memory I
     .mem_data(data),
-    // Bypass O
-    .wb_bypass(wb_bypass),
     // Register File O
     .reg_write(wb_we), .rd(wb_rd), .wb_data(wb_data)
 );

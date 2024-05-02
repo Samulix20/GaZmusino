@@ -57,6 +57,10 @@ inline WritebackStageData get_wb_stage_data(const Vrv32_top* rvtop) {
     return d;
 }
 
+inline uint32_t get_wb_result_data(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->wb_data;
+}
+
 inline uint32_t get_next_pc(const Vrv32_top* rvtop) {
     return rvtop->rv32_top->core->next_pc;
 }

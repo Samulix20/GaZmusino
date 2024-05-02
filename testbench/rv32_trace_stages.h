@@ -176,11 +176,14 @@ inline std::string wb_src_str(Instruction instr, DecodedInstruction dec_instr) {
 }
 
 // If writeback "x[rd] <- [wb_result]"
-inline std::string wb_write_str(WritebackStageData wbd) {
+inline std::string wb_write_str(const Vrv32_top* rvtop) {
+    auto wbd = get_wb_stage_data(rvtop);
+    auto wb_result = get_wb_result_data(rvtop);
+
     std::string s = "";
     if (wbd.decoded_instr.register_wb) {
         s += "x" + std::to_string(wbd.instr.rd) + 
-            " <- " + std::format("{:<#10x}", wbd.wb_result);
+            " <- " + std::format("{:<#10x}", wb_result);
     }
     return s;
 }
@@ -292,13 +295,12 @@ inline void trace_stages(const Vrv32_top* rvtop) {
         std::format("@ {:<#10x} I {:<#10x}", mem_data.pc, mem_data.instr.get());
     tc.canvas[3][1] = wb_src_str(mem_data.instr, mem_data.decoded_instr);
     tc.canvas[3][2] = mem_op_str(rvtop);
-    tc.canvas[3][3] = std::format("{}, {}", rvtop->mmio_request_done[0], rvtop->mmio_request_done[1]);
     tc.canvas[3][4] = get_memory_stall(rvtop) == 1 ? "STALL!" : "";
 
     auto wb_data = get_wb_stage_data(rvtop);
     tc.canvas[4][0] = 
         std::format("@ {:<#10x} I {:<#10x}", wb_data.pc, wb_data.instr.get());
-    tc.canvas[4][1] = wb_write_str(wb_data);
+    tc.canvas[4][1] = wb_write_str(rvtop);
 
     tc.print();
 }
