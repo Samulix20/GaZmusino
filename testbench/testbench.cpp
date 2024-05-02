@@ -13,6 +13,8 @@
 int main(int argc, char** argv) {
 
     std::string rv_elf_executable = "";
+    std::string rv_disassembly_file = "";
+
     uint64_t max_sim_time = 10000;
     bool print_trace = false;
 
@@ -24,10 +26,19 @@ int main(int argc, char** argv) {
         std::string arg = argv[i];
         if (arg == "-e") {
             i++;
+            if (i == argc) break;
             rv_elf_executable = argv[i];
+        }
+        else if (arg == "-d") {
+            i++;
+            if (i == argc) break;
+            rv_disassembly_file = argv[i];
         }
         else if (arg == "-t") print_trace = true;
     }
+
+    auto diassembly_map =
+        rv32_test::load_dissasembly(rv_disassembly_file);
 
     // Create device under test
     Vrv32_top *dut = new Vrv32_top;
@@ -72,7 +83,7 @@ int main(int argc, char** argv) {
         // Debug
         // Only on high clk and after reset
         if (print_trace && !reset_on && dut->clk == 1) {
-            rv32_test::trace_stages(dut);
+            rv32_test::trace_stages(dut, diassembly_map);
         }
 
         // Trace waveform

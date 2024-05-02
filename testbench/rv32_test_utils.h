@@ -2,11 +2,14 @@
 #define RV32_TEST_UTILS
 
 #include <cstdint>
+#include <cstdio>
 #include <elf.h>
 #include <cassert>
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <sstream>
+#include <string>
 
 // Device under test headers
 #include "Vrv32_top.h"
@@ -194,6 +197,29 @@ inline void handle_mmio_request(Vrv32_top* rvtop) {
             std::cout << static_cast<char>(request.data);
         }
     }
+}
+
+using DissasemblyMap = std::unordered_map<uint32_t, std::string>;
+
+inline DissasemblyMap load_dissasembly(std::string filename) {
+    DissasemblyMap m;
+    std::stringstream ss;
+    std::string line = "", pc_token = "", instr_token = "";
+
+    std::ifstream f = std::ifstream(filename);
+    if (!f.is_open()) return m;
+
+    while(!f.eof()) {
+        getline(f, line);
+        if (line == "") continue; // Guard for empty lines
+        ss.clear();
+        ss << line;
+        getline(ss, pc_token, ';');
+        getline(ss, instr_token, ';');
+        m[std::stoi(pc_token)] = instr_token;
+    }
+
+    return m;
 }
 
 }

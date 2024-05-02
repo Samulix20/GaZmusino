@@ -3,6 +3,7 @@
 
 #include "rv32_test_utils.h"
 
+#include <cstdint>
 #include <unordered_map>
 #include <format>
 #include <iostream>
@@ -227,6 +228,16 @@ inline std::string mem_op_str(const Vrv32_top* rvtop) {
     return s;
 }
 
+inline std::string dissasembled_isntr(
+    const DissasemblyMap& dmap, uint32_t pc, uint32_t instr) {
+
+    if (instr == 0x33) return "asm nop";
+
+    auto it = dmap.find(pc);
+    if (it == dmap.end()) return "asm ???";
+    else return "asm " + it->second;
+}
+
 class TraceCanvas {
   public:
     uint32_t stages;
@@ -262,8 +273,8 @@ class TraceCanvas {
     }
 };
 
-inline void trace_stages(const Vrv32_top* rvtop) {
-    auto tc = TraceCanvas(5, 5);
+inline void trace_stages(const Vrv32_top* rvtop, const DissasemblyMap& dmap) {
+    auto tc = TraceCanvas(5, 6);
 
     auto instr_request = get_instruction_request(rvtop);
 
@@ -272,35 +283,45 @@ inline void trace_stages(const Vrv32_top* rvtop) {
     tc.canvas[0][1] = std::format("@ <- {:<#10x}", get_next_pc(rvtop));
 
     auto decode_data = get_decode_stage_data(rvtop);
-    tc.canvas[1][0] = 
-        std::format("@ {:<#10x} I {:<#10x}", 
-            decode_data.pc, decode_data.instr.get());
-    tc.canvas[1][1] = "Opcode " + opcode_str(decode_data.instr);
-    tc.canvas[1][2] = decode_register_usage_str(rvtop);
-    tc.canvas[1][3] = bypass_str(decode_data.instr, decode_data.decoded_instr);
-    tc.canvas[1][4] = get_decode_stall(rvtop) == 1 ? "STALL!" : "";
+    tc.canvas[1][0] = std::format("@ {:<#10x} I {:<#10x}", 
+        decode_data.pc, decode_data.instr.get());
+    tc.canvas[1][1] = dissasembled_isntr(dmap, decode_data.pc, decode_data.instr.get());
+    if (decode_data.instr.get() != 0x33) {
+        tc.canvas[1][2] = "Opcode " + opcode_str(decode_data.instr);
+        tc.canvas[1][3] = decode_register_usage_str(rvtop);
+        tc.canvas[1][4] = bypass_str(decode_data.instr, decode_data.decoded_instr);
+        tc.canvas[1][5] = get_decode_stall(rvtop) == 1 ? "STALL!" : "";
+    }
 
     auto exec_data = get_exec_stage_data(rvtop);
-    tc.canvas[2][0] = 
-        std::format("@ {:<#10x} I {:<#10x}", 
-            exec_data.pc, exec_data.instr.get());
-    tc.canvas[2][1] = wb_src_str(exec_data.instr, exec_data.decoded_instr);
-    tc.canvas[2][2] = alu_op_str(exec_data.decoded_instr) + " ";
-    tc.canvas[2][2] += alu_input_str(exec_data.instr, exec_data.decoded_instr);
-    tc.canvas[2][3] = branch_op_str(exec_data.decoded_instr);
-    tc.canvas[2][4] = get_exec_jump(rvtop) == 1 ? "JUMP!" : "";
+    tc.canvas[2][0] = std::format("@ {:<#10x} I {:<#10x}", 
+        exec_data.pc, exec_data.instr.get());
+    tc.canvas[2][1] = dissasembled_isntr(dmap, exec_data.pc, exec_data.instr.get());
+    if (exec_data.instr.get() != 0x33) {
+        tc.canvas[2][2] = wb_src_str(exec_data.instr, exec_data.decoded_instr);
+        tc.canvas[2][3] = alu_op_str(exec_data.decoded_instr) + " " +
+            alu_input_str(exec_data.instr, exec_data.decoded_instr);
+        tc.canvas[2][4] = branch_op_str(exec_data.decoded_instr) + " " +
+            (get_exec_jump(rvtop) == 1 ? "JUMP!" : "");
+    }
 
     auto mem_data = get_mem_stage_data(rvtop);
     tc.canvas[3][0] = 
         std::format("@ {:<#10x} I {:<#10x}", mem_data.pc, mem_data.instr.get());
-    tc.canvas[3][1] = wb_src_str(mem_data.instr, mem_data.decoded_instr);
-    tc.canvas[3][2] = mem_op_str(rvtop);
-    tc.canvas[3][4] = get_memory_stall(rvtop) == 1 ? "STALL!" : "";
+    tc.canvas[3][1] = dissasembled_isntr(dmap, mem_data.pc, mem_data.instr.get());
+    if (mem_data.instr.get() != 0x33) {
+        tc.canvas[3][2] = wb_src_str(mem_data.instr, mem_data.decoded_instr);
+        tc.canvas[3][3] = mem_op_str(rvtop);
+        tc.canvas[3][5] = get_memory_stall(rvtop) == 1 ? "STALL!" : "";
+    }
 
     auto wb_data = get_wb_stage_data(rvtop);
     tc.canvas[4][0] = 
         std::format("@ {:<#10x} I {:<#10x}", wb_data.pc, wb_data.instr.get());
-    tc.canvas[4][1] = wb_write_str(rvtop);
+    tc.canvas[4][1] = dissasembled_isntr(dmap, wb_data.pc, wb_data.instr.get());
+    if (wb_data.instr.get() != 0x33) {
+        tc.canvas[4][2] = wb_write_str(rvtop);
+    }
 
     tc.print();
 }

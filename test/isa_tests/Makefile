@@ -18,7 +18,10 @@ CFLAGS := \
 	-I macros -I $(BSP_DIR)\
 	-ffreestanding -nostartfiles -T linker.lds
 
-all: $(TEST_BUILD).dump
+all: $(TEST_BUILD).dump $(TEST_BUILD)_asm.csv
+
+$(TEST_BUILD)_asm.csv: $(TEST_BUILD).elf
+	python ../../tools/disassembly.py $^ > $@
 
 $(TEST_BUILD).dump: $(TEST_BUILD).elf
 	$(DUMP) -D $< > $(TEST_BUILD).dump
