@@ -9,7 +9,7 @@
 
 namespace rv32_test {
 
-std::string opcode_str(Instruction instr) {
+inline std::string opcode_str(Instruction instr) {
     std::string str;
     static const std::unordered_map<RV32Core::valid_opcodes_t, std::string> str_map = {
         {RV32Core::OPCODE_LUI, "LUI"},
@@ -30,7 +30,7 @@ std::string opcode_str(Instruction instr) {
     return str;
 }
 
-std::string bypass_str(Instruction instr, DecodedInstruction dec_instr) {
+inline std::string bypass_str(Instruction instr, DecodedInstruction dec_instr) {
     static const std::unordered_map<RV32Core::bypass_t, std::string> str_map = {
         {RV32Core::NO_BYPASS, "NO"},
         {RV32Core::BYPASS_EXEC_BUFF, "EXEC"},
@@ -63,7 +63,7 @@ std::string bypass_str(Instruction instr, DecodedInstruction dec_instr) {
     return s;
 }
 
-std::string rename_imm_str(std::string op, DecodedInstruction dec_instr) {
+inline std::string rename_imm_str(std::string op, DecodedInstruction dec_instr) {
     static const std::unordered_map<RV32Core::instr_type_t, std::string> str_map = {
         {RV32Core::INSTR_R_TYPE, "???"},
         {RV32Core::INSTR_I_TYPE, "I_IMM"},
@@ -81,7 +81,7 @@ std::string rename_imm_str(std::string op, DecodedInstruction dec_instr) {
     return op;
 }
 
-std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr) {
+inline std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr) {
     std::string op1, op2;
     static const std::unordered_map<RV32Core::int_alu_input_t, std::string> str_map = {
         {RV32Core::ALU_IN_ZERO, "0"},
@@ -112,7 +112,7 @@ std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr) {
     return op1 + " " + op2;
 }
 
-std::string alu_op_str(DecodedInstruction instr) {
+inline std::string alu_op_str(DecodedInstruction instr) {
     std::string str;
     static const std::unordered_map<RV32Core::int_alu_op_t, std::string> str_map = {
         {RV32Core::ALU_OP_ADD, "ADD"},
@@ -133,7 +133,7 @@ std::string alu_op_str(DecodedInstruction instr) {
 }
 
 // If jump != NOP "[BRANCH_OP]"
-std::string branch_op_str(DecodedInstruction instr) {
+inline std::string branch_op_str(DecodedInstruction instr) {
     std::string str;
     static const std::unordered_map<RV32Core::branch_op_t, std::string> str_map = {
         {RV32Core::OP_BEQ, "BEQ"},
@@ -153,7 +153,7 @@ std::string branch_op_str(DecodedInstruction instr) {
 }
 
 // If writeback "[WB_SRC] -> x[rd]"
-std::string wb_src_str(Instruction instr, DecodedInstruction dec_instr) {
+inline std::string wb_src_str(Instruction instr, DecodedInstruction dec_instr) {
     std::string s = "";
 
     static const std::unordered_map<RV32Core::wb_result_t, std::string> str_map = {
@@ -176,7 +176,7 @@ std::string wb_src_str(Instruction instr, DecodedInstruction dec_instr) {
 }
 
 // If writeback "x[rd] <- [wb_result]"
-std::string wb_write_str(WritebackStageData wbd) {
+inline std::string wb_write_str(WritebackStageData wbd) {
     std::string s = "";
     if (wbd.decoded_instr.register_wb) {
         s += "x" + std::to_string(wbd.instr.rd) + 
@@ -185,7 +185,7 @@ std::string wb_write_str(WritebackStageData wbd) {
     return s;
 }
 
-std::string decode_register_usage_str(const Vrv32_top* rvtop) {
+inline std::string decode_register_usage_str(const Vrv32_top* rvtop) {
     std::string s = "";
     uint8_t usage = rvtop->rv32_top->core->decode_stage->use_rs;
     Instruction instr = get_decode_stage_data(rvtop).instr;
@@ -195,7 +195,7 @@ std::string decode_register_usage_str(const Vrv32_top* rvtop) {
     return s;
 }
 
-std::string mem_op_str(const Vrv32_top* rvtop) {
+inline std::string mem_op_str(const Vrv32_top* rvtop) {
     MemoryRequest request = get_memory_request(rvtop);
 
     std::string s = "";
@@ -259,7 +259,7 @@ class TraceCanvas {
     }
 };
 
-void trace_stages(const Vrv32_top* rvtop) {
+inline void trace_stages(const Vrv32_top* rvtop) {
     auto tc = TraceCanvas(5, 5);
 
     auto instr_request = get_instruction_request(rvtop);

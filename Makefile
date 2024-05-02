@@ -28,6 +28,8 @@ obj_dir/.verilator.stamp: \
 	--cc -CFLAGS "-std=c++20 -Wall -Wextra" --exe ${TOP_MODULE_SRC} $(CPP_SRC)
 	@touch obj_dir/.verilator.stamp
 
+verilate: obj_dir/.verilator.stamp
+
 clean:
 	rm -rf obj_dir build waveform.vcd
 
