@@ -10,11 +10,10 @@
 #include "rv32_test_utils.h"
 #include "rv32_trace_stages.h"
 
-constexpr uint64_t max_sim_time = 10000;
-
 int main(int argc, char** argv) {
 
     std::string rv_elf_executable = "";
+    uint64_t max_sim_time = 10000;
     bool print_trace = false;
 
     // Evaluate Verilator comand args
@@ -40,7 +39,7 @@ int main(int argc, char** argv) {
     dut->trace(m_trace, 5);
     m_trace->open("waveform.vcd");
 
-    rv32_test::RVMemory memory(rv_elf_executable);
+    auto elf_program = rv32_test::load_elf(rv_elf_executable);
     vluint64_t sim_time = 0;
 
     // Testbench simulation loop
@@ -58,12 +57,13 @@ int main(int argc, char** argv) {
 
         if (sim_time == 5) {
             // Set bram contents
-            memory.set_main_memory(dut);
+            rv32_test::set_banked_memory(dut, elf_program);
+            delete elf_program.memory.release();
         }
 
         // Memory bus signals
         if(sim_time >= 5) {
-            memory.handle_request(dut);
+            rv32_test::handle_mmio_request(dut);
         }
 
         // Update signals

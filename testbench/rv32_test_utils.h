@@ -6,6 +6,7 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 // Device under test headers
 #include "Vrv32_top.h"
@@ -92,112 +93,104 @@ inline uint8_t get_exec_jump(const Vrv32_top* rvtop) {
     return rvtop->rv32_top->core->exec_jump;
 }
 
+struct rv32_elf_program {
+    uint32_t max_addr;
+    std::unique_ptr<uint8_t> memory;
+};
+
+inline rv32_elf_program load_elf(const std::string filename) {
+    std::ifstream f(filename, std::ios::binary);
+    // Check file is open
+    assert(f.is_open());
+
+    // Read header
+    std::unique_ptr<Elf32_Ehdr> ehdr(new Elf32_Ehdr);
+    f.read(reinterpret_cast<char*>(ehdr.get()), sizeof(*ehdr));
+
+    // Check is a 32 bit elf file
+    assert(ehdr->e_ident[EI_CLASS] == 1);
+    // Check is for RISC-V
+    assert(ehdr->e_machine == EM_RISCV);
+
+    // Set fd to read program header
+    // Seek and read segment 1 cause segment 0 is used for RV attributes
+    std::unique_ptr<Elf32_Phdr> phdr(new Elf32_Phdr);
+    f.seekg(ehdr->e_phoff + sizeof(*phdr));
+    f.read(reinterpret_cast<char*>(phdr.get()), sizeof(*phdr));
+    
+    // Make sure its loadable
+    assert(phdr->p_type == PT_LOAD);
+
+    // Allocate memory of size in memory
+    rv32_elf_program elf_program;
+    elf_program.memory = std::unique_ptr<uint8_t>(new uint8_t[phdr->p_memsz]);
+    elf_program.max_addr = phdr->p_memsz;
+
+    // Go to the segment data and read
+    f.seekg(phdr->p_offset);
+    // Copy only the data present in the ELF file
+    f.read(
+        reinterpret_cast<char*>(elf_program.memory.get()),
+        phdr->p_filesz);
+    f.close();
+
+    return elf_program;
+}
+
+inline void set_banked_memory(Vrv32_top* rvtop, const rv32_elf_program& elf_program) {
+    assert(rvtop->rv32_top->memory->NUM_WORDS >= (elf_program.max_addr >> 2));
+
+    uint8_t* memory = elf_program.memory.get();
+    uint8_t bsel = 0;
+
+    for(uint32_t i = 0; i < elf_program.max_addr; i++) {
+        switch (bsel) {
+            case 0: 
+                rvtop->rv32_top->memory->b0->ram[i >> 2] = memory[i];
+                break;
+            case 1:
+                rvtop->rv32_top->memory->b1->ram[i >> 2] = memory[i];
+                break;
+            case 2:
+                rvtop->rv32_top->memory->b2->ram[i >> 2] = memory[i];
+                break;
+            case 3:
+                rvtop->rv32_top->memory->b3->ram[i >> 2] = memory[i];
+                break;
+            default: break;
+        }
+        bsel = (bsel + 1) % 4;
+    }
+}
+
 // Bsp defines config
 #include "../bsp/riscv/config.h"
 
-class RVMemory {
-  private:
-    uint8_t* memory = nullptr;
-    uint32_t max_addr = 0;
+inline void handle_mmio_request(Vrv32_top* rvtop) {
+    MemoryRequest request = get_memory_request(rvtop);
 
-  public:
-    // Default constructor
-    RVMemory() {}
+    rvtop->mmio_request_done[0] = 0;
+    rvtop->mmio_request_done[1] = 0;
+
+    // Check request
+    if (request.op == RV32Core::MEM_NOP) return;
     
-    // load elf constructor
-    RVMemory(const std::string filename) {
-        load_elf(filename);
-    }
-
-    ~RVMemory() {
-        // Free if allocated
-        if (memory != nullptr) delete memory;
-    }
-
-    void load_elf(const std::string filename) {
-        std::ifstream f(filename, std::ios::binary);
-        // Check file is open
-        assert(f.is_open());
-
-        // Read header
-        Elf32_Ehdr* ehdr = new Elf32_Ehdr;
-        f.read(reinterpret_cast<char*>(ehdr), sizeof(*ehdr));
-
-        // Check is a 32 bit elf file
-        assert(ehdr->e_ident[EI_CLASS] == 1);
-        // Check is for RISC-V
-        assert(ehdr->e_machine == EM_RISCV);
-
-        // Set fd to read program header
-        // Seek and read segment 1 cause segment 0 is used for RV attributes
-        Elf32_Phdr* phdr = new Elf32_Phdr;
-        f.seekg(ehdr->e_phoff + sizeof(*phdr));
-        f.read(reinterpret_cast<char*>(phdr), sizeof(*phdr));
-        
-        // Make sure its loadable
-        assert(phdr->p_type == PT_LOAD);
-
-        // Allocate memory of size in memory
-        if (memory != nullptr) delete memory;
-        memory = new uint8_t[phdr->p_memsz];
-        max_addr = phdr->p_memsz;
-        // Go to the segment data and read
-        f.seekg(phdr->p_offset);
-        // Copy only the data present in the ELF file
-        f.read(reinterpret_cast<char*>(memory), phdr->p_filesz);
-        f.close();
-    }
-
-    void set_main_memory(Vrv32_top* rvtop) {
-        assert(rvtop->rv32_top->memory->NUM_WORDS >= (max_addr >> 2));
-
-        uint8_t bsel = 0;
-        for(uint32_t i = 0; i < max_addr; i++) {
-            switch (bsel) {
-                case 0: 
-                    rvtop->rv32_top->memory->b0->ram[i >> 2] = memory[i];
-                    break;
-                case 1:
-                    rvtop->rv32_top->memory->b1->ram[i >> 2] = memory[i];
-                    break;
-                case 2:
-                    rvtop->rv32_top->memory->b2->ram[i >> 2] = memory[i];
-                    break;
-                case 3:
-                    rvtop->rv32_top->memory->b3->ram[i >> 2] = memory[i];
-                    break;
-                default: break;
-            }
-            bsel = (bsel + 1) % 4;
+    // MMIO 0 Exit
+    if (request.addr == EXIT_STATUS_ADDR) {
+        rvtop->mmio_request_done[0] = 1;
+        if (request.op == RV32Core::MEM_SW && rvtop->clk == 1) {
+            std::cout << "Exit status " << request.data << '\n';
+            exit(request.data);
         }
     }
-
-    void handle_request(Vrv32_top* rvtop) {
-        MemoryRequest request = get_memory_request(rvtop);
-
-        rvtop->mmio_request_done[0] = 0;
-        rvtop->mmio_request_done[1] = 0;
-
-        // Check request
-        if (request.op == RV32Core::MEM_NOP) return;
-        
-        // MMIO 0 Exit
-        if (request.addr == EXIT_STATUS_ADDR) {
-            rvtop->mmio_request_done[0] = 1;
-            if (request.op == RV32Core::MEM_SW && rvtop->clk == 1) {
-                std::cout << "Exit status " << request.data << '\n';
-                exit(request.data);
-            }
-        }
-        // MMIO 1 Print
-        if (request.addr == PRINT_REG_ADDR) {
-            rvtop->mmio_request_done[1] = 1;
-            if (request.op == RV32Core::MEM_SW && rvtop->clk == 1) {
-                std::cout << static_cast<char>(request.data);
-            }
+    // MMIO 1 Print
+    if (request.addr == PRINT_REG_ADDR) {
+        rvtop->mmio_request_done[1] = 1;
+        if (request.op == RV32Core::MEM_SW && rvtop->clk == 1) {
+            std::cout << static_cast<char>(request.data);
         }
     }
-};
+}
 
 }
 
