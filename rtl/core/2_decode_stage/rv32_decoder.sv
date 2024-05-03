@@ -1,8 +1,8 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
-`include "rtl/rv32_types"
-
-module rv32_decoder (
+module rv32_decoder
+import rv32_types::*;
+(
     input rv_instr_t instr,
     output decoded_instr_t decoded_instr,
     // Register use for dependecy detection

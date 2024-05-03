@@ -1,6 +1,7 @@
-`include "rtl/rv32_types"
-
-module rv32_top #(parameter int NUM_MMIO = 2) (
+module rv32_top
+import rv32_types::*;
+#(parameter int NUM_MMIO = 2)
+(
     input logic clk, resetn,
     // MMIO
     output memory_request_t mmio_data_request,

@@ -1,6 +1,7 @@
-`include "rtl/rv32_types"
 
-module rv32_int_alu (
+module rv32_int_alu
+import rv32_types::*;
+(
     input rv32_word op1, op2,
     int_alu_op_t opsel,
     output rv32_word result

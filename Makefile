@@ -5,10 +5,9 @@ VV := ${VERILATOR_ROOT}/bin/verilator
 TOP_MODULE := rv32_top
 TOP_MODULE_SRC := rtl/${TOP_MODULE}.sv
 VERILATED_MODULE := V${TOP_MODULE}
-VERILOG_MODULES := \
+VERILOG_MODULES := rtl/rv32_types.sv \
 	$(shell find rtl/core -name '*.sv')\
 	$(shell find rtl/memory -name '*.sv')
-VERILOG_HEADERS := rtl/rv_immediates.sv rtl/rv32_types.sv
 
 CPP_SRC := $(shell find testbench -name '*.cpp')
 CPP_HDR := $(shell find testbench -name '*.h')

@@ -12,43 +12,43 @@ namespace rv32_test {
 
 inline std::string opcode_str(Instruction instr) {
     std::string str;
-    static const std::unordered_map<RV32Core::valid_opcodes_t, std::string> str_map = {
-        {RV32Core::OPCODE_LUI, "LUI"},
-        {RV32Core::OPCODE_AUIPC, "AUIPC"},
-        {RV32Core::OPCODE_JAL, "JAL"},
-        {RV32Core::OPCODE_JALR, "JALR"},
-        {RV32Core::OPCODE_BRANCH, "BRANCH"},
-        {RV32Core::OPCODE_LOAD, "LOAD"},
-        {RV32Core::OPCODE_STORE, "STORE"},
-        {RV32Core::OPCODE_INTEGER_IMM, "INT IMM"},
-        {RV32Core::OPCODE_INTEGER_REG, "INT REG"},
-        {RV32Core::OPCODE_ZICSR, "ZICSR"},
-        {RV32Core::OPCODE_BARRIER, "BARRIER"}
+    static const std::unordered_map<RV32Types::valid_opcodes_t, std::string> str_map = {
+        {RV32Types::OPCODE_LUI, "LUI"},
+        {RV32Types::OPCODE_AUIPC, "AUIPC"},
+        {RV32Types::OPCODE_JAL, "JAL"},
+        {RV32Types::OPCODE_JALR, "JALR"},
+        {RV32Types::OPCODE_BRANCH, "BRANCH"},
+        {RV32Types::OPCODE_LOAD, "LOAD"},
+        {RV32Types::OPCODE_STORE, "STORE"},
+        {RV32Types::OPCODE_INTEGER_IMM, "INT IMM"},
+        {RV32Types::OPCODE_INTEGER_REG, "INT REG"},
+        {RV32Types::OPCODE_ZICSR, "ZICSR"},
+        {RV32Types::OPCODE_BARRIER, "BARRIER"}
     };
-    auto it = str_map.find(static_cast<RV32Core::valid_opcodes_t>(instr.opcode));
+    auto it = str_map.find(static_cast<RV32Types::valid_opcodes_t>(instr.opcode));
     if (it != str_map.end()) str = it->second;
     else str = "???";
     return str;
 }
 
 inline std::string bypass_str(Instruction instr, DecodedInstruction dec_instr) {
-    static const std::unordered_map<RV32Core::bypass_t, std::string> str_map = {
-        {RV32Core::NO_BYPASS, "NO"},
-        {RV32Core::BYPASS_EXEC_BUFF, "EXEC"},
-        {RV32Core::BYPASS_MEM_BUFF, "MEM"}
+    static const std::unordered_map<RV32Types::bypass_t, std::string> str_map = {
+        {RV32Types::NO_BYPASS, "NO"},
+        {RV32Types::BYPASS_EXEC_BUFF, "EXEC"},
+        {RV32Types::BYPASS_MEM_BUFF, "MEM"}
     };
 
     std::string s = "";
 
     for (uint32_t i = 0; i < 2; i++) {
-        RV32Core::bypass_t bypass;
+        RV32Types::bypass_t bypass;
         std::string rs, b_op;
 
         if (i == 0) {
-            bypass = static_cast<RV32Core::bypass_t>(dec_instr.bypass_rs1);
+            bypass = static_cast<RV32Types::bypass_t>(dec_instr.bypass_rs1);
             rs = "rs1(x" + std::to_string(instr.rs1) + ")";
         } else {
-            bypass = static_cast<RV32Core::bypass_t>(dec_instr.bypass_rs2);
+            bypass = static_cast<RV32Types::bypass_t>(dec_instr.bypass_rs2);
             rs = "rs2(x" + std::to_string(instr.rs2) + ")";
         }
 
@@ -65,18 +65,18 @@ inline std::string bypass_str(Instruction instr, DecodedInstruction dec_instr) {
 }
 
 inline std::string rename_imm_str(std::string op, DecodedInstruction dec_instr) {
-    static const std::unordered_map<RV32Core::instr_type_t, std::string> str_map = {
-        {RV32Core::INSTR_R_TYPE, "???"},
-        {RV32Core::INSTR_I_TYPE, "I_IMM"},
-        {RV32Core::INSTR_S_TYPE, "S_IMM"},
-        {RV32Core::INSTR_B_TYPE, "B_IMM"},
-        {RV32Core::INSTR_U_TYPE, "U_IMM"},
-        {RV32Core::INSTR_J_TYPE, "J_IMM"}
+    static const std::unordered_map<RV32Types::instr_type_t, std::string> str_map = {
+        {RV32Types::INSTR_R_TYPE, "???"},
+        {RV32Types::INSTR_I_TYPE, "I_IMM"},
+        {RV32Types::INSTR_S_TYPE, "S_IMM"},
+        {RV32Types::INSTR_B_TYPE, "B_IMM"},
+        {RV32Types::INSTR_U_TYPE, "U_IMM"},
+        {RV32Types::INSTR_J_TYPE, "J_IMM"}
     };
 
     if (op != "IMM") return op;
 
-    auto it = str_map.find(static_cast<RV32Core::instr_type_t>(dec_instr.t));
+    auto it = str_map.find(static_cast<RV32Types::instr_type_t>(dec_instr.t));
     if (it != str_map.end()) op = it->second;
     else op = "???";
     return op;
@@ -84,15 +84,15 @@ inline std::string rename_imm_str(std::string op, DecodedInstruction dec_instr) 
 
 inline std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr) {
     std::string op1, op2;
-    static const std::unordered_map<RV32Core::int_alu_input_t, std::string> str_map = {
-        {RV32Core::ALU_IN_ZERO, "0"},
-        {RV32Core::ALU_IN_REG_1, "R1"},
-        {RV32Core::ALU_IN_REG_2, "R2"},
-        {RV32Core::ALU_IN_PC, "PC"},
-        {RV32Core::ALU_IN_IMM, "IMM"}
+    static const std::unordered_map<RV32Types::int_alu_input_t, std::string> str_map = {
+        {RV32Types::ALU_IN_ZERO, "0"},
+        {RV32Types::ALU_IN_REG_1, "R1"},
+        {RV32Types::ALU_IN_REG_2, "R2"},
+        {RV32Types::ALU_IN_PC, "PC"},
+        {RV32Types::ALU_IN_IMM, "IMM"}
     };
     auto it = str_map.find(
-        static_cast<RV32Core::int_alu_input_t>(dec_instr.int_alu_i1));
+        static_cast<RV32Types::int_alu_input_t>(dec_instr.int_alu_i1));
     if (it != str_map.end()) op1 = it->second;
     else op1 = "???";
 
@@ -100,7 +100,7 @@ inline std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr
     else if(op1 == "R2") op1 = "rs2(x" + std::to_string(instr.rs2) + ")";
 
     it = str_map.find(
-        static_cast<RV32Core::int_alu_input_t>(dec_instr.int_alu_i2));
+        static_cast<RV32Types::int_alu_input_t>(dec_instr.int_alu_i2));
     if (it != str_map.end()) op2 = it->second;
     else op2 = " ???";
 
@@ -115,19 +115,19 @@ inline std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr
 
 inline std::string alu_op_str(DecodedInstruction instr) {
     std::string str;
-    static const std::unordered_map<RV32Core::int_alu_op_t, std::string> str_map = {
-        {RV32Core::ALU_OP_ADD, "ADD"},
-        {RV32Core::ALU_OP_SLL, "SLL"},
-        {RV32Core::ALU_OP_SLT, "SLT"},
-        {RV32Core::ALU_OP_SLTU, "SLTU"},
-        {RV32Core::ALU_OP_XOR, "XOR"},
-        {RV32Core::ALU_OP_SRL, "SRL"},
-        {RV32Core::ALU_OP_OR, "OR"},
-        {RV32Core::ALU_OP_AND, "AND"},
-        {RV32Core::ALU_OP_SRA, "SRA"},
-        {RV32Core::ALU_OP_SUB, "SUB"}
+    static const std::unordered_map<RV32Types::int_alu_op_t, std::string> str_map = {
+        {RV32Types::ALU_OP_ADD, "ADD"},
+        {RV32Types::ALU_OP_SLL, "SLL"},
+        {RV32Types::ALU_OP_SLT, "SLT"},
+        {RV32Types::ALU_OP_SLTU, "SLTU"},
+        {RV32Types::ALU_OP_XOR, "XOR"},
+        {RV32Types::ALU_OP_SRL, "SRL"},
+        {RV32Types::ALU_OP_OR, "OR"},
+        {RV32Types::ALU_OP_AND, "AND"},
+        {RV32Types::ALU_OP_SRA, "SRA"},
+        {RV32Types::ALU_OP_SUB, "SUB"}
     };
-    auto it = str_map.find(static_cast<RV32Core::int_alu_op_t>(instr.int_alu_op));
+    auto it = str_map.find(static_cast<RV32Types::int_alu_op_t>(instr.int_alu_op));
     if (it != str_map.end()) str = it->second;
     else str = "???";
     return str;
@@ -136,17 +136,17 @@ inline std::string alu_op_str(DecodedInstruction instr) {
 // If jump != NOP "[BRANCH_OP]"
 inline std::string branch_op_str(DecodedInstruction instr) {
     std::string str;
-    static const std::unordered_map<RV32Core::branch_op_t, std::string> str_map = {
-        {RV32Core::OP_BEQ, "BEQ"},
-        {RV32Core::OP_BNE, "BNE"},
-        {RV32Core::OP_BLT, "BLT"},
-        {RV32Core::OP_BGE, "BGE"},
-        {RV32Core::OP_BLTU, "BLTU"},
-        {RV32Core::OP_BGEU, "BGEU"},
-        {RV32Core::OP_J, "J"},
-        {RV32Core::OP_NOP, "NOP"}
+    static const std::unordered_map<RV32Types::branch_op_t, std::string> str_map = {
+        {RV32Types::OP_BEQ, "BEQ"},
+        {RV32Types::OP_BNE, "BNE"},
+        {RV32Types::OP_BLT, "BLT"},
+        {RV32Types::OP_BGE, "BGE"},
+        {RV32Types::OP_BLTU, "BLTU"},
+        {RV32Types::OP_BGEU, "BGEU"},
+        {RV32Types::OP_J, "J"},
+        {RV32Types::OP_NOP, "NOP"}
     };
-    auto it = str_map.find(static_cast<RV32Core::branch_op_t>(instr.branch_op));
+    auto it = str_map.find(static_cast<RV32Types::branch_op_t>(instr.branch_op));
     if (it != str_map.end()) str = it->second;
     else str = "???";
     if(str == "NOP") str = "";
@@ -157,13 +157,13 @@ inline std::string branch_op_str(DecodedInstruction instr) {
 inline std::string wb_src_str(Instruction instr, DecodedInstruction dec_instr) {
     std::string s = "";
 
-    static const std::unordered_map<RV32Core::wb_result_t, std::string> str_map = {
-        {RV32Core::WB_PC4, "PC4"},
-        {RV32Core::WB_INT_ALU, "ALU"},
-        {RV32Core::WB_MEM_DATA, "MEM"}
+    static const std::unordered_map<RV32Types::wb_result_t, std::string> str_map = {
+        {RV32Types::WB_PC4, "PC4"},
+        {RV32Types::WB_INT_ALU, "ALU"},
+        {RV32Types::WB_MEM_DATA, "MEM"}
     };
     auto it = str_map.find(
-        static_cast<RV32Core::wb_result_t>(dec_instr.wb_result_src));
+        static_cast<RV32Types::wb_result_t>(dec_instr.wb_result_src));
     if (it != str_map.end()) s = it->second;
     else s = "???";
 
@@ -203,18 +203,18 @@ inline std::string mem_op_str(const Vrv32_top* rvtop) {
     MemoryRequest request = get_memory_request(rvtop);
 
     std::string s = "";
-    static const std::unordered_map<RV32Core::mem_op_t, std::string> str_map = {
-        {RV32Core::MEM_LB, "LB"},
-        {RV32Core::MEM_LH, "LH"},
-        {RV32Core::MEM_LW, "LW"},
-        {RV32Core::MEM_LBU, "LBU"},
-        {RV32Core::MEM_LHU, "LHU"},
-        {RV32Core::MEM_SB, "SB"},
-        {RV32Core::MEM_SH, "SH"},
-        {RV32Core::MEM_SW, "SW"},
-        {RV32Core::MEM_NOP, "NO MEM"}
+    static const std::unordered_map<RV32Types::mem_op_t, std::string> str_map = {
+        {RV32Types::MEM_LB, "LB"},
+        {RV32Types::MEM_LH, "LH"},
+        {RV32Types::MEM_LW, "LW"},
+        {RV32Types::MEM_LBU, "LBU"},
+        {RV32Types::MEM_LHU, "LHU"},
+        {RV32Types::MEM_SB, "SB"},
+        {RV32Types::MEM_SH, "SH"},
+        {RV32Types::MEM_SW, "SW"},
+        {RV32Types::MEM_NOP, "NO MEM"}
     };
-    auto it = str_map.find(static_cast<RV32Core::mem_op_t>(request.op));
+    auto it = str_map.find(static_cast<RV32Types::mem_op_t>(request.op));
     if (it != str_map.end()) s = it->second;
     else s = "???";
 

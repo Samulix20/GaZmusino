@@ -1,6 +1,7 @@
-`include "rtl/rv32_types"
 
-module rv32_branch_unit (
+module rv32_branch_unit
+import rv32_types::*;
+(
     input rv32_word op1, op2,
     input branch_op_t branch_op,
     output logic do_branch

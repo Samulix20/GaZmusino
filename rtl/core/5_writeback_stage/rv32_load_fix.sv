@@ -1,8 +1,8 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
-`include "rtl/rv32_types"
-
-module rv32_load_fix (
+module rv32_load_fix
+import rv32_types::*;
+(
     // Core I/O
     input mem_op_t op,
     input rv32_word addr,

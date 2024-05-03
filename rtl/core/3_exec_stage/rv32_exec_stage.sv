@@ -1,8 +1,8 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
-`include "rtl/rv_immediates"
-
-module rv32_exec_stage (
+module rv32_exec_stage
+import rv32_types::*;
+(
     // Clk, Reset signals
     input logic clk, resetn,
     // Pipeline I/O
@@ -15,6 +15,48 @@ module rv32_exec_stage (
     // Bypass data
     input rv32_word wb_bypass
 );
+
+function automatic rv32_word decode_i_imm(input rv32_word instr);
+    rv32_word imm;
+    imm[31:11] = '{default: instr[31]};
+    imm[10:0] = instr[30:20];
+    return imm;
+endfunction
+
+function automatic rv32_word decode_s_imm(input rv32_word instr);
+    rv32_word imm;
+    imm[31:11] = '{default: instr[31]};
+    imm[10:5] = instr[30:25];
+    imm[4:0] = instr[11:7];
+    return imm;
+endfunction
+
+function automatic rv32_word decode_b_imm(input rv32_word instr);
+    rv32_word imm;
+    imm[31:12] = '{default: instr[31]};
+    imm[11] = instr[7];
+    imm[10:5] = instr[30:25];
+    imm[4:1] = instr[11:8];
+    imm[0] = 0;
+    return imm;
+endfunction
+
+function automatic rv32_word decode_u_imm(input rv32_word instr);
+    rv32_word imm;
+    imm[31:12] = instr[31:12];
+    imm[11:0] = '{default: 0};
+    return imm;
+endfunction
+
+function automatic rv32_word decode_j_imm(input rv32_word instr);
+    rv32_word imm;
+    imm[31:20] = '{default: instr[31]};
+    imm[19:12] = instr[19:12];
+    imm[11] = instr[20];
+    imm[10:1] = instr[30:21];
+    imm[0] = 0;
+    return imm;
+endfunction
 
 // TODO Setup as a loop
 function automatic rv32_word alu_input_sel(
@@ -113,7 +155,7 @@ end
 
 always_ff @(posedge clk) begin
     if (!resetn) begin
-        exec_mem_buff.instr <= `RV_NOP;
+        exec_mem_buff.instr <= RV_NOP;
         exec_mem_buff.pc <= 0;
         exec_mem_buff.decoded_instr <= create_nop_ctrl();
     end

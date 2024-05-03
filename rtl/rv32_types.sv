@@ -1,8 +1,4 @@
-`ifndef RV_32_TYPES
-`define RV_32_TYPES
-
-// Nop operation add x0 x0, 0 (0x00000033)
-`define RV_NOP 'h33
+package rv32_types;
 
 typedef logic[31:0] rv32_word;
 
@@ -19,6 +15,9 @@ typedef struct packed {
     rv_reg_id_t rd;            // [11:7]
     opcode_t opcode;        // [6:0]
 } rv_instr_t /*verilator public*/;
+
+// Nop operation add x0 x0, 0 (0x00000033)
+const rv_instr_t RV_NOP = 'h33;
 
 typedef enum logic [6:0] {
     OPCODE_LUI = 7'b0110111,
@@ -171,5 +170,4 @@ typedef struct packed {
     mem_op_t op;
 } memory_request_t /*verilator public*/;
 
-`endif
-
+endpackage

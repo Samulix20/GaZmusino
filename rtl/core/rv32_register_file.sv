@@ -1,6 +1,7 @@
-`include "rtl/rv32_types"
 
-module rv32_register_file (
+module rv32_register_file
+import rv32_types::*;
+(
     input   logic write, clk, resetn,
     input   rv_reg_id_t r1, r2, rw,
     input   rv32_word d,

@@ -1,8 +1,8 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
-`include "rtl/rv32_types"
-
-module rv32_mem_stage(
+module rv32_mem_stage
+import rv32_types::*;
+(
     // Clk, Reset signals
     input logic clk, resetn,
     // Pipeline I/O
@@ -31,7 +31,7 @@ end
 
 always_ff @(posedge clk) begin
     if(!resetn) begin
-        mem_wb_buff.instr <= `RV_NOP;
+        mem_wb_buff.instr <= RV_NOP;
         mem_wb_buff.decoded_instr <= create_nop_ctrl();
         mem_wb_buff.pc <= 0;
     end

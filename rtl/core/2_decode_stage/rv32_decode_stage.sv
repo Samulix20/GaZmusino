@@ -1,8 +1,8 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
-`include "rtl/rv32_types"
-
-module rv32_decode_stage (
+module rv32_decode_stage
+import rv32_types::*;
+(
     // Clk, Reset signals
     input logic clk, resetn,
     // Pipeline I/O
@@ -27,7 +27,7 @@ decoded_instr_t decoder_output;
 // Small logic to support fetch bubbles
 rv_instr_t internal_instr;
 always_comb begin
-    if (fetch_decode_buff.generate_nop) internal_instr = `RV_NOP;
+    if (fetch_decode_buff.generate_nop) internal_instr = RV_NOP;
     else internal_instr = instr;
 end
 
@@ -75,7 +75,7 @@ always_comb begin
     output_internal_data = internal_data;
 
     if (stall | set_nop) begin
-        output_internal_data.instr = `RV_NOP;
+        output_internal_data.instr = RV_NOP;
         output_internal_data.decoded_instr = create_nop_ctrl();
         if (set_nop) output_internal_data.pc = set_nop_pc;
     end
@@ -84,7 +84,7 @@ end
 
 always_ff @(posedge clk) begin
     if (!resetn) begin
-        decode_exec_buff.instr <= `RV_NOP;
+        decode_exec_buff.instr <= RV_NOP;
         decode_exec_buff.decoded_instr <= create_nop_ctrl();
         decode_exec_buff.pc <= 0;
     end

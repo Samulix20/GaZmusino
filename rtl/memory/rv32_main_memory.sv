@@ -1,10 +1,10 @@
 /* verilator lint_off WIDTHTRUNC */
 /* verilator lint_off UNUSEDSIGNAL */
 
-`include "rtl/rv32_types"
-
 // 1 MB 262144 words
-module rv32_main_memory #(
+module rv32_main_memory
+import rv32_types::*;
+#(
     parameter int NUM_WORDS /*verilator public*/ = 262144
 ) (
     input logic clk, resetn,

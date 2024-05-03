@@ -18,9 +18,9 @@
 #include "Vrv32_top_rv32_decode_stage.h"
 #include "Vrv32_top_rv32_exec_stage.h"
 #include "Vrv32_top_rv32_mem_stage.h"
-#include "Vrv32_top___024unit.h"
 #include "Vrv32_top_rv32_main_memory.h"
 #include "Vrv32_top_bram__N40000.h"
+#include "Vrv32_top_rv32_types.h"
 
 namespace rv32_test {
 
@@ -33,7 +33,7 @@ using MemoryRequest = Vrv32_top_memory_request_t__struct__0;
 
 using Instruction = Vrv32_top_rv_instr_t__struct__0;
 using DecodedInstruction = Vrv32_top_decoded_instr_t__struct__0;
-using RV32Core = Vrv32_top___024unit;
+using RV32Types = Vrv32_top_rv32_types;
 
 // Getters core internal data
 inline DecodeStageData get_decode_stage_data(const Vrv32_top* rvtop) {
@@ -180,12 +180,12 @@ inline void handle_mmio_request(Vrv32_top* rvtop) {
     rvtop->mmio_request_done[1] = 0;
 
     // Check request
-    if (request.op == RV32Core::MEM_NOP) return;
+    if (request.op == RV32Types::MEM_NOP) return;
     
     // MMIO 0 Exit
     if (request.addr == EXIT_STATUS_ADDR) {
         rvtop->mmio_request_done[0] = 1;
-        if (request.op == RV32Core::MEM_SW && rvtop->clk == 1) {
+        if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
             std::cout << "Exit status " << request.data << '\n';
             exit(request.data);
         }
@@ -193,7 +193,7 @@ inline void handle_mmio_request(Vrv32_top* rvtop) {
     // MMIO 1 Print
     if (request.addr == PRINT_REG_ADDR) {
         rvtop->mmio_request_done[1] = 1;
-        if (request.op == RV32Core::MEM_SW && rvtop->clk == 1) {
+        if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
             std::cout << static_cast<char>(request.data);
         }
     }

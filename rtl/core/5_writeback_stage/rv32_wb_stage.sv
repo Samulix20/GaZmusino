@@ -1,8 +1,8 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
-`include "rtl/rv32_types"
-
-module rv32_wb_stage(
+module rv32_wb_stage
+import rv32_types::*;
+(
     // Pipeline I/O
     input mem_wb_buffer_t mem_wb_buff,
     // Mem data input

@@ -1,8 +1,8 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
-`include "rtl/rv32_types"
-
-module rv32_hazzard_detection_unit (
+module rv32_hazzard_detection_unit
+import rv32_types::*;
+(
     input logic[1:0] use_rs,
     input rv_instr_t current_instr,
     input decode_exec_buffer_t decode_exec_buff,

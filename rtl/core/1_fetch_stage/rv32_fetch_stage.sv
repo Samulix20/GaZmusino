@@ -1,8 +1,8 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
-`include "rtl/rv32_types"
-
-module rv32_fetch_stage (
+module rv32_fetch_stage
+import rv32_types::*;
+(
     // Clk, Reset signals
     input logic clk, resetn,
 
