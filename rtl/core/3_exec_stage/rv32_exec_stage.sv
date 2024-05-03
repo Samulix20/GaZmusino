@@ -16,48 +16,6 @@ import rv32_types::*;
     input rv32_word wb_bypass
 );
 
-function automatic rv32_word decode_i_imm(input rv32_word instr);
-    rv32_word imm;
-    imm[31:11] = '{default: instr[31]};
-    imm[10:0] = instr[30:20];
-    return imm;
-endfunction
-
-function automatic rv32_word decode_s_imm(input rv32_word instr);
-    rv32_word imm;
-    imm[31:11] = '{default: instr[31]};
-    imm[10:5] = instr[30:25];
-    imm[4:0] = instr[11:7];
-    return imm;
-endfunction
-
-function automatic rv32_word decode_b_imm(input rv32_word instr);
-    rv32_word imm;
-    imm[31:12] = '{default: instr[31]};
-    imm[11] = instr[7];
-    imm[10:5] = instr[30:25];
-    imm[4:1] = instr[11:8];
-    imm[0] = 0;
-    return imm;
-endfunction
-
-function automatic rv32_word decode_u_imm(input rv32_word instr);
-    rv32_word imm;
-    imm[31:12] = instr[31:12];
-    imm[11:0] = '{default: 0};
-    return imm;
-endfunction
-
-function automatic rv32_word decode_j_imm(input rv32_word instr);
-    rv32_word imm;
-    imm[31:20] = '{default: instr[31]};
-    imm[19:12] = instr[19:12];
-    imm[11] = instr[20];
-    imm[10:1] = instr[30:21];
-    imm[0] = 0;
-    return imm;
-endfunction
-
 // TODO Setup as a loop
 function automatic rv32_word alu_input_sel(
     input logic input_sel,
@@ -101,23 +59,18 @@ always_comb begin
 end
 
 // Immediate creation logic
-rv32_word imm;
-always_comb begin
-    case (decode_exec_buff.decoded_instr.t)
-        INSTR_I_TYPE: imm = decode_i_imm(decode_exec_buff.instr);
-        INSTR_S_TYPE: imm = decode_s_imm(decode_exec_buff.instr);
-        INSTR_B_TYPE: imm = decode_b_imm(decode_exec_buff.instr);
-        INSTR_U_TYPE: imm = decode_u_imm(decode_exec_buff.instr);
-        INSTR_J_TYPE: imm = decode_j_imm(decode_exec_buff.instr);
-        default: imm = 0;
-    endcase
-end
+rv32_word immediate;
+rv32_immediate_gen immediate_gen(
+    .instr_type(decode_exec_buff.decoded_instr.t),
+    .instruction(decode_exec_buff.instr),
+    .immediate(immediate)
+);
 
 rv32_word alu_op1, alu_op2;
 always_comb begin
     // Alu inputs setup
-    alu_op1 = alu_input_sel(0, imm, decode_exec_buff.pc, reg1, reg2, decode_exec_buff);
-    alu_op2 = alu_input_sel(1, imm, decode_exec_buff.pc, reg1, reg2, decode_exec_buff);
+    alu_op1 = alu_input_sel(0, immediate, decode_exec_buff.pc, reg1, reg2, decode_exec_buff);
+    alu_op2 = alu_input_sel(1, immediate, decode_exec_buff.pc, reg1, reg2, decode_exec_buff);
 end
 
 // Int ALU
