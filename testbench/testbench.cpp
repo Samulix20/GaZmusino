@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     std::string rv_elf_executable = "";
     std::string rv_disassembly_file = "";
 
-    uint64_t max_sim_time = 10000;
+    uint64_t max_sim_time = 10000, sim_time = 0;
     bool print_trace = false;
 
     // Evaluate Verilator comand args
@@ -50,8 +50,8 @@ int main(int argc, char** argv) {
     dut->trace(m_trace, 5);
     m_trace->open("waveform.vcd");
 
-    auto elf_program = rv32_test::load_elf(rv_elf_executable);
-    vluint64_t sim_time = 0;
+    auto elf_program = 
+        rv32_test::load_elf(rv_elf_executable);
 
     // Testbench simulation loop
     while (sim_time < max_sim_time) {
