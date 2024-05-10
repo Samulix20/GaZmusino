@@ -1,10 +1,11 @@
 /* verilator lint_off WIDTHTRUNC */
 /* verilator lint_off UNUSEDSIGNAL */
+/* verilator lint_off WIDTHEXPAND */
 
 module rv32_main_memory
 import rv32_types::*;
 #(
-    parameter int NUM_WORDS /*verilator public*/ = 8192
+    parameter int NUM_WORDS /*verilator public*/ = 262144
 ) (
     input logic clk, resetn,
     // PORT A
@@ -29,7 +30,7 @@ end
 parameter int ADDR_WIDTH = $clog2(NUM_WORDS);
 logic [ADDR_WIDTH - 1:0] addr_port_a, addr_port_b;
 
-always_comb begin 
+always_comb begin
     addr_port_a = instr_request.addr[ADDR_WIDTH - 1 + 2:2];
     addr_port_b = data_request.addr[ADDR_WIDTH - 1 + 2:2];
 end

@@ -17,7 +17,7 @@ module bram #(
     output logic[7:0] data_a, data_b
 );
 
-logic [7:0] ram [2**ADDR_WIDTH] = '{default: 0} /* verilator public */;
+logic [7:0] ram [2**ADDR_WIDTH] /* verilator public */ = '{default: 0};
 
 always_ff @(posedge clk) begin
     // Reset only affects the registers
@@ -29,7 +29,7 @@ always_ff @(posedge clk) begin
     end
 end
 
-always_ff @(posedge clk) begin 
+always_ff @(posedge clk) begin
     // Reset only affects the registers
     if (!resetn) begin
         data_b <= 0;

@@ -17,7 +17,7 @@ always_ff @(negedge clk) begin
     end else if (write) begin
         register_file[rw] <= d;
         // x0 is always 0
-        register_file[0] = 0;
+        register_file[0] <= 0;
     end
 end
 
