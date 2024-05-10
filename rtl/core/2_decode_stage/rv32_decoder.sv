@@ -85,6 +85,7 @@ always_comb begin
         OPCODE_INTEGER_IMM: begin
             // SRAI instr is the only that sets alu_op to 1xxx
             if (instr.funct3 == 3'b101 && instr.funct7[5]) is_srai = 1;
+            else is_srai = 0;
             decoded_instr.t = INSTR_I_TYPE;
             decoded_instr.int_alu_op = int_alu_op_t'({is_srai, instr.funct3});
             decoded_instr.int_alu_i1 = ALU_IN_REG_1;

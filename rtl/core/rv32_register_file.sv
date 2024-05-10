@@ -16,12 +16,9 @@ always_ff @(negedge clk) begin
         register_file <= '{default: 0};
     end else if (write) begin
         register_file[rw] <= d;
+        // x0 is always 0
+        register_file[0] = 0;
     end
-end
-
-// x0 is always 0
-always_comb begin
-    register_file[0] = 0;
 end
 
 // Read logic

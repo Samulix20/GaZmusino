@@ -1,11 +1,10 @@
 /* verilator lint_off WIDTHTRUNC */
 /* verilator lint_off UNUSEDSIGNAL */
 
-// 1 MB 262144 words
 module rv32_main_memory
 import rv32_types::*;
 #(
-    parameter int NUM_WORDS /*verilator public*/ = 262144
+    parameter int NUM_WORDS /*verilator public*/ = 8192
 ) (
     input logic clk, resetn,
     // PORT A
@@ -27,35 +26,43 @@ always_comb begin
     else instr_read = 0;
 end
 
-bram #(.NUM_BYTES(NUM_WORDS)) b0(
+parameter int ADDR_WIDTH = $clog2(NUM_WORDS);
+logic [ADDR_WIDTH - 1:0] addr_port_a, addr_port_b;
+
+always_comb begin 
+    addr_port_a = instr_request.addr[ADDR_WIDTH - 1 + 2:2];
+    addr_port_b = data_request.addr[ADDR_WIDTH - 1 + 2:2];
+end
+
+bram #(.ADDR_WIDTH(ADDR_WIDTH)) b0(
     .clk(clk), .resetn(resetn),
-    .addr_a(instr_request.addr[31:2]), .addr_b(data_request.addr[31:2]),
+    .addr_a(addr_port_a), .addr_b(addr_port_b),
     .read_a(instr_read), .read_b(1),
-    .data_in_b(data_in_b[0]), .we_b(we_b[0]),
+    .data_in_b(data_in_b[0]), .we_b(we_b[0]), .data_in_a(0), .we_a(0),
     .data_a(instr[7:0]), .data_b(data[7:0])
 );
 
-bram #(.NUM_BYTES(NUM_WORDS)) b1(
+bram #(.ADDR_WIDTH(ADDR_WIDTH)) b1(
     .clk(clk), .resetn(resetn),
-    .addr_a(instr_request.addr[31:2]), .addr_b(data_request.addr[31:2]),
+    .addr_a(addr_port_a), .addr_b(addr_port_b),
     .read_a(instr_read), .read_b(1),
-    .data_in_b(data_in_b[1]), .we_b(we_b[1]),
+    .data_in_b(data_in_b[1]), .we_b(we_b[1]), .data_in_a(0), .we_a(0),
     .data_a(instr[15:8]), .data_b(data[15:8])
 );
 
-bram #(.NUM_BYTES(NUM_WORDS)) b2(
+bram #(.ADDR_WIDTH(ADDR_WIDTH)) b2(
     .clk(clk), .resetn(resetn),
-    .addr_a(instr_request.addr[31:2]), .addr_b(data_request.addr[31:2]),
+    .addr_a(addr_port_a), .addr_b(addr_port_b),
     .read_a(instr_read), .read_b(1),
-    .data_in_b(data_in_b[2]), .we_b(we_b[2]),
+    .data_in_b(data_in_b[2]), .we_b(we_b[2]), .data_in_a(0), .we_a(0),
     .data_a(instr[23:16]), .data_b(data[23:16])
 );
 
-bram #(.NUM_BYTES(NUM_WORDS)) b3(
+bram #(.ADDR_WIDTH(ADDR_WIDTH)) b3(
     .clk(clk), .resetn(resetn),
-    .addr_a(instr_request.addr[31:2]), .addr_b(data_request.addr[31:2]),
+    .addr_a(addr_port_a), .addr_b(addr_port_b),
     .read_a(instr_read), .read_b(1),
-    .data_in_b(data_in_b[3]), .we_b(we_b[3]),
+    .data_in_b(data_in_b[3]), .we_b(we_b[3]), .data_in_a(0), .we_a(0),
     .data_a(instr[31:24]), .data_b(data[31:24])
 );
 
