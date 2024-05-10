@@ -30,9 +30,9 @@ always_comb begin
     else internal_instr = instr;
 end
 
-logic [1:0] use_rs /*verilator public*/;
+logic use_rs[3] /*verilator public*/;
+bypass_t bypass_rs[3];
 logic hazzard_stall;
-bypass_t bypass_rs[2];
 
 rv32_decoder decoder(
     .use_rs(use_rs),

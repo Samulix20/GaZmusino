@@ -191,10 +191,11 @@ inline std::string wb_write_str(const Vrv32_top* rvtop) {
 
 inline std::string decode_register_usage_str(const Vrv32_top* rvtop) {
     std::string s = "";
-    uint8_t usage = rvtop->rv32_top->core->decode_stage->use_rs;
+    auto usage = rvtop->rv32_top->core->decode_stage->use_rs;
     Instruction instr = get_decode_stage_data(rvtop).instr;
-    if(usage & 1) s += "rs1(x" + std::to_string(instr.rs1) + ") ";
-    if(usage & 2) s += "rs2(x" + std::to_string(instr.rs2) + ") ";
+    if(usage[0]) s += "rs1(x" + std::to_string(instr.rs1) + ") ";
+    if(usage[1]) s += "rs2(x" + std::to_string(instr.rs2) + ") ";
+    if(usage[2]) s += "rs3(x" + std::to_string(instr.rd) + ") ";
     if(s != "") s = "Uses " + s;
     return s;
 }

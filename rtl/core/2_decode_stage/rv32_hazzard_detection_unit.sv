@@ -3,20 +3,18 @@
 module rv32_hazzard_detection_unit
 import rv32_types::*;
 (
-    input logic[1:0] use_rs,
+    input logic use_rs[3],
     input rv_instr_t current_instr,
     input decode_exec_buffer_t decode_exec_buff,
     input exec_mem_buffer_t exec_mem_buff,
     output logic stall,
-    output bypass_t bypass_rs[2]
+    output bypass_t bypass_rs[3]
 );
 
 always_comb begin
-    logic stall_vec [2];
-    stall_vec[0] = 0;
-    stall_vec[1] = 0;
+    logic stall_vec[3] = '{default: 0};
 
-    for(int idx = 0; idx < 2; idx = idx + 1) begin
+    for(int idx = 0; idx < 3; idx = idx + 1) begin
         rv_reg_id_t rs;
         bypass_rs[idx] = NO_BYPASS;
 
@@ -45,7 +43,7 @@ always_comb begin
         end
     end
 
-    stall = stall_vec[0] | stall_vec[1];
+    stall = stall_vec.or();
 end
 
 endmodule

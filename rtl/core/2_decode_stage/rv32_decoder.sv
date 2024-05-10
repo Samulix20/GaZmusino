@@ -6,7 +6,7 @@ import rv32_types::*;
     input rv_instr_t instr,
     output decoded_instr_t decoded_instr,
     // Register use for dependecy detection
-    output logic [1:0] use_rs
+    output logic use_rs[3]
 );
 
 always_comb begin
@@ -16,8 +16,9 @@ always_comb begin
     // Default signals NOP Setup add x0, x0, 0;
     decoded_instr = create_nop_ctrl();
 
-    use_rs[0] = 0;
-    use_rs[1] = 0;
+    use_rs[0] = 0; // rs1
+    use_rs[1] = 0; // rs2
+    use_rs[2] = 0; // rs3 == rd
 
     case(instr.opcode)
         // Load upper imm
@@ -138,8 +139,6 @@ always_comb begin
             decoded_instr.invalid = 1;
         end
     endcase
-
-    // Todo make register use check with automatic with code
 
     if (instr.rd == 0) decoded_instr.register_wb = 0;
 end
