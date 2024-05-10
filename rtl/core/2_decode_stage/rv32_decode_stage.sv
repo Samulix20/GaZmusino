@@ -13,9 +13,8 @@ import rv32_types::*;
     output logic stall,
     // Memory I
     input rv_instr_t instr,
-    // Register file read I/O
-    output rv_reg_id_t rs1, rs2,
-    input rv32_word reg1, reg2,
+    // Register file data input
+    input rv32_word reg_data[3],
     // Hazzard detection I/O
     input exec_mem_buffer_t exec_mem_buff
 );
@@ -57,10 +56,8 @@ always_comb begin
     internal_data.instr = internal_instr;
 
     // Register file data
-    rs1 = instr.rs1;
-    rs2 = instr.rs2;
-    internal_data.reg1 = reg1;
-    internal_data.reg2 = reg2;
+    internal_data.reg1 = reg_data[0];
+    internal_data.reg2 = reg_data[1];
 
     // Default decode
     internal_data.decoded_instr = decoder_output;

@@ -8,7 +8,7 @@ import rv32_types::*;
     // Instructions memory port
     output memory_request_t instr_request,
     input logic instr_request_done,
-    input rv32_word instr,
+    input rv_instr_t instr,
     // Data memory port
     output memory_request_t data_request,
     input logic data_request_done,
@@ -52,16 +52,21 @@ always_ff @(posedge clk) begin
 end
 
 // Register file
-rv_reg_id_t dec_rs1, dec_rs2, wb_rd;
-rv32_word dec_reg1, dec_reg2;
+rv_reg_id_t rs[3];
+rv32_word reg_data[3];
+always_comb begin
+    rs[0] = instr.rs1;
+    rs[1] = instr.rs2;
+    rs[2] = instr.rd;
+end
+rv_reg_id_t wb_rd;
 rv32_word wb_data /*verilator public*/;
 logic wb_we;
 rv32_register_file rf(
-    .clk(clk), .resetn(resetn),
-    // Decode interface
-    .r1(dec_rs1), .o1(dec_reg1),
-    .r2(dec_rs2), .o2(dec_reg2),
-    // Writeback interface
+    .clk(clk),
+    // Decode (read) interface
+    .rs(rs), .o(reg_data),
+    // Writeback (write) interface
     .write(wb_we), .d(wb_data), .rw(wb_rd)
 );
 
@@ -97,9 +102,8 @@ rv32_decode_stage decode_stage(
     // Jump signals
     .set_nop(jump_set_nop),
     .set_nop_pc(jump_nop_pc),
-    // Register file read I/O
-    .rs1(dec_rs1), .rs2(dec_rs2),
-    .reg1(dec_reg1), .reg2(dec_reg2),
+    // Register file read
+    .reg_data(reg_data),
     // Hazzard detection
     .exec_mem_buff(exec_mem_buff)
 );
