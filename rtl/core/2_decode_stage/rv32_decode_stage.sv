@@ -58,13 +58,15 @@ always_comb begin
     // Register file data
     internal_data.reg1 = reg_data[0];
     internal_data.reg2 = reg_data[1];
+    internal_data.reg3 = reg_data[2];
 
     // Default decode
     internal_data.decoded_instr = decoder_output;
 
     // Hazard detection
-    internal_data.decoded_instr.bypass_rs1 = bypass_rs[0];
-    internal_data.decoded_instr.bypass_rs2 = bypass_rs[1];
+    internal_data.decoded_instr.bypass_rs[0] = bypass_rs[0];
+    internal_data.decoded_instr.bypass_rs[1] = bypass_rs[1];
+    internal_data.decoded_instr.bypass_rs[2] = bypass_rs[2];
     stall = hazzard_stall;
 end
 

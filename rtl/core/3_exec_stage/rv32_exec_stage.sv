@@ -16,46 +16,30 @@ import rv32_types::*;
     input rv32_word wb_bypass
 );
 
-// TODO Setup as a loop
-function automatic rv32_word alu_input_sel(
-    input logic input_sel,
-    input rv32_word imm,
-    input rv32_word exec_pc,
-    input rv32_word reg1,
-    input rv32_word reg2,
-    input decode_exec_buffer_t db
-);
-    int_alu_input_t opsel;
-    rv32_word out;
-
-    if (input_sel == 0) opsel = db.decoded_instr.int_alu_i1;
-    else opsel = db.decoded_instr.int_alu_i2;
-
-    case (opsel)
-        ALU_IN_REG_1: out = reg1;
-        ALU_IN_REG_2: out = reg2;
-        ALU_IN_PC: out = exec_pc;
-        ALU_IN_IMM: out = imm;
-        default: out = 0;
-    endcase
-    return out;
-endfunction
-
 exec_mem_buffer_t internal_data /*verilator public*/;
 exec_mem_buffer_t output_internal_data;
 
-rv32_word reg1, reg2;
+// Operand bypass
+rv32_word reg_data[3];
 always_comb begin
-    case (decode_exec_buff.decoded_instr.bypass_rs1)
-        BYPASS_EXEC_BUFF: reg1 = exec_mem_buff.wb_result;
-        BYPASS_MEM_BUFF: reg1 = wb_bypass;
-        default: reg1 = decode_exec_buff.reg1;
-    endcase
-    case (decode_exec_buff.decoded_instr.bypass_rs2)
-        BYPASS_EXEC_BUFF: reg2 = exec_mem_buff.wb_result;
-        BYPASS_MEM_BUFF: reg2 = wb_bypass;
-        default: reg2 = decode_exec_buff.reg2;
-    endcase
+    for(int idx = 0; idx < 3; idx = idx + 1) begin
+        rv32_word aux_reg;
+        if (idx == 0) begin
+            aux_reg = decode_exec_buff.reg1;
+        end
+        else if (idx == 1) begin
+            aux_reg = decode_exec_buff.reg2;
+        end
+        else if (idx == 2) begin
+            aux_reg = decode_exec_buff.reg3;
+        end
+
+        case (decode_exec_buff.decoded_instr.bypass_rs[idx])
+            BYPASS_EXEC_BUFF: reg_data[idx] = exec_mem_buff.wb_result;
+            BYPASS_MEM_BUFF: reg_data[idx] = wb_bypass;
+            default: reg_data[idx] = aux_reg;
+        endcase
+    end
 end
 
 // Immediate creation logic
@@ -66,24 +50,30 @@ rv32_immediate_gen immediate_gen(
     .immediate(immediate)
 );
 
-rv32_word alu_op1, alu_op2;
+rv32_word alu_op[2];
 always_comb begin
-    // Alu inputs setup
-    alu_op1 = alu_input_sel(0, immediate, decode_exec_buff.pc, reg1, reg2, decode_exec_buff);
-    alu_op2 = alu_input_sel(1, immediate, decode_exec_buff.pc, reg1, reg2, decode_exec_buff);
+    for(int idx = 0; idx < 2; idx = idx + 1) begin
+        case (decode_exec_buff.decoded_instr.int_alu_input[idx])
+            ALU_IN_REG_1: alu_op[idx] = reg_data[0];
+            ALU_IN_REG_2: alu_op[idx] = reg_data[1];
+            ALU_IN_PC: alu_op[idx] = decode_exec_buff.pc;
+            ALU_IN_IMM: alu_op[idx] = immediate;
+            default: alu_op[idx] = 0;
+        endcase
+    end
 end
 
 // Int ALU
 rv32_word int_alu_result;
 rv32_int_alu int_alu (
-    .op1(alu_op1), .op2(alu_op2),
+    .op1(alu_op[0]), .op2(alu_op[1]),
     .opsel(decode_exec_buff.decoded_instr.int_alu_op),
     .result(int_alu_result)
 );
 
 // Branch unit
 rv32_branch_unit branch_unit (
-    .op1(reg1), .op2(reg2),
+    .op1(reg_data[0]), .op2(reg_data[1]),
     .branch_op(decode_exec_buff.decoded_instr.branch_op),
     .do_branch(do_jump)
 );
@@ -101,7 +91,7 @@ always_comb begin
     case(decode_exec_buff.decoded_instr.wb_result_src)
         WB_PC4: internal_data.wb_result = decode_exec_buff.pc + 4;
         WB_INT_ALU: internal_data.wb_result = int_alu_result;
-        WB_STORE: internal_data.wb_result = reg2;
+        WB_STORE: internal_data.wb_result = reg_data[1];
         default: internal_data.wb_result = 0;
     endcase
 end

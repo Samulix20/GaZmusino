@@ -2,6 +2,7 @@
 #define RV32_TRACE_STAGES
 
 #include "rv32_test_utils.h"
+#include "verilated.h"
 
 #include <cstdint>
 #include <unordered_map>
@@ -45,10 +46,10 @@ inline std::string bypass_str(Instruction instr, DecodedInstruction dec_instr) {
         std::string rs, b_op;
 
         if (i == 0) {
-            bypass = static_cast<RV32Types::bypass_t>(dec_instr.bypass_rs1);
+            bypass = static_cast<RV32Types::bypass_t>(dec_instr.bypass_rs[0]);
             rs = "rs1(x" + std::to_string(instr.rs1) + ")";
         } else {
-            bypass = static_cast<RV32Types::bypass_t>(dec_instr.bypass_rs2);
+            bypass = static_cast<RV32Types::bypass_t>(dec_instr.bypass_rs[1]);
             rs = "rs2(x" + std::to_string(instr.rs2) + ")";
         }
 
@@ -92,7 +93,7 @@ inline std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr
         {RV32Types::ALU_IN_IMM, "IMM"}
     };
     auto it = str_map.find(
-        static_cast<RV32Types::int_alu_input_t>(dec_instr.int_alu_i1));
+        static_cast<RV32Types::int_alu_input_t>(dec_instr.int_alu_input[0]));
     if (it != str_map.end()) op1 = it->second;
     else op1 = "???";
 
@@ -100,7 +101,7 @@ inline std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr
     else if(op1 == "R2") op1 = "rs2(x" + std::to_string(instr.rs2) + ")";
 
     it = str_map.find(
-        static_cast<RV32Types::int_alu_input_t>(dec_instr.int_alu_i2));
+        static_cast<RV32Types::int_alu_input_t>(dec_instr.int_alu_input[1]));
     if (it != str_map.end()) op2 = it->second;
     else op2 = " ???";
 

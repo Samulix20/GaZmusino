@@ -108,14 +108,12 @@ typedef struct packed {
     // Immediate generation
     instr_type_t t;
     // Bypass
-    bypass_t bypass_rs1;
-    bypass_t bypass_rs2;
+    bypass_t [2:0] bypass_rs;
     // Branch
     branch_op_t branch_op;
     // Alu
     int_alu_op_t int_alu_op;
-    int_alu_input_t int_alu_i1;
-    int_alu_input_t int_alu_i2;
+    int_alu_input_t [1:0] int_alu_input;
     // Memory
     mem_op_t mem_op;
     // Writeback source
@@ -129,12 +127,13 @@ function automatic decoded_instr_t create_nop_ctrl();
     decoded_instr_t instr;
     instr.invalid = 0;
     instr.t = INSTR_R_TYPE;
-    instr.bypass_rs1 = NO_BYPASS;
-    instr.bypass_rs2 = NO_BYPASS;
+    instr.bypass_rs[0] = NO_BYPASS;
+    instr.bypass_rs[1] = NO_BYPASS;
+    instr.bypass_rs[2] = NO_BYPASS;
     instr.branch_op = OP_NOP;
     instr.int_alu_op = ALU_OP_ADD;
-    instr.int_alu_i1 = ALU_IN_ZERO;
-    instr.int_alu_i2 = ALU_IN_ZERO;
+    instr.int_alu_input[0] = ALU_IN_ZERO;
+    instr.int_alu_input[1] = ALU_IN_ZERO;
     instr.mem_op = MEM_NOP;
     instr.wb_result_src = WB_INT_ALU;
     instr.register_wb = 0;
@@ -152,6 +151,7 @@ typedef struct packed {
     decoded_instr_t decoded_instr;
     rv32_word reg1;
     rv32_word reg2;
+    rv32_word reg3;
 } decode_exec_buffer_t /*verilator public*/;
 
 typedef struct packed {
