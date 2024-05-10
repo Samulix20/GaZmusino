@@ -19,7 +19,7 @@
 #include "Vrv32_top_rv32_exec_stage.h"
 #include "Vrv32_top_rv32_mem_stage.h"
 #include "Vrv32_top_rv32_main_memory.h"
-#include "Vrv32_top_bram__A12.h"
+#include "Vrv32_top_bram_2_port__N40000.h"
 #include "Vrv32_top_rv32_types.h"
 
 namespace rv32_test {

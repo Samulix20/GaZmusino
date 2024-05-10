@@ -27,15 +27,13 @@ always_comb begin
     else instr_read = 0;
 end
 
-parameter int ADDR_WIDTH = $clog2(NUM_WORDS);
-logic [ADDR_WIDTH - 1:0] addr_port_a, addr_port_b;
-
+logic [29:0] addr_port_a, addr_port_b;
 always_comb begin
-    addr_port_a = instr_request.addr[ADDR_WIDTH - 1 + 2:2];
-    addr_port_b = data_request.addr[ADDR_WIDTH - 1 + 2:2];
+    addr_port_a = instr_request.addr[31:2];
+    addr_port_b = data_request.addr[31:2];
 end
 
-bram #(.ADDR_WIDTH(ADDR_WIDTH)) b0(
+bram_2_port #(.NUM_BYTES(NUM_WORDS)) b0(
     .clk(clk), .resetn(resetn),
     .addr_a(addr_port_a), .addr_b(addr_port_b),
     .read_a(instr_read), .read_b(1),
@@ -43,7 +41,7 @@ bram #(.ADDR_WIDTH(ADDR_WIDTH)) b0(
     .data_a(instr[7:0]), .data_b(data[7:0])
 );
 
-bram #(.ADDR_WIDTH(ADDR_WIDTH)) b1(
+bram_2_port #(.NUM_BYTES(NUM_WORDS)) b1(
     .clk(clk), .resetn(resetn),
     .addr_a(addr_port_a), .addr_b(addr_port_b),
     .read_a(instr_read), .read_b(1),
@@ -51,7 +49,7 @@ bram #(.ADDR_WIDTH(ADDR_WIDTH)) b1(
     .data_a(instr[15:8]), .data_b(data[15:8])
 );
 
-bram #(.ADDR_WIDTH(ADDR_WIDTH)) b2(
+bram_2_port #(.NUM_BYTES(NUM_WORDS)) b2(
     .clk(clk), .resetn(resetn),
     .addr_a(addr_port_a), .addr_b(addr_port_b),
     .read_a(instr_read), .read_b(1),
@@ -59,7 +57,7 @@ bram #(.ADDR_WIDTH(ADDR_WIDTH)) b2(
     .data_a(instr[23:16]), .data_b(data[23:16])
 );
 
-bram #(.ADDR_WIDTH(ADDR_WIDTH)) b3(
+bram_2_port #(.NUM_BYTES(NUM_WORDS)) b3(
     .clk(clk), .resetn(resetn),
     .addr_a(addr_port_a), .addr_b(addr_port_b),
     .read_a(instr_read), .read_b(1),
