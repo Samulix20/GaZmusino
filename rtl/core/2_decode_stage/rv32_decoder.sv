@@ -106,6 +106,9 @@ always_comb begin
             decoded_instr.register_wb = 1;
             use_rs[0] = 1;
             use_rs[1] = 1;
+
+            // ONLY FOR TESTING PURPOSES TODO REMOVE
+            use_rs[2] = 1;
         end
 
         // Store
