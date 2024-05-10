@@ -52,8 +52,8 @@ always_ff @(posedge clk) begin
 end
 
 // Register file
-rv_reg_id_t rs[3];
-rv32_word reg_data[3];
+rv_reg_id_t [2:0] rs;
+rv32_word [2:0] reg_data;
 always_comb begin
     rs[0] = instr.rs1;
     rs[1] = instr.rs2;

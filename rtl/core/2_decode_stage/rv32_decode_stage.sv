@@ -14,7 +14,7 @@ import rv32_types::*;
     // Memory I
     input rv_instr_t instr,
     // Register file data input
-    input rv32_word reg_data[3],
+    input rv32_word [2:0] reg_data,
     // Hazzard detection I/O
     input exec_mem_buffer_t exec_mem_buff
 );
@@ -30,8 +30,8 @@ always_comb begin
     else internal_instr = instr;
 end
 
-logic use_rs[3] /*verilator public*/;
-bypass_t bypass_rs[3];
+logic use_rs [3] /*verilator public*/;
+bypass_t [2:0] bypass_rs;
 logic hazzard_stall;
 
 rv32_decoder decoder(
@@ -56,17 +56,13 @@ always_comb begin
     internal_data.instr = internal_instr;
 
     // Register file data
-    internal_data.reg1 = reg_data[0];
-    internal_data.reg2 = reg_data[1];
-    internal_data.reg3 = reg_data[2];
+    internal_data.reg_data = reg_data;
 
     // Default decode
     internal_data.decoded_instr = decoder_output;
 
     // Hazard detection
-    internal_data.decoded_instr.bypass_rs[0] = bypass_rs[0];
-    internal_data.decoded_instr.bypass_rs[1] = bypass_rs[1];
-    internal_data.decoded_instr.bypass_rs[2] = bypass_rs[2];
+    internal_data.decoded_instr.bypass_rs = bypass_rs;
     stall = hazzard_stall;
 end
 

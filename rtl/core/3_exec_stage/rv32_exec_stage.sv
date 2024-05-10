@@ -23,21 +23,10 @@ exec_mem_buffer_t output_internal_data;
 rv32_word reg_data[3];
 always_comb begin
     for(int idx = 0; idx < 3; idx = idx + 1) begin
-        rv32_word aux_reg;
-        if (idx == 0) begin
-            aux_reg = decode_exec_buff.reg1;
-        end
-        else if (idx == 1) begin
-            aux_reg = decode_exec_buff.reg2;
-        end
-        else if (idx == 2) begin
-            aux_reg = decode_exec_buff.reg3;
-        end
-
         case (decode_exec_buff.decoded_instr.bypass_rs[idx])
             BYPASS_EXEC_BUFF: reg_data[idx] = exec_mem_buff.wb_result;
             BYPASS_MEM_BUFF: reg_data[idx] = wb_bypass;
-            default: reg_data[idx] = aux_reg;
+            default: reg_data[idx] = decode_exec_buff.reg_data[idx];
         endcase
     end
 end

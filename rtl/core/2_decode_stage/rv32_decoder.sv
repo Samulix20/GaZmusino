@@ -6,7 +6,7 @@ import rv32_types::*;
     input rv_instr_t instr,
     output decoded_instr_t decoded_instr,
     // Register use for dependecy detection
-    output logic use_rs[3]
+    output logic use_rs [3]
 );
 
 always_comb begin

@@ -3,12 +3,12 @@
 module rv32_hazzard_detection_unit
 import rv32_types::*;
 (
-    input logic use_rs[3],
+    input logic use_rs [3],
     input rv_instr_t current_instr,
     input decode_exec_buffer_t decode_exec_buff,
     input exec_mem_buffer_t exec_mem_buff,
     output logic stall,
-    output bypass_t bypass_rs[3]
+    output bypass_t [2:0] bypass_rs
 );
 
 always_comb begin

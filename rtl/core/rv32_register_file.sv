@@ -7,8 +7,8 @@ import rv32_types::*;
 (
     input   logic clk,
     // Read ports
-    input   rv_reg_id_t rs[3],
-    output  rv32_word o[3],
+    input   rv_reg_id_t [2:0] rs,
+    output  rv32_word [2:0] o,
     // Write port
     input logic   write,
     input   rv_reg_id_t rw,
