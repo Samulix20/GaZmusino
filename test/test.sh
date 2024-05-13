@@ -5,7 +5,7 @@ NC='\e[0m'
 # ISA TEST SECTION
 
 cd isa_tests
-rv_tests=$(ls base/base.S rv32ui/*.S)
+rv_tests="$(ls base/base.S rv32ui/*.S) $(ls rv32um/*.S | grep -E mul)"
 cd ..
 
 i=1

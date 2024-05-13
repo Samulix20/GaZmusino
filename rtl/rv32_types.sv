@@ -50,6 +50,13 @@ typedef enum logic [3:0] {
     ALU_OP_SRA  = 4'b1101
 } int_alu_op_t /*verilator public*/;
 
+typedef enum logic [1:0] {
+    MUL_OP_MUL    = 2'b00,
+    MUL_OP_MULH   = 2'b01,
+    MUL_OP_MULHSU = 2'b10,
+    MUL_OP_MULHU  = 2'b11
+} mul_op_t /*verilator public*/;
+
 typedef enum logic [3:0] {
     OP_BEQ = 4'b0000,
     OP_BNE = 4'b0001,
@@ -78,11 +85,12 @@ typedef enum logic [2:0] {
     ALU_IN_IMM
 } int_alu_input_t /*verilator public*/;
 
-typedef enum logic [2:0] {
+typedef enum logic [3:0] {
     WB_PC4,
     WB_INT_ALU,
     WB_MEM_DATA,
-    WB_STORE
+    WB_STORE,
+    WB_MUL_UNIT
 } wb_result_t /*verilator public*/;
 
 typedef enum logic [3:0] {
@@ -114,6 +122,8 @@ typedef struct packed {
     // Alu
     int_alu_op_t int_alu_op;
     int_alu_input_t [1:0] int_alu_input;
+    // Mul
+    mul_op_t mul_op;
     // Memory
     mem_op_t mem_op;
     // Writeback source
@@ -134,6 +144,7 @@ function automatic decoded_instr_t create_nop_ctrl();
     instr.int_alu_op = ALU_OP_ADD;
     instr.int_alu_input[0] = ALU_IN_ZERO;
     instr.int_alu_input[1] = ALU_IN_ZERO;
+    instr.mul_op = MUL_OP_MUL;
     instr.mem_op = MEM_NOP;
     instr.wb_result_src = WB_INT_ALU;
     instr.register_wb = 0;

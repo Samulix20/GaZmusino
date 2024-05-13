@@ -70,6 +70,14 @@ always_comb begin
     jump_addr = int_alu_result;
 end
 
+// Mul unit
+rv32_word mul_unit_result;
+rv32_mul_unit mul_unit (
+    .op1(reg_data[0]), .op2(reg_data[1]),
+    .opsel(decode_exec_buff.decoded_instr.mul_op),
+    .result(mul_unit_result)
+);
+
 always_comb begin
     internal_data.instr = decode_exec_buff.instr;
     internal_data.pc = decode_exec_buff.pc;
@@ -81,6 +89,7 @@ always_comb begin
         WB_PC4: internal_data.wb_result = decode_exec_buff.pc + 4;
         WB_INT_ALU: internal_data.wb_result = int_alu_result;
         WB_STORE: internal_data.wb_result = reg_data[1];
+        WB_MUL_UNIT: internal_data.wb_result = mul_unit_result;
         default: internal_data.wb_result = 0;
     endcase
 end

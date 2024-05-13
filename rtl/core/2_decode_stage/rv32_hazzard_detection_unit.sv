@@ -19,7 +19,8 @@ always_comb begin
         bypass_rs[idx] = NO_BYPASS;
 
         if (idx == 0) rs = current_instr.rs1;
-        else rs = current_instr.rs2;
+        else if (idx == 1) rs = current_instr.rs2;
+        else rs = current_instr.rd;
 
         // Check first mem cause it will get overwritten if required
         // rs dependency with instr at mem

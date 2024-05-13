@@ -95,20 +95,27 @@ always_comb begin
             use_rs[0] = 1;
         end
 
-        // Integer register arithmetic
-        // ALU: R1, R2
-        // RD = ALU
+        // Integer register op register arithmetic
         OPCODE_INTEGER_REG: begin
+
             decoded_instr.t = INSTR_R_TYPE;
-            decoded_instr.int_alu_op = int_alu_op_t'({instr.funct7[5], instr.funct3});
-            decoded_instr.int_alu_input[0] = ALU_IN_REG_1;
-            decoded_instr.int_alu_input[1] = ALU_IN_REG_2;
             decoded_instr.register_wb = 1;
             use_rs[0] = 1;
             use_rs[1] = 1;
 
-            // ONLY FOR TESTING PURPOSES TODO REMOVE
-            use_rs[2] = 1;
+            case (instr.funct7)
+                7'b0000001: begin // Mul extension
+                    decoded_instr.mul_op = mul_op_t'(instr.funct3[1:0]);
+                    decoded_instr.wb_result_src = WB_MUL_UNIT;
+                end
+                default: begin // Base integer instructions
+                    decoded_instr.int_alu_op = int_alu_op_t'({instr.funct7[5], instr.funct3});
+                    decoded_instr.int_alu_input[0] = ALU_IN_REG_1;
+                    decoded_instr.int_alu_input[1] = ALU_IN_REG_2;
+                end
+            endcase
+
+
         end
 
         // Store
