@@ -152,7 +152,8 @@ always_comb begin
                     use_rs[1] = 1;
                 end
                 3'b001: begin
-                    decoded_instr.wb_result_src = WB_GRNG; 
+                    decoded_instr.wb_result_src = WB_GRNG;
+                    decoded_instr.grng_enable = 1; 
                     decoded_instr.register_wb = 1;
                 end
                 default: begin

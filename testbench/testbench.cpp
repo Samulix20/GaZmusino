@@ -15,7 +15,7 @@ int main(int argc, char** argv) {
     std::string rv_elf_executable = "";
     std::string rv_disassembly_file = "";
 
-    uint64_t max_sim_time = 10000, sim_time = 0;
+    uint64_t max_sim_time = 100000, sim_time = 0;
     bool print_trace = false;
 
     // Evaluate Verilator comand args

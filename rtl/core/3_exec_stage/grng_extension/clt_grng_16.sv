@@ -53,10 +53,12 @@ adder_tree_12_12 adder_tree(
     .result(__sample)
 );
 
+const logic [15:0] C6 = 6;
+
 always_comb begin
-    rv32_word aux;
-    aux = rv32_word'({1'b0, __sample});
-    sample = $signed(aux) - $signed(6);
+    //sample[15:0] = $signed(__sample) - $signed(C6);
+    sample[15:0] = __sample;
+    sample[31:16] = 0;
 end
 
 endmodule
