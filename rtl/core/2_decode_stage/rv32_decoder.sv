@@ -115,7 +115,6 @@ always_comb begin
                 end
             endcase
 
-
         end
 
         // Store
@@ -142,6 +141,24 @@ always_comb begin
             decoded_instr.wb_result_src = WB_MEM_DATA;
             decoded_instr.register_wb = 1;
             use_rs[0] = 1;
+        end
+
+        OPCODE_GRNG: begin
+            decoded_instr.t = INSTR_R_TYPE;
+
+            case (instr.funct3)
+                3'b000: begin // Set seed
+                    use_rs[0] = 1;
+                    use_rs[1] = 1;
+                end
+                3'b001: begin
+                    decoded_instr.wb_result_src = WB_GRNG; 
+                    decoded_instr.register_wb = 1;
+                end
+                default: begin
+                    decoded_instr.invalid = 1;
+                end
+            endcase
         end
 
         default: begin

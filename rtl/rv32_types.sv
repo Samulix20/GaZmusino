@@ -30,7 +30,8 @@ typedef enum logic [6:0] {
     OPCODE_INTEGER_IMM = 7'b0010011,
     OPCODE_INTEGER_REG = 7'b0110011,
     OPCODE_ZICSR = 7'b1110011,
-    OPCODE_BARRIER = 7'b0001111
+    OPCODE_BARRIER = 7'b0001111,
+    OPCODE_GRNG = 7'b0001011
 } valid_opcodes_t /*verilator public*/;
 
 // SLT set less than
@@ -85,12 +86,13 @@ typedef enum logic [2:0] {
     ALU_IN_IMM
 } int_alu_input_t /*verilator public*/;
 
-typedef enum logic [3:0] {
+typedef enum logic [2:0] {
     WB_PC4,
     WB_INT_ALU,
     WB_MEM_DATA,
     WB_STORE,
-    WB_MUL_UNIT
+    WB_MUL_UNIT,
+    WB_GRNG
 } wb_result_t /*verilator public*/;
 
 typedef enum logic [3:0] {
@@ -124,6 +126,8 @@ typedef struct packed {
     int_alu_input_t [1:0] int_alu_input;
     // Mul
     mul_op_t mul_op;
+    // GRNG advance
+    logic grng_enable;
     // Memory
     mem_op_t mem_op;
     // Writeback source
@@ -148,6 +152,7 @@ function automatic decoded_instr_t create_nop_ctrl();
     instr.mem_op = MEM_NOP;
     instr.wb_result_src = WB_INT_ALU;
     instr.register_wb = 0;
+    instr.grng_enable = 0;
     return instr;
 endfunction
 

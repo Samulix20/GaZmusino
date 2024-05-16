@@ -1,15 +1,15 @@
 module lfsr_151_144 (
-    input logic clk, advance, set,
+    input logic clk, enable, set,
     input logic[150:0] seed,
     output logic[150:0] current_state
 );
 
 always_ff @(posedge clk) begin
     if (set) begin
-        current_state = seed;
+        current_state <= seed;
     end
-    else if (advance) begin
-        current_state = next_state;
+    else if (enable) begin
+        current_state <= next_state;
     end
 end
 

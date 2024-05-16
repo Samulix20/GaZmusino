@@ -39,6 +39,7 @@ rv32_immediate_gen immediate_gen(
     .immediate(immediate)
 );
 
+// ALU Xbar
 rv32_word alu_op[2];
 always_comb begin
     for(int idx = 0; idx < 2; idx = idx + 1) begin
@@ -78,6 +79,15 @@ rv32_mul_unit mul_unit (
     .result(mul_unit_result)
 );
 
+// GRNG unit
+rv32_word grng_result;
+clt_grng_16 grng (
+    .clk(clk), .resetn(resetn), 
+    .enable(decode_exec_buff.decoded_instr.grng_enable),
+    .seed(0), .sample(grng_result)
+);
+
+
 always_comb begin
     internal_data.instr = decode_exec_buff.instr;
     internal_data.pc = decode_exec_buff.pc;
@@ -90,6 +100,7 @@ always_comb begin
         WB_INT_ALU: internal_data.wb_result = int_alu_result;
         WB_STORE: internal_data.wb_result = reg_data[1];
         WB_MUL_UNIT: internal_data.wb_result = mul_unit_result;
+        WB_GRNG: internal_data.wb_result = grng_result;
         default: internal_data.wb_result = 0;
     endcase
 end
