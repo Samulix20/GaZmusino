@@ -1,10 +1,9 @@
 # Makefile for compilation of C/C++ programs for RISC-V platform
 SRCS ?= 
 BUILD_DIR ?= build
-TARGET_NAME ?= main
 CPP_TARGET ?= 0
-BSP_SRC_DIR ?= bsp
-BSP_BUILD_DIR ?= build/bsp
+BSP_DIR ?= bsp
+BSP_BUILD_DIR ?= $(BUILD_DIR)/bsp
 
 # C Compiler definitions
 CROSS := riscv32-unknown-elf-
@@ -34,7 +33,7 @@ CFLAGS := \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S \
 	-Wall -O3 -march=rv32g -mabi=ilp32 -mno-div \
 	-fopt-info-optimized=$(BUILD_DIR)/comp_report.txt \
-	-I $(BSP_SRC_DIR)/include \
+	-I $(BSP_DIR)/include \
 	-ffreestanding -nostartfiles -T $(BSP_BUILD_DIR)/linker.lds \
 	$(C_EXTRA_FLAGS)
 

@@ -1,0 +1,8 @@
+# $1 must be a src directory file
+
+srcs="$(find $1 -name '*.c') $(find $1 -name '*.S')"
+
+bash bsp/compiler.sh -b build/sim $srcs
+
+make -s
+./obj_dir/Vrv32_top -e build/sim/main.elf

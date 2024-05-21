@@ -1,12 +1,16 @@
+#include <stdlib.h>
 
-#include "riscv/types.h"
-#include <riscv/print.h>
+#include <riscv/types.h>
 #include <riscv/custom.h>
 
+#include "test_vector.h"
+
 int main() {
-    for (int i = 0; i < 10; i++) {
-        int32 aux = gen_num();
-        printf("aux = %i\n", aux);
+    for (int i = 0; i < TEST_SIZE; i++) {
+        int32 sample = gen_num();
+        if(TEST_VECTOR[i] != sample) {
+            exit(1);
+        }
     }
     return 0;
 }

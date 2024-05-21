@@ -31,5 +31,4 @@ cd $CALL_PWD
 make -s -f $SCRIPT_PWD/c.mk\
     SRCS="$(echo $@)"\
     BUILD_DIR=$BUILD_DIR\
-    BSP_SRC_DIR=$SCRIPT_PWD\
-    BSP_BUILD_DIR=$BUILD_DIR/bsp 2>/dev/null
+    BSP_DIR=$SCRIPT_PWD 2>/dev/null

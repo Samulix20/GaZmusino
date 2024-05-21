@@ -51,7 +51,7 @@ fi
 
 make -s -C ../bsp -f bsp.mk BUILD_DIR=../build/bsp
 
-rv_tests=$(ls c_tests | grep -E hello)
+rv_tests=$(ls c_tests)
 num_tests=$(echo "$rv_tests" | wc -l)
 
 i=1
