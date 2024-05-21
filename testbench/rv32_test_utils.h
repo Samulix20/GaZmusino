@@ -171,7 +171,7 @@ inline void set_banked_memory(Vrv32_top* rvtop, const rv32_elf_program& elf_prog
 }
 
 // Bsp defines config
-#include "../bsp/riscv/config.h"
+#include "../bsp/include/riscv/config.h"
 
 inline void handle_mmio_request(Vrv32_top* rvtop) {
     MemoryRequest request = get_memory_request(rvtop);

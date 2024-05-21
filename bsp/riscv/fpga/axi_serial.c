@@ -1,4 +1,4 @@
-#include "axi_serial.h"
+#include <riscv/fpga/axi_serial.h>
 
 void axi_serial_init() {
     AXI_SERIAL_REG = 0;

@@ -1,6 +1,7 @@
-#include "fixed.h"
-#include "limits.h"
-#include "riscv/types.h"
+#include <riscv/fixed.h>
+#include <riscv/types.h>
+
+#include <limits.h>
 
 int32 log2fix(int32 x, const uint8 scale) {
 

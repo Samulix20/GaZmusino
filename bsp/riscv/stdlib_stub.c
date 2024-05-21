@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
-#include "print.h"
+#include <riscv/config.h>
 
 // Stubs for C stdlib syscalls
 // Most of this functions do nothing
@@ -68,8 +68,17 @@ int _lseek(int file, int ptr, int dir) {
 }
 
 int _write(int fd, const void* buf, size_t count) {
-    (void) fd;
-    (void) buf;
-    (void) count;
-    return 0;
+
+    size_t bytes_written = 0;
+
+    // stdout and stderr
+    if (fd == 1 || fd == 2) {
+        char* char_buf = (char*) buf;
+        for(int i = 0; i < count; i++) {
+            PRINT_REG = char_buf[i];
+            bytes_written++;
+        }
+    } 
+
+    return bytes_written;
 }

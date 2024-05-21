@@ -1,6 +1,5 @@
-#include "mtimer.h"
-#include "csr.h"
-#include "print.h"
+#include <riscv/mtimer.h>
+#include <riscv/csr.h>
 
 static uint64 period;
 

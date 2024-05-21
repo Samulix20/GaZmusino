@@ -1,6 +1,6 @@
 RUN_PARAMS ?=
 
-VERILATOR_ROOT := /home/samuelpp/opt/verilator
+VERILATOR_ROOT := /home/samupp/Repos/verilator
 VV := ${VERILATOR_ROOT}/bin/verilator
 TOP_MODULE := rv32_top
 TOP_MODULE_SRC := rtl/${TOP_MODULE}.sv

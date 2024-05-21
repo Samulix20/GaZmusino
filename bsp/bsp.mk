@@ -13,14 +13,14 @@ CFLAGS := \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S\
 	-Wall -O3\
 	-march=rv32g -mabi=ilp32 -mno-div\
-	-I .\
+	-I ./include\
 	-ffreestanding -nostartfiles
 
 bsp: $(OBJS) $(BUILD_DIR)/linker.lds
 
 $(BUILD_DIR)/linker.lds:
 	@mkdir -p $(@D)
-	@$(CC) -E -P -x c -I . linker.lds.in > $(BUILD_DIR)/linker.lds
+	@$(CC) -E -P -x c -I ./include linker.lds.in > $(BUILD_DIR)/linker.lds
 
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(@D)

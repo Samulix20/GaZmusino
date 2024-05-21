@@ -15,7 +15,7 @@ CFLAGS := \
 	-Wall\
 	-march=rv32g -mabi=ilp32 -mno-div\
 	-fopt-info-optimized=comp_report.txt\
-	-I macros -I $(BSP_DIR)\
+	-I macros -I $(BSP_DIR)/include\
 	-ffreestanding -nostartfiles -T linker.lds
 
 all: $(TEST_BUILD).dump $(TEST_BUILD)_asm.csv

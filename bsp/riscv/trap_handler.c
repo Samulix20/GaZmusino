@@ -1,7 +1,7 @@
-#include "print.h"
-#include "csr.h"
-#include "mtimer.h"
+#include <riscv/csr.h>
+#include <riscv/mtimer.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 
 void _trap_handler() {
@@ -12,9 +12,9 @@ void _trap_handler() {
             _mtimer_irq();
             break;
         default:
-            rv_printf("Unexpected mcause found: 0x%x\n", mcause);
-            rv_printf("MEPC: 0x%x\n", read_mepc());
-            rv_printf("MSCRATCH: 0x%x\n", read_mscratch());
+            printf("Unexpected mcause found: 0x%08lx\n", mcause);
+            printf("MEPC: 0x%08lx\n", read_mepc());
+            printf("MSCRATCH: 0x%08lx\n", read_mscratch());
             exit(mcause);
     }
 }

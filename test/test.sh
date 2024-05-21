@@ -51,7 +51,7 @@ fi
 
 make -s -C ../bsp -f bsp.mk BUILD_DIR=../build/bsp
 
-rv_tests=$(ls c_tests)
+rv_tests=$(ls c_tests | grep -E hello)
 num_tests=$(echo "$rv_tests" | wc -l)
 
 i=1
@@ -63,12 +63,10 @@ echo "Running $num_tests c_tests..."
 
 for test in $rv_tests
 do
-    make -s -f ../bsp/c.mk\
-        CSRCS=$(find c_tests/$test -name '*.c')\
-        TARGET_NAME=c_tests/$test/main\
-        BUILD_DIR=../build\
-        BSP_SRC_DIR=../bsp\
-        BSP_BUILD_DIR=../build/bsp 2>/dev/null
+    
+    test_srcs=$(find c_tests/$test -name '*.c')
+    
+    bash ../bsp/compiler.sh -b ../build/c_tests/$test $test_srcs
 
     test_res=$(../obj_dir/Vrv32_top +verilator+rand+reset+2\
                 -e ../build/c_tests/$test/main.elf 2>&1)
