@@ -128,6 +128,8 @@ typedef struct packed {
     mul_op_t mul_op;
     // GRNG advance
     logic grng_enable;
+    // GRNG set seed
+    logic grng_seed;
     // Memory
     mem_op_t mem_op;
     // Writeback source
@@ -153,6 +155,7 @@ function automatic decoded_instr_t create_nop_ctrl();
     instr.wb_result_src = WB_INT_ALU;
     instr.register_wb = 0;
     instr.grng_enable = 0;
+    instr.grng_seed = 0;
     return instr;
 endfunction
 

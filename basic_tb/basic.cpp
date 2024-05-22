@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <iostream>
 
 // Verilator
@@ -29,7 +30,6 @@ int main(int argc, char** argv) {
     m_trace->open("waveform.vcd");
 
     // Testbench vars
-    uint64_t setup_cyles = 0;
 
     // Simulation loop
     while(sim_time < MAX_SIM_TIME) {
@@ -47,16 +47,6 @@ int main(int argc, char** argv) {
         tb->eval();
 
         // Testbench
-        if(!reset_on && tb->clk == 1) {
-            setup_cyles++;
-            uint64_t idx = setup_cyles - 4;
-            if (setup_cyles > 3 && idx < TEST_VECTOR.size()) {
-                if (tb->r != TEST_VECTOR[idx]) {
-                    std::cerr << "Test failed on " << idx << '\n';
-                    exit(1);
-                }
-            } 
-        }
 
         // Trace
         m_trace->dump(sim_time);

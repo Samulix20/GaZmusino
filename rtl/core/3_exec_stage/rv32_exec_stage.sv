@@ -84,7 +84,8 @@ rv32_word grng_result;
 clt_grng_16 grng (
     .clk(clk), .resetn(resetn), 
     .enable(decode_exec_buff.decoded_instr.grng_enable),
-    .seed(0), .sample(grng_result)
+    .set_seed(decode_exec_buff.decoded_instr.grng_seed), .seed(reg_data[0]),
+    .sample(grng_result)
 );
 
 

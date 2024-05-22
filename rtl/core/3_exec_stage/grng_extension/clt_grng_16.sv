@@ -2,7 +2,7 @@
 
 module clt_grng_16 
 (
-    input logic clk, resetn, enable,
+    input logic clk, resetn, enable, set_seed,
     input logic[31:0] seed,
     output logic[31:0] sample
 );
@@ -12,16 +12,26 @@ const logic [150:0] RESET_SEED = 151'b011100110010010011001110110100011110100000
 // Control logic
 logic [2:0] current_state, next_state;
 logic uc_enable, uc_set, state_change;
+logic [150:0] uc_seed;
+
 always_comb begin 
     uc_set = 0;
     uc_enable = 0;
     state_change = 0;
+    uc_seed = RESET_SEED;
     next_state = current_state;
 
     if (!resetn) begin 
         state_change = 1;
         next_state = 4;
         uc_set = 1;
+    end
+    else if (set_seed) begin
+        state_change = 1;
+        next_state = 4;
+        uc_set = 1;
+        uc_seed[150:32] = RESET_SEED[150:32];
+        uc_seed[31:0] = seed;
     end
     else if (current_state > 0) begin
         state_change = 1;
@@ -41,7 +51,7 @@ end
 logic [150:0] urng_state;
 lfsr_151_144 urng(
     .clk(clk), .enable(uc_enable),
-    .set(uc_set), .seed(RESET_SEED),
+    .set(uc_set), .seed(uc_seed),
     .current_state(urng_state)
 );
 

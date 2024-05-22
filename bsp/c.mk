@@ -1,7 +1,6 @@
 # Makefile for compilation of C/C++ programs for RISC-V platform
 SRCS ?= 
 BUILD_DIR ?= build
-CPP_TARGET ?= 0
 BSP_DIR ?= bsp
 BSP_BUILD_DIR ?= $(BUILD_DIR)/bsp
 
@@ -10,12 +9,6 @@ CROSS := riscv32-unknown-elf-
 CC := $(CROSS)gcc
 CPPC := $(CROSS)g++
 DUMP := $(CROSS)objdump
-
-ifeq ($(CPP_TARGET), 1)
-LINKER := $(CPPC)
-else
-LINKER := $(CC)
-endif
 
 # BSP must be compiled before
 BSP_OBJS := $(shell find $(BSP_BUILD_DIR) -name '*.o')
@@ -28,6 +21,13 @@ OBJS := \
 	$(CSRCS:%.c=$(BUILD_DIR)/%.o) \
 	$(ASRCS:%.S=$(BUILD_DIR)/%.o)
 
+# If cpp sources present, target is cpp
+ifeq ($(CPPSRCS),)
+LINKER := $(CC)
+else
+LINKER := $(CPPC)
+endif
+
 # Compiler flags
 CFLAGS := \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S \
@@ -39,20 +39,21 @@ CFLAGS := \
 
 $(BUILD_DIR)/main.dump: $(BUILD_DIR)/main.elf
 	@mkdir -p $(@D)
-	@$(DUMP) -D $< > $(BUILD_DIR)/main.dump
+	$(DUMP) -D $< > $(BUILD_DIR)/main.dump
 
 $(BUILD_DIR)/main.elf: $(OBJS) $(BSP_OBJS)
 	@mkdir -p $(@D)
-	@$(LINKER) $(CFLAGS) $^ -o $@
+	echo $(SRCS)
+	$(LINKER) $(CFLAGS) $^ -o $@
 
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(@D)
-	@$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(@D)
-	@$(CPPC) $(CFLAGS) -c $< -o $@
+	$(CPPC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: %.S
 	@mkdir -p $(@D)
-	@$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@

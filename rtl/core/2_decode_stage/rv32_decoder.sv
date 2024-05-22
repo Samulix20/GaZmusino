@@ -148,8 +148,8 @@ always_comb begin
 
             case (instr.funct3)
                 3'b000: begin // Set seed
+                    decoded_instr.grng_seed = 1;
                     use_rs[0] = 1;
-                    use_rs[1] = 1;
                 end
                 3'b001: begin
                     decoded_instr.wb_result_src = WB_GRNG;

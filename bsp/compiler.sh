@@ -3,7 +3,7 @@ CALL_PWD=$(pwd)
 SCRIPT_PWD=$(realpath $(dirname $0))
 BUILD_DIR=$CALL_PWD/build
 
-while getopts ":b:" opt; do
+while getopts ":b:p" opt; do
   case ${opt} in
     b)
         BUILD_DIR=$CALL_PWD/$OPTARG
