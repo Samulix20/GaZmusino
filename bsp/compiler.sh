@@ -3,7 +3,7 @@ CALL_PWD=$(pwd)
 SCRIPT_PWD=$(realpath $(dirname $0))
 BUILD_DIR=$CALL_PWD/build
 
-while getopts ":b:p" opt; do
+while getopts ":b:" opt; do
   case ${opt} in
     b)
         BUILD_DIR=$CALL_PWD/$OPTARG
@@ -19,16 +19,17 @@ while getopts ":b:p" opt; do
   esac
 done
 
+
 shift "$((OPTIND-1))"
 
 # Build bsp
 cd $SCRIPT_PWD
-make -s -f bsp.mk \
-    BUILD_DIR=$BUILD_DIR/bsp
+make -s -f bsp.mk BUILD_DIR=$BUILD_DIR/bsp
 
 # Build elf
 cd $CALL_PWD
-make -s -f $SCRIPT_PWD/c.mk\
+make -s -f $SCRIPT_PWD/Makefile\
     SRCS="$(echo $@)"\
     BUILD_DIR=$BUILD_DIR\
-    BSP_DIR=$SCRIPT_PWD 2>/dev/null
+    BSP_DIR=$SCRIPT_PWD
+

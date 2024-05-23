@@ -40,5 +40,7 @@ int32 log2fix(int32 x, const uint8 scale) {
 const int32 log2e_f28 = 387270501;
 
 int32 logfix(int32 x, const uint8 scale) {
+    (void) x;
+    (void) scale;
     return 0;
 }

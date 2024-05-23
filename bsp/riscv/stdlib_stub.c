@@ -1,23 +1,24 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
+#include <errno.h>
+#undef errno
+extern int errno;
+
 #include <riscv/config.h>
 
 // Stubs for C stdlib syscalls
 // Most of this functions do nothing
 
-void exit(int status) {
+void _exit(int status) {
     EXIT_STATUS_REG = status;
     while(1) {}
 }
 
-void _exit() {
-    exit(-1);
-}
-
 unsigned _sbrk(int inc) {
     (void) inc;
-    return 0;
+    errno = ENOMEM;
+    return -1;
 }
 
 int _kill(int pid, int sig) {
@@ -74,7 +75,7 @@ int _write(int fd, const void* buf, size_t count) {
     // stdout and stderr
     if (fd == 1 || fd == 2) {
         char* char_buf = (char*) buf;
-        for(int i = 0; i < count; i++) {
+        for(size_t i = 0; i < count; i++) {
             PRINT_REG = char_buf[i];
             bytes_written++;
         }

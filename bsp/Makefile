@@ -2,13 +2,27 @@
 SRCS ?= 
 BUILD_DIR ?= build
 BSP_DIR ?= bsp
-BSP_BUILD_DIR ?= $(BUILD_DIR)/bsp
+
+# Setup BSP build subdir
+BSP_BUILD_DIR := $(BUILD_DIR)/bsp
 
 # C Compiler definitions
 CROSS := riscv32-unknown-elf-
 CC := $(CROSS)gcc
-CPPC := $(CROSS)g++
+CXX := $(CROSS)g++
 DUMP := $(CROSS)objdump
+
+# Compiler flags
+CFLAGS := \
+	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S \
+	-Wall -O3 \
+	-march=rv32g -mabi=ilp32 -mno-div \
+	-ffreestanding \
+	-fopt-info-optimized=$(BUILD_DIR)/comp_report.txt \
+	-I $(BSP_DIR)/include \
+	-T $(BSP_BUILD_DIR)/linker.lds
+
+CXXFLAGS := $(CFLAGS) -fno-exceptions -fno-unwind-tables -fno-rtti
 
 # BSP must be compiled before
 BSP_OBJS := $(shell find $(BSP_BUILD_DIR) -name '*.o')
@@ -23,19 +37,10 @@ OBJS := \
 
 # If cpp sources present, target is cpp
 ifeq ($(CPPSRCS),)
-LINKER := $(CC)
+LINKER := $(CC) $(CFLAGS)
 else
-LINKER := $(CPPC)
+LINKER := $(CXX) $(CXXFLAGS)
 endif
-
-# Compiler flags
-CFLAGS := \
-	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S \
-	-Wall -O3 -march=rv32g -mabi=ilp32 -mno-div \
-	-fopt-info-optimized=$(BUILD_DIR)/comp_report.txt \
-	-I $(BSP_DIR)/include \
-	-ffreestanding -nostartfiles -T $(BSP_BUILD_DIR)/linker.lds \
-	$(C_EXTRA_FLAGS)
 
 $(BUILD_DIR)/main.dump: $(BUILD_DIR)/main.elf
 	@mkdir -p $(@D)
@@ -43,8 +48,7 @@ $(BUILD_DIR)/main.dump: $(BUILD_DIR)/main.elf
 
 $(BUILD_DIR)/main.elf: $(OBJS) $(BSP_OBJS)
 	@mkdir -p $(@D)
-	echo $(SRCS)
-	$(LINKER) $(CFLAGS) $^ -o $@
+	$(LINKER) $^ -o $@
 
 $(BUILD_DIR)/%.o: %.c
 	@mkdir -p $(@D)
@@ -52,7 +56,7 @@ $(BUILD_DIR)/%.o: %.c
 
 $(BUILD_DIR)/%.o: %.cpp
 	@mkdir -p $(@D)
-	$(CPPC) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/%.o: %.S
 	@mkdir -p $(@D)

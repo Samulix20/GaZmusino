@@ -1,24 +1,15 @@
 
 .section .init
-.globl _start
+.globl __rv_init
 
-_start:
+__rv_init:
     # Set trap handler
     la      x1, __trap_handler
     csrw    mtvec, x1
-    # Init global pointer
-    .option push
-	.option norelax
-	la      gp, _gp
-	.option pop
     # Set stack pointer
     la      sp, _stack_top
-    # Init bss sections to 0
-    jal     bss_init
-    # Jump to main function
-    jal     main
-    # Call exit with return from main
-    jal     exit
+    # Call libc startup
+    j       _start
 
 __trap_handler:
     # Context save
