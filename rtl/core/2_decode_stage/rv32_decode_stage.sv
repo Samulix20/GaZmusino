@@ -21,6 +21,8 @@ import rv32_types::*;
     input rv_instr_t instr,
     // Register file data input
     input rv32_word [2:0] reg_data,
+    // CSR file data input
+    input rv32_word csr_data,
     // Hazzard detection I/O
     input exec_mem_buffer_t exec_mem_buff
 );
@@ -49,6 +51,7 @@ rv32_decoder decoder(
 rv32_hazzard_detection_unit hazzard_detection(
     .use_rs(use_rs),
     .current_instr(internal_instr),
+    .current_decoded_instr(decoder_output),
     .decode_exec_buff(decode_exec_buff),
     .exec_mem_buff(exec_mem_buff),
     .stall(hazzard_stall),
@@ -70,8 +73,14 @@ always_comb begin
     // Hazard detection
     internal_data.decoded_instr.bypass_rs = bypass_rs;
     stall = hazzard_stall;
+
+    // If CSR instruction advance read csr
+    if (internal_data.decoded_instr.wb_result_src == WB_CSR) begin
+        internal_data.reg_data[2] = csr_data;
+    end
 end
 
+// Final stall control and register write
 always_comb begin
     output_internal_data = internal_data;
 

@@ -77,11 +77,17 @@ rv32_register_file rf(
 );
 
 // CSR
-rv32_word _csr_dump_value;
+rv32_word csr_read_data;
+rv_csr_id_t csr_read_id;
+csr_write_request_t csr_write_request;
+always_comb begin 
+    csr_read_id = instr[31:20];
+end
 rv32_csr csr_file(
     .clk(clk), .resetn(resetn),
-    .id(0), .instr_retired(0),
-    .value(_csr_dump_value)
+    .read_id(csr_read_id), .read_value(csr_read_data),
+    .write_request(csr_write_request),
+    .instr_retired(0)
 );
 
 // FETCH STAGE
@@ -118,6 +124,8 @@ rv32_decode_stage decode_stage(
     .set_nop_pc(jump_nop_pc),
     // Register file read
     .reg_data(reg_data),
+    // CSR file read
+    .csr_data(csr_read_data),
     // Hazzard detection
     .exec_mem_buff(exec_mem_buff)
 );
@@ -148,7 +156,9 @@ rv32_mem_stage mem_stage(
     .stall(mem_stall),
     // Data Memory I/O
     .data_request(data_request),
-    .request_done(data_request_done)
+    .request_done(data_request_done),
+    // CSR File O
+    .csr_write_request(csr_write_request)
 );
 
 // WRITEBACK STAGE

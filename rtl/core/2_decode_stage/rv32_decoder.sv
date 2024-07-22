@@ -117,7 +117,6 @@ always_comb begin
 
             case (instr.funct7)
                 7'b0000001: begin // Mul extension
-                    decoded_instr.mul_op = mul_op_t'(instr.funct3[1:0]);
                     decoded_instr.wb_result_src = WB_MUL_UNIT;
                 end
                 default: begin // Base integer instructions
@@ -152,6 +151,15 @@ always_comb begin
             decoded_instr.mem_op = mem_op_t'({1'b0, instr.funct3});
             decoded_instr.wb_result_src = WB_MEM_DATA;
             decoded_instr.register_wb = 1;
+            use_rs[0] = 1;
+        end
+
+        // Zicsr
+        // RD = CSR
+        OPCODE_ZICSR: begin
+            decoded_instr.register_wb = 1;
+            decoded_instr.csr_wb = 1;
+            decoded_instr.wb_result_src = WB_CSR;
             use_rs[0] = 1;
         end
 

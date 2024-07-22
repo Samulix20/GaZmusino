@@ -7,7 +7,8 @@ def disassembly(elf_file):
     r = subprocess.run(
         ["riscv32-unknown-elf-objdump", "-d", elf_file],
         check=False,
-        capture_output=True)
+        capture_output=True
+    )
 
     for l in r.stdout.splitlines():
         #  pc:  raw_instr  instr_str  <tag>  #comment

@@ -48,7 +48,27 @@ rv32_immediate_gen immediate_gen(
     .immediate(immediate)
 );
 
-// ALU Xbar
+// Zicsr functional unit
+zicsr_op_t zicsr_unit_op;
+rv32_word zicsr_operand_data, zicsr_reg_result, zicsr_csr_result;
+// Operand selection
+always_comb begin
+    zicsr_unit_op = zicsr_op_t'(decode_exec_buff.instr.funct3[1:0]);
+    // Register
+    if (decode_exec_buff.instr.funct3[2] == 0) zicsr_operand_data = reg_data[0];
+    // Special Immediate
+    else begin
+        zicsr_operand_data[4:0] = decode_exec_buff.instr.rs1;
+        zicsr_operand_data[31:5] = 0;
+    end
+end
+rv32_zicsr_unit zicsr_unit (
+    .csr(reg_data[2]), .operand(zicsr_operand_data),
+    .opsel(zicsr_unit_op),
+    .reg_result(zicsr_reg_result), .csr_result(zicsr_csr_result)
+);
+
+// Int ALU and Xbar
 rv32_word alu_op[2];
 always_comb begin
     for(int idx = 0; idx < 2; idx = idx + 1) begin
@@ -61,8 +81,6 @@ always_comb begin
         endcase
     end
 end
-
-// Int ALU
 rv32_word int_alu_result;
 rv32_int_alu int_alu (
     .op1(alu_op[0]), .op2(alu_op[1]),
@@ -81,10 +99,14 @@ always_comb begin
 end
 
 // Mul unit
+mul_op_t mul_unit_op;
 rv32_word mul_unit_result;
+always_comb begin 
+    mul_unit_op = mul_op_t'(decode_exec_buff.instr.funct3[1:0]);
+end
 rv32_mul_unit mul_unit (
     .op1(reg_data[0]), .op2(reg_data[1]),
-    .opsel(decode_exec_buff.decoded_instr.mul_op),
+    .opsel(mul_unit_op),
     .result(mul_unit_result)
 );
 
@@ -111,6 +133,10 @@ always_comb begin
         WB_STORE: internal_data.wb_result = reg_data[1];
         WB_MUL_UNIT: internal_data.wb_result = mul_unit_result;
         WB_GRNG: internal_data.wb_result = grng_result;
+        WB_CSR: begin 
+            internal_data.wb_result = zicsr_reg_result;
+            internal_data.mem_addr = zicsr_csr_result;
+        end
         default: internal_data.wb_result = 0;
     endcase
 end

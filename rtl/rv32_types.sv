@@ -7,6 +7,7 @@ typedef logic[31:0] rv32_word;
 typedef rv32_word [1:0] rv64_word;
 
 typedef logic [4:0] rv_reg_id_t;
+typedef logic [11:0] rv_csr_id_t;
 
 typedef logic [6:0] opcode_t;
 
@@ -38,6 +39,15 @@ typedef enum logic [6:0] {
     OPCODE_GRNG = 7'b0001011
 } valid_opcodes_t /*verilator public*/;
 
+typedef enum logic [2:0] {
+    INSTR_R_TYPE,
+    INSTR_I_TYPE,
+    INSTR_S_TYPE,
+    INSTR_B_TYPE,
+    INSTR_U_TYPE,
+    INSTR_J_TYPE
+} instr_type_t /*verilator public*/;
+
 // SLT set less than
 // SLL shift left logical
 // SRL shift right logical
@@ -55,12 +65,21 @@ typedef enum logic [3:0] {
     ALU_OP_SRA  = 4'b1101
 } int_alu_op_t /*verilator public*/;
 
+// Mul operations
 typedef enum logic [1:0] {
     MUL_OP_MUL    = 2'b00,
     MUL_OP_MULH   = 2'b01,
     MUL_OP_MULHSU = 2'b10,
     MUL_OP_MULHU  = 2'b11
 } mul_op_t /*verilator public*/;
+
+// Zicsr operations
+typedef enum logic [1:0] {
+    CSR_NOP = 2'b00,
+    CSR_RW = 2'b01,
+    CSR_RS = 2'b10,
+    CSR_RC = 2'b11
+} zicsr_op_t /*verilator public*/;
 
 typedef enum logic [3:0] {
     OP_BEQ = 4'b0000,
@@ -73,14 +92,17 @@ typedef enum logic [3:0] {
     OP_NOP = 4'b1111
 } branch_op_t /*verilator public*/;
 
-typedef enum logic [2:0] {
-    INSTR_R_TYPE,
-    INSTR_I_TYPE,
-    INSTR_S_TYPE,
-    INSTR_B_TYPE,
-    INSTR_U_TYPE,
-    INSTR_J_TYPE
-} instr_type_t /*verilator public*/;
+typedef enum logic [3:0] {
+    MEM_LB = 4'b0000,
+    MEM_LH = 4'b0001,
+    MEM_LW = 4'b0010,
+    MEM_LBU = 4'b0100,
+    MEM_LHU = 4'b0101,
+    MEM_SB = 4'b1000,
+    MEM_SH = 4'b1001,
+    MEM_SW = 4'b1010,
+    MEM_NOP = 4'b1111
+} mem_op_t /*verilator public*/;
 
 typedef enum logic [2:0] {
     ALU_IN_ZERO,
@@ -96,20 +118,9 @@ typedef enum logic [2:0] {
     WB_MEM_DATA,
     WB_STORE,
     WB_MUL_UNIT,
-    WB_GRNG
+    WB_GRNG,
+    WB_CSR
 } wb_result_t /*verilator public*/;
-
-typedef enum logic [3:0] {
-    MEM_LB = 4'b0000,
-    MEM_LH = 4'b0001,
-    MEM_LW = 4'b0010,
-    MEM_LBU = 4'b0100,
-    MEM_LHU = 4'b0101,
-    MEM_SB = 4'b1000,
-    MEM_SH = 4'b1001,
-    MEM_SW = 4'b1010,
-    MEM_NOP = 4'b1111
-} mem_op_t /*verilator public*/;
 
 typedef enum logic [2:0] {
     NO_BYPASS,
@@ -126,10 +137,10 @@ typedef struct packed {
     // Branch
     branch_op_t branch_op;
     // Alu
+    // TODO make struct
     int_alu_op_t int_alu_op;
     int_alu_input_t [1:0] int_alu_input;
-    // Mul
-    mul_op_t mul_op;
+    // TODO setup grng as struct
     // GRNG advance
     logic grng_enable;
     // GRNG set seed
@@ -140,6 +151,8 @@ typedef struct packed {
     wb_result_t wb_result_src;
     // Final Writeback
     logic register_wb;
+    // Final CSR write
+    logic csr_wb;
 } decoded_instr_t /*verilator public*/;
 
 // Used for NOP generation
@@ -154,14 +167,20 @@ function automatic decoded_instr_t create_nop_ctrl();
     instr.int_alu_op = ALU_OP_ADD;
     instr.int_alu_input[0] = ALU_IN_ZERO;
     instr.int_alu_input[1] = ALU_IN_ZERO;
-    instr.mul_op = MUL_OP_MUL;
     instr.mem_op = MEM_NOP;
     instr.wb_result_src = WB_INT_ALU;
     instr.register_wb = 0;
     instr.grng_enable = 0;
     instr.grng_seed = 0;
+    instr.csr_wb = 0;
     return instr;
 endfunction
+
+typedef struct packed {
+    rv_csr_id_t id;
+    rv32_word value;
+    logic write;
+} csr_write_request_t /*verilator public*/;
 
 typedef struct packed {
     rv32_word pc;

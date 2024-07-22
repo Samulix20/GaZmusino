@@ -17,10 +17,19 @@ import rv32_types::*;
     output logic stall,
     // Data Mem I/O
     output memory_request_t data_request,
-    input logic request_done
+    input logic request_done,
+    // CSR file O
+    output csr_write_request_t csr_write_request
 );
 
 mem_wb_buffer_t internal_data /*verilator public*/;
+
+// CSR instructions commit at memory
+always_comb begin 
+    csr_write_request.id = exec_mem_buff.instr[31:20];
+    csr_write_request.value = exec_mem_buff.mem_addr;
+    csr_write_request.write = exec_mem_buff.decoded_instr.csr_wb;
+end
 
 always_comb begin
     data_request.addr = exec_mem_buff.mem_addr;

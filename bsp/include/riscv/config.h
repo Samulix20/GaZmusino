@@ -3,6 +3,7 @@
 
 #define MEM_SIZE 1024k
 #define STACK_SIZE 10240
+// #define HEAP_SIZE TODO
 
 // mtimer MMIO 
 #define MTIMER_BASE_ADDR 0x10500000
