@@ -13,7 +13,7 @@ ENTRY(__rv_init) /* Setup rv init as entry point */
 /* Memory config of RISC-V CPU */
 MEMORY
 {
-  ram (wxa) : ORIGIN = 0x00000000, LENGTH = 1024k
+  ram (wxa) : ORIGIN = 0x00000000, LENGTH = 4096k
 }
 
 SECTIONS

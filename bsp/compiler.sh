@@ -2,11 +2,15 @@
 CALL_PWD=$(pwd)
 SCRIPT_PWD=$(realpath $(dirname $0))
 BUILD_DIR=$CALL_PWD/build
+EXTRA_FLAGS=""
 
-while getopts ":b:" opt; do
+while getopts ":b:f:" opt; do
   case ${opt} in
     b)
         BUILD_DIR=$CALL_PWD/$OPTARG
+        ;;
+    f)
+        EXTRA_FLAGS=$OPTARG
         ;;
     :)
         echo "Option -${OPTARG} requires an argument."
@@ -31,5 +35,5 @@ cd $CALL_PWD
 make -s -f $SCRIPT_PWD/Makefile\
     SRCS="$(echo $@)"\
     BUILD_DIR=$BUILD_DIR\
-    BSP_DIR=$SCRIPT_PWD
-
+    BSP_DIR=$SCRIPT_PWD\
+    EXTRA_FLAGS="$EXTRA_FLAGS"

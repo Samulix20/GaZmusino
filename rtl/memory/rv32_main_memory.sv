@@ -5,7 +5,7 @@
 module rv32_main_memory
 import rv32_types::*;
 #(
-    parameter int NUM_WORDS /*verilator public*/ = 262144
+    parameter int NUM_WORDS /*verilator public*/ = 1048576
 ) (
     input logic clk, resetn,
     // PORT A

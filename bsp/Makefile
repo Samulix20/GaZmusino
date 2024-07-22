@@ -2,6 +2,7 @@
 SRCS ?= 
 BUILD_DIR ?= build
 BSP_DIR ?= bsp
+EXTRA_FLAGS ?=
 
 # Setup BSP build subdir
 BSP_BUILD_DIR := $(BUILD_DIR)/bsp
@@ -20,7 +21,8 @@ CFLAGS := \
 	-ffreestanding \
 	-fopt-info-optimized=$(BUILD_DIR)/comp_report.txt \
 	-I $(BSP_DIR)/include \
-	-T $(BSP_BUILD_DIR)/linker.lds
+	-T $(BSP_BUILD_DIR)/linker.lds \
+	$(EXTRA_FLAGS)
 
 CXXFLAGS := $(CFLAGS) -fno-exceptions -fno-unwind-tables -fno-rtti
 

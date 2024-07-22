@@ -1,14 +1,17 @@
 #ifndef RV32_TEST_UTILS
 #define RV32_TEST_UTILS
 
+#include <cstddef>
 #include <cstdint>
 #include <cstdio>
+#include <cstring>
 #include <elf.h>
 #include <cassert>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <sstream>
+#include <string.h>
 #include <string>
 
 // Device under test headers
@@ -19,7 +22,7 @@
 #include "Vrv32_top_rv32_exec_stage.h"
 #include "Vrv32_top_rv32_mem_stage.h"
 #include "Vrv32_top_rv32_main_memory.h"
-#include "Vrv32_top_bram_2_port__N40000.h"
+#include "Vrv32_top_bram_2_port__N100000.h"
 #include "Vrv32_top_rv32_types.h"
 
 namespace rv32_test {
@@ -173,7 +176,21 @@ inline void set_banked_memory(Vrv32_top* rvtop, const rv32_elf_program& elf_prog
 // Bsp defines config
 #include "../bsp/include/riscv/config.h"
 
-inline void handle_mmio_request(Vrv32_top* rvtop) {
+uint64_t profiler_counters[255];
+uint64_t profiler_counters_starts[255];
+
+inline void init_profiler_counters() {
+    std::memset(profiler_counters, 0, 255 * sizeof(uint64_t));
+}
+
+inline void print_profiler_counters() {
+    for(size_t i = 0; i < 255; i++) {
+        if (profiler_counters[i] == 0) continue; // Ignore unused counters
+        std::cout << "Counter " << i << " " << profiler_counters[i] << '\n';
+    }
+}
+
+inline void handle_mmio_request(Vrv32_top* rvtop, uint64_t sim_time) {
     MemoryRequest request = get_memory_request(rvtop);
 
     rvtop->mmio_request_done[0] = 0;
@@ -187,6 +204,8 @@ inline void handle_mmio_request(Vrv32_top* rvtop) {
         rvtop->mmio_request_done[0] = 1;
         if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
             std::cout << "Exit status " << request.data << '\n';
+            std::cout << "Sim time " << sim_time << '\n';
+            print_profiler_counters();
             exit(request.data);
         }
     }
@@ -195,6 +214,24 @@ inline void handle_mmio_request(Vrv32_top* rvtop) {
         rvtop->mmio_request_done[1] = 1;
         if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
             std::cout << static_cast<char>(request.data);
+        }
+    }
+    // MMIO Profiler
+    // Start
+    if (request.addr == PROFILER_BASE_ADDR) {
+        rvtop->mmio_request_done[1] = 1; // Tell the core the request is done
+        if (request.op == RV32Types::MEM_SB && rvtop->clk == 1) {
+            uint8_t counter_id = static_cast<uint8_t>(request.data);
+            profiler_counters_starts[counter_id] = sim_time;
+        }
+        
+    }
+    // Stop
+    if (request.addr == (PROFILER_BASE_ADDR + 1)) {
+        rvtop->mmio_request_done[1] = 1; // Tell the core the request is done
+        if (request.op == RV32Types::MEM_SB && rvtop->clk == 1) {
+            uint8_t counter_id = static_cast<uint8_t>(request.data);
+            profiler_counters[counter_id] += (sim_time - profiler_counters_starts[counter_id]) / 2;
         }
     }
 }

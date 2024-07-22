@@ -12,3 +12,5 @@ build
 
 # Others
 waveform.vcd
+test/c_tests/bnn
+

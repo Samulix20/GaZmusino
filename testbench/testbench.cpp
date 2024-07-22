@@ -19,6 +19,7 @@ int main(int argc, char** argv) {
     constexpr uint64_t max_sim_time = 10000000;
     uint64_t sim_time = 0;
     bool print_trace = false;
+    bool forever = true;
 
     // Evaluate Verilator comand args
     Verilated::commandArgs(argc, argv);
@@ -47,16 +48,18 @@ int main(int argc, char** argv) {
 
     // Waveform tracing
     // trace signals 5 levels under dut
-    Verilated::traceEverOn(true);
-    VerilatedVcdC *m_trace = new VerilatedVcdC;
-    dut->trace(m_trace, 5);
-    m_trace->open("waveform.vcd");
+    //Verilated::traceEverOn(true);
+    //VerilatedVcdC *m_trace = new VerilatedVcdC;
+    //dut->trace(m_trace, 5);
+    //m_trace->open("waveform.vcd");
 
     auto elf_program = 
         rv32_test::load_elf(rv_elf_executable);
 
+    rv32_test::init_profiler_counters();
+
     // Testbench simulation loop
-    while (sim_time < max_sim_time) {
+    while (forever || sim_time < max_sim_time) {
 
         // Clk signal
         dut->clk ^= 1;
@@ -76,7 +79,7 @@ int main(int argc, char** argv) {
 
         // Memory bus signals
         if(sim_time >= 5) {
-            rv32_test::handle_mmio_request(dut);
+            rv32_test::handle_mmio_request(dut, sim_time);
         }
 
         // Update signals
@@ -89,14 +92,14 @@ int main(int argc, char** argv) {
         }
 
         // Trace waveform
-        m_trace->dump(sim_time);
+        //m_trace->dump(sim_time);
         
         // Advance simulation loop
         sim_time++;
     }
 
     // Close waveform file
-    m_trace->close();
+    //m_trace->close();
     // Free device under test
     delete dut;
     // Exit end
