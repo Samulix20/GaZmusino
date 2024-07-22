@@ -1,5 +1,11 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
+/*
+ CPU 4 memory stage
+ - Memory requests
+*/
+
+
 module rv32_mem_stage
 import rv32_types::*;
 (

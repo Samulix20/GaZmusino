@@ -1,5 +1,8 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
+// RISC-V immediate generation circuits
+// Made as functions so they are all in the same file
+
 module rv32_immediate_gen
 import rv32_types::*;
 (

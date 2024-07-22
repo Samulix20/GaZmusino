@@ -1,4 +1,6 @@
 
+// 32 bit integer ALU 
+
 module rv32_int_alu
 import rv32_types::*;
 (

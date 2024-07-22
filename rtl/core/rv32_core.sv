@@ -1,5 +1,10 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
+/*
+ RISCV 5-stage in order core
+ Fetch | Decode | Execute | Memory | Writeback
+*/
+
 module rv32_core
 import rv32_types::*;
 (
@@ -15,20 +20,21 @@ import rv32_types::*;
     input rv32_word data
 );
 
-rv32_word pc;
+// Stage buffers
 fetch_decode_buffer_t fetch_decode_buff /*verilator public*/;
 decode_exec_buffer_t decode_exec_buff /*verilator public*/;
 exec_mem_buffer_t exec_mem_buff /*verilator public*/;
 mem_wb_buffer_t mem_wb_buff /*verilator public*/;
+
+// Bypass signals
 rv32_word wb_bypass;
 
 // PC/Jump logic
 logic exec_jump /*verilator public*/;
 logic jump_set_nop;
 rv32_word exec_jump_addr, jump_nop_pc;
+rv32_word pc, next_pc /*verilator public*/;
 
-
-rv32_word next_pc /*verilator public*/;
 always_comb begin
     jump_set_nop = 0;
     jump_nop_pc = decode_exec_buff.pc;
@@ -68,6 +74,14 @@ rv32_register_file rf(
     .rs(rs), .o(reg_data),
     // Writeback (write) interface
     .write(wb_we), .d(wb_data), .rw(wb_rd)
+);
+
+// CSR
+rv32_word _csr_dump_value;
+rv32_csr csr_file(
+    .clk(clk), .resetn(resetn),
+    .id(0), .instr_retired(0),
+    .value(_csr_dump_value)
 );
 
 // FETCH STAGE

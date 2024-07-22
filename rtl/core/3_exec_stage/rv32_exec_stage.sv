@@ -1,5 +1,14 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
+/* 
+ CPU 3 execution stage
+ - Bypass
+ - Immediate generation
+ - Integer ALU
+ - Integer MUL
+ - Branch
+*/
+
 module rv32_exec_stage
 import rv32_types::*;
 (

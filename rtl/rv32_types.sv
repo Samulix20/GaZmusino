@@ -1,6 +1,10 @@
 package rv32_types;
 
+// Definitions for all data types, structs, etc...
+// TODO divide into different files
+
 typedef logic[31:0] rv32_word;
+typedef rv32_word [1:0] rv64_word;
 
 typedef logic [4:0] rv_reg_id_t;
 

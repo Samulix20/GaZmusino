@@ -1,3 +1,5 @@
+# Runs all tests under isa_tests, c_tests and cpp_tests
+
 RED='\e[31m'
 GREEN='\e[32m'
 NC='\e[0m'

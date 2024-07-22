@@ -11,7 +11,7 @@ int main() {
     for (int i = 0; i < TEST_SIZE; i++) {
         int32 sample = gen_num();
         if(TEST_VECTOR[i] != sample) {
-            exit(i);
+            exit(i + 1);
         }
     }
 
@@ -21,7 +21,7 @@ int main() {
     for (int i = 0; i < TEST_SIZE; i++) {
         int32 sample = gen_num();
         if(TEST_VECTOR_SEED_CHANGE[i] != sample) {
-            exit(i);
+            exit(i + 1);
         }
     }
 

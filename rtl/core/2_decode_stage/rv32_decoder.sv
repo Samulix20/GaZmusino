@@ -1,5 +1,17 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
+/* 
+ RISCV Instruction decoder
+ - RV32I
+ - C compression detection (not decoding yet)
+ - Zicsr extension
+*/
+
+/*
+ Custom extensions
+ - GNRG
+*/
+
 module rv32_decoder
 import rv32_types::*;
 (
@@ -143,6 +155,9 @@ always_comb begin
             use_rs[0] = 1;
         end
 
+        // GRNG Custom extension
+        // RD = GRNG
+        // GRNG <- R1
         OPCODE_GRNG: begin
             decoded_instr.t = INSTR_R_TYPE;
 

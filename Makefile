@@ -1,7 +1,12 @@
 RUN_PARAMS ?=
 
-VERILATOR_ROOT := /home/samuelpp/opt/verilator
-VV := ${VERILATOR_ROOT}/bin/verilator
+# Custom verilator instalation
+#VERILATOR_ROOT := /home/samuelpp/opt/verilator
+#VV := ${VERILATOR_ROOT}/bin/verilator
+
+# Package manager verilator instalation
+VV := verilator
+
 TOP_MODULE := rv32_top
 TOP_MODULE_SRC := rtl/${TOP_MODULE}.sv
 VERILATED_MODULE := V${TOP_MODULE}

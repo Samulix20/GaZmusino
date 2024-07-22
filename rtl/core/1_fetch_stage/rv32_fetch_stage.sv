@@ -1,5 +1,10 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
+/* 
+ CPU 1 fetch stage
+ - Instruction fetch
+*/
+
 module rv32_fetch_stage
 import rv32_types::*;
 (

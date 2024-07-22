@@ -1,5 +1,11 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
+/*
+ CPU 2 decode stage
+ - Decode
+ - Data Hazzard detection
+*/
+
 module rv32_decode_stage
 import rv32_types::*;
 (

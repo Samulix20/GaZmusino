@@ -1,4 +1,11 @@
 
+// RISC-V branch operation unit
+
+/*
+ TODO maybe move addres as input for this unit so the output can be packed
+ as an struct
+*/
+
 module rv32_branch_unit
 import rv32_types::*;
 (

@@ -1,6 +1,10 @@
 
-// 3 Read ports
-// 1 Write port
+/* 
+ Register file, 32 registers
+ - x0 is readonly 0
+ - 3 Read ports
+ - 1 Write port
+*/
 
 module rv32_register_file
 import rv32_types::*;
@@ -17,6 +21,7 @@ import rv32_types::*;
 
 rv32_word register_file [32];
 
+// Write logic
 always_ff @(negedge clk) begin
     if (write) begin
         register_file[rw] <= d;

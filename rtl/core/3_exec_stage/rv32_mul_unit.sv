@@ -1,5 +1,7 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
+// 32 bit integer multiplication unit
+
 module rv32_mul_unit
 import rv32_types::*;
 (

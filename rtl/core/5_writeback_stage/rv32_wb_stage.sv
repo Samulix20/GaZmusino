@@ -1,5 +1,11 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
+/*
+ CPU 5 writeback stage
+ - Load data fixing
+ - Register file write
+*/
+
 module rv32_wb_stage
 import rv32_types::*;
 (
@@ -23,9 +29,11 @@ rv32_load_fix load_fix(
 );
 
 always_comb begin
+    // Register file write control
     reg_write = mem_wb_buff.decoded_instr.register_wb;
     rd = mem_wb_buff.instr.rd;
 
+    // Writeback data
     // Set mem load result if required
     case (mem_wb_buff.decoded_instr.wb_result_src)
         WB_MEM_DATA: wb_data = fixed_load;

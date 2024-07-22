@@ -1,5 +1,7 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
+// Load data aligner/sign extender
+
 module rv32_load_fix
 import rv32_types::*;
 (

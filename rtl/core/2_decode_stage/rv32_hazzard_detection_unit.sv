@@ -1,5 +1,7 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
+// Data Hazzard detection logic
+
 module rv32_hazzard_detection_unit
 import rv32_types::*;
 (
