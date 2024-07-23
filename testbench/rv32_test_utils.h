@@ -203,7 +203,7 @@ inline void handle_mmio_request(Vrv32_top* rvtop, uint64_t sim_time) {
     if (request.addr == EXIT_STATUS_ADDR) {
         rvtop->mmio_request_done[0] = 1;
         if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
-            std::cout << "Exit status " << request.data << '\n';
+            std::cout << '\n' << "Exit status " << request.data << '\n';
             std::cout << "Sim time " << sim_time << '\n';
             print_profiler_counters();
             exit(request.data);
