@@ -32,10 +32,6 @@ TEST_CASE(10, a0, 0xbad1dea, li a0, 0x0001dea; csrrc a0, mscratch, a0);
 TEST_CASE(11, a0, 0xbad0000, li a0, 0x000beef; csrrs a0, mscratch, a0);
 TEST_CASE(12, a0, 0xbadbeef, csrr a0, mscratch);
 
-
-j ending
-
-
 csrrs x10, misa, x0
 srli x10, x10, 20
 andi x10, x10, 1
