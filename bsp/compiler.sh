@@ -27,8 +27,7 @@ done
 shift "$((OPTIND-1))"
 
 # Build bsp
-cd $SCRIPT_PWD
-make -s -f bsp.mk BUILD_DIR=$BUILD_DIR/bsp
+make -s -f $SCRIPT_PWD/BSP.mk BUILD_DIR=$BUILD_DIR/bsp
 
 # Build elf
 cd $CALL_PWD

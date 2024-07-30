@@ -4,7 +4,7 @@ BSP_DIR ?= ../../bsp
 
 TEST_BASENAME = $(basename $(TEST_TARGET))
 
-CROSS := riscv32-unknown-elf-
+CROSS := riscv64-unknown-elf-
 CC := $(CROSS)gcc
 DUMP := $(CROSS)objdump
 
@@ -13,12 +13,12 @@ TEST_BUILD := $(BUILD_DIR)/$(TEST_BASENAME)
 CFLAGS := \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S\
 	-Wall\
-	-march=rv32g -mabi=ilp32 -mno-div\
+	-march=rv32i_zmmul_zicsr -mabi=ilp32\
 	-fopt-info-optimized=comp_report.txt\
 	-I macros -I $(BSP_DIR)/include\
 	-ffreestanding -nostartfiles -T linker.lds
 
-all: $(TEST_BUILD).dump $(TEST_BUILD)_asm.csv
+all: $(TEST_BUILD).dump
 
 $(TEST_BUILD)_asm.csv: $(TEST_BUILD).elf
 	python ../../tools/disassembly.py $^ > $@

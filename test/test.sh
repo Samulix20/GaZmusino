@@ -118,7 +118,7 @@ print_test_results
 
 # BSP TEST BUILD SECTION
 
-build_output=$(make -C ../bsp -f bsp.mk BUILD_DIR=../build/bsp 2>&1)
+build_output=$(make -C ../bsp -f BSP.mk BUILD_DIR=../build/bsp 2>&1)
 make_status=$?
 if [ $make_status -ne 0 ]; then
     echo -e "${RED}[!!] Error building BSP $NC"
