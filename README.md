@@ -6,7 +6,7 @@ Verilator 5.024 2024-04-05
 
 ## RISC-V Compiler
 
-./configure --with-arch=rv32g --with-abi=ilp32
+./configure --prefix=/home/samupp/opt/gcc-riscv --enable-multilib --with-multilib-generator="rv32i_zmmul_zicsr-ilp32--"
 
 ## References
 1. https://itsembedded.com/dhd/verilator_1/

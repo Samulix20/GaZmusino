@@ -8,7 +8,7 @@ EXTRA_FLAGS ?=
 BSP_BUILD_DIR := $(BUILD_DIR)/bsp
 
 # C Compiler definitions
-CROSS := riscv32-unknown-elf-
+CROSS := riscv64-unknown-elf-
 CC := $(CROSS)gcc
 CXX := $(CROSS)g++
 DUMP := $(CROSS)objdump
@@ -17,7 +17,7 @@ DUMP := $(CROSS)objdump
 CFLAGS := \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S \
 	-Wall -O3 \
-	-march=rv32g -mabi=ilp32 -mno-div \
+	-march=rv32i_zmmul_zicsr -mabi=ilp32 -mno-div \
 	-fopt-info-optimized=$(BUILD_DIR)/comp_report.txt \
 	-I $(BSP_DIR)/include \
 	-T $(BSP_BUILD_DIR)/linker.lds \

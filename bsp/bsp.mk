@@ -1,7 +1,7 @@
 BUILD_DIR ?= build/bsp
 
 # C Compiler definitions
-CROSS := riscv32-unknown-elf-
+CROSS := riscv64-unknown-elf-
 CC := $(CROSS)gcc
 DUMP := $(CROSS)objdump
 
@@ -13,7 +13,7 @@ CFLAGS := \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S \
 	-ffreestanding \
 	-Wall -Wextra -O3 \
-	-march=rv32g -mabi=ilp32 -mno-div \
+	-march=rv32i_zmmul_zicsr -mabi=ilp32 \
 	-I ./include
 
 bsp: $(OBJS) $(BUILD_DIR)/linker.lds

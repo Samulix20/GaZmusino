@@ -1,15 +1,29 @@
 #ifndef PROFILER_INTERNAL_H
 #define PROFILER_INTERNAL_H
 
-#include <riscv/types.h>
+#include <riscv/csr.h>
+#include <riscv/config.h>
 
-// Cost 2 cycles (Overhead)
-inline void set_mcountinhibit() {
-    asm volatile(
-        "li x31, 1\n"
-        "csrs mcountinhibit, x31"
-        ::: "x31"
-    );
+// Private real functions
+void _start_internal_counter(const uint8 id);
+void _stop_internal_counter(const uint8 id);
+
+// Wrappers that disable/enable the hw counters
+
+inline void start_internal_counter(const uint8 id) {
+    disable_hw_counters();
+    _start_internal_counter(id);
+    enable_hw_counters();
 }
+
+inline void stop_internal_counter(const uint8 id) {
+    disable_hw_counters();
+    _stop_internal_counter(id);
+    enable_hw_counters();
+}
+
+uint64 get_internal_counter(const uint8 id);
+
+void reset_internal_counter(const uint8 id);
 
 #endif

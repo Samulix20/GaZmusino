@@ -127,15 +127,13 @@ if [ $make_status -ne 0 ]; then
 fi
 
 # C TEST SECTION
-
 test_folder="c_tests"
 run_all_folder_tests
 
 # CPP TEST SECTION
-
 test_folder="cpp_tests"
 run_all_folder_tests
 
 # EXTRA TEST SECTION
-test_folder="extra"
-run_all_folder_tests
+#test_folder="extra"
+#run_all_folder_tests

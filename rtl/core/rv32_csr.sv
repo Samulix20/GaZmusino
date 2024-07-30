@@ -73,8 +73,8 @@ end
 always_comb begin
 
     // Counters default behaviour
-    if (mcountinhibit.cy) next_mcycle = mcycle + 1;
-    if (mcountinhibit.ir && instr_retired) next_minstret <= minstret + 1;
+    if (!mcountinhibit.cy) next_mcycle = mcycle + 1;
+    if (!mcountinhibit.ir && instr_retired) next_minstret <= minstret + 1;
 
     // User write logic
     if (write_request.write) begin

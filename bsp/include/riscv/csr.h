@@ -78,16 +78,33 @@ inline void clear_mcountinhibit(uint32 mask) {
     asm volatile("csrc mcountinhibit, %0" :: "r" (mask));
 }
 
+// Utility functions for disable/enable the hw counters
+// 2 cycles overhead
+
+inline void disable_hw_counters() {
+    asm volatile(
+        "li x31, 5\n"
+        "csrs mcountinhibit, x31"
+        ::: "x31"
+    );
+}
+
+inline void enable_hw_counters() {
+    asm volatile(
+        "li x31, 5\n"
+        "csrc mcountinhibit, x31"
+        ::: "x31"
+    );
+}
+
 inline uint64 read_mcycle() {
     uint32 cl, ch;
 
-    set_mcountinhibit(MCYCLE_BIT);
     asm volatile(
         "csrr %0, mcycle\n"
         "csrr %1, mcycleh" 
         : "=r" (cl), "=r" (ch)
     );
-    clear_mcountinhibit(MCYCLE_BIT);
 
     return ((uint64) ch << 32) | cl;
 }
@@ -95,13 +112,11 @@ inline uint64 read_mcycle() {
 inline uint64 read_instret() {
     uint32 il, ih;
 
-    set_mcountinhibit(MINSTRET_BIT);
     asm volatile(
         "csrr %0, minstret\n"
         "csrr %1, minstreth"
         : "=r" (il), "=r" (ih)
     );
-    clear_mcountinhibit(MINSTRET_BIT);
 
     return ((uint64) ih << 32) | il;
 }
@@ -109,7 +124,6 @@ inline uint64 read_instret() {
 inline void read_hw_counters(uint64* cycles, uint64* instr) {
     uint32 cl, ch, il, ih;
 
-    set_mcountinhibit(MINSTRET_BIT | MCYCLE_BIT);
     asm volatile(
         "csrr %0, mcycle\n"
         "csrr %1, mcycleh" 
@@ -120,7 +134,6 @@ inline void read_hw_counters(uint64* cycles, uint64* instr) {
         "csrr %1, minstreth"
         : "=r" (il), "=r" (ih)
     );
-    clear_mcountinhibit(MINSTRET_BIT | MCYCLE_BIT);
 
     *cycles = ((uint64) ch << 32) | cl;
     *instr = ((uint64) ih << 32) | il;

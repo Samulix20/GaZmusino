@@ -5,6 +5,9 @@
 #define STACK_SIZE 10240
 // #define HEAP_SIZE TODO
 
+// Profiler internal counters
+#define NUM_PROFILER_COUNTERS 8
+
 // mtimer MMIO 
 #define MTIMER_BASE_ADDR 0x10500000
 #define MTIMER_COUNTER      *((volatile uint64_t *) MTIMER_BASE_ADDR)
