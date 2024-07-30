@@ -16,8 +16,8 @@ DUMP := $(CROSS)objdump
 # Compiler flags
 CFLAGS := \
 	-fdata-sections -ffunction-sections -Wl,--gc-sections,-S \
-	-Wall -O3 \
-	-march=rv32i_zmmul_zicsr -mabi=ilp32 -mno-div \
+	-Wall -Wextra -O3 \
+	-march=rv32i_zmmul_zicsr -mabi=ilp32 \
 	-fopt-info-optimized=$(BUILD_DIR)/comp_report.txt \
 	-I $(BSP_DIR)/include \
 	-T $(BSP_BUILD_DIR)/linker.lds \
