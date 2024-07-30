@@ -1,11 +1,11 @@
 RUN_PARAMS ?=
 
 # Custom verilator instalation
-#VERILATOR_ROOT := /home/samuelpp/opt/verilator
-#VV := ${VERILATOR_ROOT}/bin/verilator
+VERILATOR_ROOT := /home/samupp/Repos/verilator
+VV := ${VERILATOR_ROOT}/bin/verilator
 
 # Package manager verilator instalation
-VV := verilator
+#VV := verilator
 
 TOP_MODULE := rv32_top
 TOP_MODULE_SRC := rtl/${TOP_MODULE}.sv
