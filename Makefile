@@ -17,7 +17,7 @@ VERILOG_MODULES := rtl/rv32_types.sv \
 CPP_SRC := $(shell find testbench -name '*.cpp')
 CPP_HDR := $(shell find testbench -name '*.h')
 
-.PHONY: test
+.PHONY: test clean run
 
 obj_dir/${VERILATED_MODULE}: obj_dir/.verilator.stamp
 	make -C obj_dir -f ${VERILATED_MODULE}.mk
@@ -34,11 +34,11 @@ obj_dir/.verilator.stamp: \
 
 verilate: obj_dir/.verilator.stamp
 
-clean:
-	rm -rf obj_dir build waveform.vcd
-
 wave:
 	gtkwave waveform.vcd >/dev/null 2>/dev/null &
+
+clean:
+	rm -rf obj_dir build waveform.vcd
 
 run: obj_dir/${VERILATED_MODULE}
 	./obj_dir/${VERILATED_MODULE} +verilator+rand+reset+2 $(RUN_PARAMS)
