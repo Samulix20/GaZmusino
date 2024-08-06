@@ -1,16 +1,26 @@
+#!/bin/bash
+
+# Script for compiling a set of C source files using the required
+# Makefiles and BSP for the RISC-V platform
 
 CALL_PWD=$(pwd)
 SCRIPT_PWD=$(realpath $(dirname $0))
+BSP_DIR=$SCRIPT_PWD/bsp
 BUILD_DIR=$CALL_PWD/build
 EXTRA_FLAGS=""
 
-while getopts ":b:f:" opt; do
+while getopts ":b:f:h" opt; do
   case ${opt} in
     b)
         BUILD_DIR=$CALL_PWD/$OPTARG
         ;;
     f)
         EXTRA_FLAGS=$OPTARG
+        ;;
+    h)
+        echo "Usage $0 -b \"build_directory\" -f \"extra_flags\""
+        echo ""
+        exit 0
         ;;
     :)
         echo "Option -${OPTARG} requires an argument."
@@ -23,16 +33,10 @@ while getopts ":b:f:" opt; do
   esac
 done
 
-
 shift "$((OPTIND-1))"
 
-# Build bsp
-make -s -f $SCRIPT_PWD/BSP.mk BUILD_DIR=$BUILD_DIR/bsp
-
 # Build elf
-cd $CALL_PWD
-make -s -f $SCRIPT_PWD/Makefile\
+make -f $BSP_DIR/Makefile\
     SRCS="$(echo $@)"\
     BUILD_DIR=$BUILD_DIR\
-    BSP_DIR=$SCRIPT_PWD\
     EXTRA_FLAGS="$EXTRA_FLAGS"

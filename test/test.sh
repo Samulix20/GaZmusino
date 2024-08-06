@@ -54,8 +54,7 @@ run_all_folder_tests() {
     do
         
         test_srcs="$(find $test_folder/$test -name '*.c') $(find $test_folder/$test -name '*.cpp')"
-        
-        build_output=$(bash ../bsp/compiler.sh -b ../build/$test_folder/$test $test_srcs 2>&1)
+        build_output=$(bash ../compiler.sh -b ../build/$test_folder/$test $test_srcs 2>&1)
         make_status=$?
 
         if [ $make_status -ne 0 ]; then
@@ -113,18 +112,8 @@ do
 
     i=$((i+1))
 done
-
 print_test_results
 
-# BSP TEST BUILD SECTION
-
-build_output=$(make -C ../bsp -f BSP.mk BUILD_DIR=../build/bsp 2>&1)
-make_status=$?
-if [ $make_status -ne 0 ]; then
-    echo -e "${RED}[!!] Error building BSP $NC"
-    echo -e "$build_output"
-    exit $make_status
-fi
 
 # C TEST SECTION
 test_folder="c_tests"
