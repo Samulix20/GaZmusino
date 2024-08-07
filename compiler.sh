@@ -3,16 +3,15 @@
 # Script for compiling a set of C source files using the required
 # Makefiles and BSP for the RISC-V platform
 
-CALL_PWD=$(pwd)
 SCRIPT_PWD=$(realpath $(dirname $0))
 BSP_DIR=$SCRIPT_PWD/bsp
-BUILD_DIR=$CALL_PWD/build
+BUILD_DIR=$(pwd)/build
 EXTRA_FLAGS=""
 
 while getopts ":b:f:h" opt; do
   case ${opt} in
     b)
-        BUILD_DIR=$CALL_PWD/$OPTARG
+        BUILD_DIR=$OPTARG
         ;;
     f)
         EXTRA_FLAGS=$OPTARG
@@ -37,6 +36,6 @@ shift "$((OPTIND-1))"
 
 # Build elf
 make -f $BSP_DIR/Makefile\
-    SRCS="$(echo $@)"\
+    SRCS="$@"\
     BUILD_DIR=$BUILD_DIR\
     EXTRA_FLAGS="$EXTRA_FLAGS"

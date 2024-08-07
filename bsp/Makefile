@@ -4,7 +4,7 @@ BUILD_DIR ?=		# Build directory
 EXTRA_FLAGS ?=		# Optional extra flags
 
 .PHONY: all
-all: info $(BUILD_DIR)/linker.lds $(BUILD_DIR)/main.elf
+all: $(BUILD_DIR)/linker.lds $(BUILD_DIR)/main.elf
 
 # Setup BSP source dir
 BSP_DIR := $(shell dirname $(realpath $(MAKEFILE_LIST)))
@@ -47,10 +47,6 @@ LN := $(CC) $(CFLAGS)
 else
 LN := $(CXX) $(CXXFLAGS)
 endif
-
-info:
-	@echo "$(realpath $(SRCS))"
-	@echo "$(SRCS)"
 
 # Link final elf file
 $(BUILD_DIR)/main.elf: $(OBJS)
