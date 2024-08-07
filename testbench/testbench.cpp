@@ -9,7 +9,8 @@
 
 #include "Vrv32_top.h"
 #include "rv32_test_utils.h"
-#include "rv32_trace_stages.h"
+// TODO update types
+//#include "rv32_trace_stages.h"
 
 int main(int argc, char** argv) {
 
@@ -88,7 +89,8 @@ int main(int argc, char** argv) {
         // Debug
         // Only on high clk and after reset
         if (print_trace && !reset_on && dut->clk == 1) {
-            rv32_test::trace_stages(dut, diassembly_map);
+            // TODO Update and redo
+            //rv32_test::trace_stages(dut, diassembly_map);
         }
 
         // Trace waveform

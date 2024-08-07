@@ -72,7 +72,7 @@ rv32_zicsr_unit zicsr_unit (
 rv32_word alu_op[2];
 always_comb begin
     for(int idx = 0; idx < 2; idx = idx + 1) begin
-        case (decode_exec_buff.decoded_instr.int_alu_input[idx])
+        case (decode_exec_buff.decoded_instr.int_alu_instr.xbar[idx])
             ALU_IN_REG_1: alu_op[idx] = reg_data[0];
             ALU_IN_REG_2: alu_op[idx] = reg_data[1];
             ALU_IN_PC: alu_op[idx] = decode_exec_buff.pc;
@@ -84,7 +84,7 @@ end
 rv32_word int_alu_result;
 rv32_int_alu int_alu (
     .op1(alu_op[0]), .op2(alu_op[1]),
-    .opsel(decode_exec_buff.decoded_instr.int_alu_op),
+    .opsel(decode_exec_buff.decoded_instr.int_alu_instr.op),
     .result(int_alu_result)
 );
 

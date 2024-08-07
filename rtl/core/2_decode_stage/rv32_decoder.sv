@@ -38,7 +38,7 @@ always_comb begin
         // RD = ALU
         OPCODE_LUI: begin
             decoded_instr.t = INSTR_U_TYPE;
-            decoded_instr.int_alu_input[1] = ALU_IN_IMM;
+            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
             decoded_instr.register_wb = 1;
         end
 
@@ -47,8 +47,8 @@ always_comb begin
         // RD = ALU
         OPCODE_AUIPC: begin
             decoded_instr.t = INSTR_U_TYPE;
-            decoded_instr.int_alu_input[0] = ALU_IN_PC;
-            decoded_instr.int_alu_input[1] = ALU_IN_IMM;
+            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_PC;
+            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
             decoded_instr.register_wb = 1;
         end
 
@@ -59,8 +59,8 @@ always_comb begin
         OPCODE_JAL: begin
             decoded_instr.t = INSTR_J_TYPE;
             decoded_instr.branch_op = OP_J;
-            decoded_instr.int_alu_input[0] = ALU_IN_PC;
-            decoded_instr.int_alu_input[1] = ALU_IN_IMM;
+            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_PC;
+            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
             decoded_instr.register_wb = 1;
             decoded_instr.wb_result_src = WB_PC4;
         end
@@ -72,8 +72,8 @@ always_comb begin
         OPCODE_JALR: begin
             decoded_instr.t = INSTR_I_TYPE;
             decoded_instr.branch_op = OP_J;
-            decoded_instr.int_alu_input[0] = ALU_IN_REG_1;
-            decoded_instr.int_alu_input[1] = ALU_IN_IMM;
+            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_REG_1;
+            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
             decoded_instr.register_wb = 1;
             decoded_instr.wb_result_src = WB_PC4;
             use_rs[0] = 1;
@@ -86,8 +86,8 @@ always_comb begin
         OPCODE_BRANCH: begin
             decoded_instr.t = INSTR_B_TYPE;
             decoded_instr.branch_op = branch_op_t'({1'b0, instr.funct3});
-            decoded_instr.int_alu_input[0] = ALU_IN_PC;
-            decoded_instr.int_alu_input[1] = ALU_IN_IMM;
+            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_PC;
+            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
             use_rs[0] = 1;
             use_rs[1] = 1;
         end
@@ -100,9 +100,9 @@ always_comb begin
             if (instr.funct3 == 3'b101 && instr.funct7[5]) is_srai = 1;
             else is_srai = 0;
             decoded_instr.t = INSTR_I_TYPE;
-            decoded_instr.int_alu_op = int_alu_op_t'({is_srai, instr.funct3});
-            decoded_instr.int_alu_input[0] = ALU_IN_REG_1;
-            decoded_instr.int_alu_input[1] = ALU_IN_IMM;
+            decoded_instr.int_alu_instr.op = int_alu_op_t'({is_srai, instr.funct3});
+            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_REG_1;
+            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
             decoded_instr.register_wb = 1;
             use_rs[0] = 1;
         end
@@ -120,9 +120,9 @@ always_comb begin
                     decoded_instr.wb_result_src = WB_MUL_UNIT;
                 end
                 default: begin // Base integer instructions
-                    decoded_instr.int_alu_op = int_alu_op_t'({instr.funct7[5], instr.funct3});
-                    decoded_instr.int_alu_input[0] = ALU_IN_REG_1;
-                    decoded_instr.int_alu_input[1] = ALU_IN_REG_2;
+                    decoded_instr.int_alu_instr.op = int_alu_op_t'({instr.funct7[5], instr.funct3});
+                    decoded_instr.int_alu_instr.xbar[0] = ALU_IN_REG_1;
+                    decoded_instr.int_alu_instr.xbar[1] = ALU_IN_REG_2;
                 end
             endcase
 
@@ -133,8 +133,8 @@ always_comb begin
         // MEM <- R2
         OPCODE_STORE: begin
             decoded_instr.t = INSTR_S_TYPE;
-            decoded_instr.int_alu_input[0] = ALU_IN_REG_1;
-            decoded_instr.int_alu_input[1] = ALU_IN_IMM;
+            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_REG_1;
+            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
             decoded_instr.mem_op = mem_op_t'({1'b1, instr.funct3});
             decoded_instr.wb_result_src = WB_STORE;
             use_rs[0] = 1;
@@ -146,8 +146,8 @@ always_comb begin
         // RD = MEM
         OPCODE_LOAD: begin
             decoded_instr.t = INSTR_I_TYPE;
-            decoded_instr.int_alu_input[0] = ALU_IN_REG_1;
-            decoded_instr.int_alu_input[1] = ALU_IN_IMM;
+            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_REG_1;
+            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
             decoded_instr.mem_op = mem_op_t'({1'b0, instr.funct3});
             decoded_instr.wb_result_src = WB_MEM_DATA;
             decoded_instr.register_wb = 1;

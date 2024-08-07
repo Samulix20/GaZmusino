@@ -13,7 +13,7 @@ fi
 SRCS="$(find $1 -name '*.c') $(find $1 -name '*.S') $(find $1 -name '*.cpp')"
 
 # Remove previous built simulation elf
-#rm -rf build/sim
+rm -rf build/sim
 
 # Compile source files + bsp and store results in build/sim
 bash compiler.sh -b build/sim -f "-I $1/libs" $SRCS

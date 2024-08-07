@@ -110,7 +110,7 @@ typedef enum logic [2:0] {
     ALU_IN_REG_2,
     ALU_IN_PC,
     ALU_IN_IMM
-} int_alu_input_t /*verilator public*/;
+} int_alu_xbar_t /*verilator public*/;
 
 typedef enum logic [2:0] {
     WB_PC4,
@@ -129,6 +129,20 @@ typedef enum logic [2:0] {
 } bypass_t /*verilator public*/;
 
 typedef struct packed {
+    int_alu_op_t op;
+    int_alu_xbar_t [1:0] xbar;
+} int_alu_instr_t /*verilator public*/;
+
+function automatic int_alu_instr_t create_alu_nop_instr();
+    int_alu_instr_t alu_instr;
+    alu_instr.op = ALU_OP_ADD;
+    alu_instr.xbar[0] = ALU_IN_ZERO;
+    alu_instr.xbar[1] = ALU_IN_ZERO;
+    return alu_instr;
+endfunction
+
+// TODO rename to control_t or similar
+typedef struct packed {
     logic invalid;
     // Immediate generation
     instr_type_t t;
@@ -136,10 +150,8 @@ typedef struct packed {
     bypass_t [2:0] bypass_rs;
     // Branch
     branch_op_t branch_op;
-    // Alu
-    // TODO make struct
-    int_alu_op_t int_alu_op;
-    int_alu_input_t [1:0] int_alu_input;
+    // Int Alu
+    int_alu_instr_t int_alu_instr;
     // TODO setup grng as struct
     // GRNG advance
     logic grng_enable;
@@ -164,9 +176,7 @@ function automatic decoded_instr_t create_nop_ctrl();
     instr.bypass_rs[1] = NO_BYPASS;
     instr.bypass_rs[2] = NO_BYPASS;
     instr.branch_op = OP_NOP;
-    instr.int_alu_op = ALU_OP_ADD;
-    instr.int_alu_input[0] = ALU_IN_ZERO;
-    instr.int_alu_input[1] = ALU_IN_ZERO;
+    instr.int_alu_instr = create_alu_nop_instr();
     instr.mem_op = MEM_NOP;
     instr.wb_result_src = WB_INT_ALU;
     instr.register_wb = 0;

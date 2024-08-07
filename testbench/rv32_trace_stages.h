@@ -9,6 +9,8 @@
 #include <format>
 #include <iostream>
 
+// TODO update types
+
 namespace rv32_test {
 
 inline std::string opcode_str(Instruction instr) {
