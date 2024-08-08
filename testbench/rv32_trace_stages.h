@@ -9,8 +9,6 @@
 #include <format>
 #include <iostream>
 
-// TODO update types
-
 namespace rv32_test {
 
 inline std::string opcode_str(Instruction instr) {
@@ -87,7 +85,7 @@ inline std::string rename_imm_str(std::string op, DecodedInstruction dec_instr) 
 
 inline std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr) {
     std::string op1, op2;
-    static const std::unordered_map<RV32Types::int_alu_input_t, std::string> str_map = {
+    static const std::unordered_map<RV32Types::int_alu_xbar_t, std::string> str_map = {
         {RV32Types::ALU_IN_ZERO, "0"},
         {RV32Types::ALU_IN_REG_1, "R1"},
         {RV32Types::ALU_IN_REG_2, "R2"},
@@ -95,7 +93,7 @@ inline std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr
         {RV32Types::ALU_IN_IMM, "IMM"}
     };
     auto it = str_map.find(
-        static_cast<RV32Types::int_alu_input_t>(dec_instr.int_alu_input[0]));
+        static_cast<RV32Types::int_alu_xbar_t>(dec_instr.int_alu_instr.xbar[0]));
     if (it != str_map.end()) op1 = it->second;
     else op1 = "???";
 
@@ -103,7 +101,7 @@ inline std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr
     else if(op1 == "R2") op1 = "rs2(x" + std::to_string(instr.rs2) + ")";
 
     it = str_map.find(
-        static_cast<RV32Types::int_alu_input_t>(dec_instr.int_alu_input[1]));
+        static_cast<RV32Types::int_alu_xbar_t>(dec_instr.int_alu_instr.xbar[1]));
     if (it != str_map.end()) op2 = it->second;
     else op2 = " ???";
 
@@ -130,7 +128,7 @@ inline std::string alu_op_str(DecodedInstruction instr) {
         {RV32Types::ALU_OP_SRA, "SRA"},
         {RV32Types::ALU_OP_SUB, "SUB"}
     };
-    auto it = str_map.find(static_cast<RV32Types::int_alu_op_t>(instr.int_alu_op));
+    auto it = str_map.find(static_cast<RV32Types::int_alu_op_t>(instr.int_alu_instr.op));
     if (it != str_map.end()) str = it->second;
     else str = "???";
     return str;

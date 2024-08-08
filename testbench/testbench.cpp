@@ -9,8 +9,8 @@
 
 #include "Vrv32_top.h"
 #include "rv32_test_utils.h"
-// TODO update types
-//#include "rv32_trace_stages.h"
+
+#include "rv32_trace_stages.h"
 
 int main(int argc, char** argv) {
 
@@ -71,8 +71,7 @@ int main(int argc, char** argv) {
 
         if (sim_time == 5) {
             // Set bram contents
-            rv32_test::set_banked_memory(dut, elf_program);
-            delete elf_program.memory.release();
+            //rv32_test::set_banked_memory(dut, elf_program);
         }
 
         // Update signals
@@ -81,6 +80,7 @@ int main(int argc, char** argv) {
         // Memory bus signals
         if(sim_time >= 5) {
             rv32_test::handle_mmio_request(dut, sim_time);
+            rv32_test::handle_main_memory_request_comb(dut, elf_program);
         }
 
         // Update signals
@@ -89,8 +89,7 @@ int main(int argc, char** argv) {
         // Debug
         // Only on high clk and after reset
         if (print_trace && !reset_on && dut->clk == 1) {
-            // TODO Update and redo
-            //rv32_test::trace_stages(dut, diassembly_map);
+            rv32_test::trace_stages(dut, diassembly_map);
         }
 
         // Trace waveform
@@ -108,3 +107,16 @@ int main(int argc, char** argv) {
     std::cerr << "Max sim time reached" << "\n";
     exit(255); 
 }
+
+/*
+rv32_test::memory_request_t instr_req;
+instr_req.set(dut->instr_request);
+// Protect against mem array overflow
+if (instr_req.addr <= (0xee88 + 0x2808)) {
+    raw_instr = rv32_test::read_instr(program_code, instr_req.addr);
+    rv32_test::memory_response_t instr_res;
+    instr_res.data = raw_instr;
+    instr_res.ready = 1;
+    dut->instr_response = instr_res.get();
+}
+*/

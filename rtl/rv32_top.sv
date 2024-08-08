@@ -1,3 +1,5 @@
+// TODO group MMIO in struct
+
 module rv32_top
 import rv32_types::*;
 #(parameter int NUM_MMIO = 2)
@@ -5,12 +7,12 @@ import rv32_types::*;
     input logic clk, resetn,
     // MMIO
     output memory_request_t mmio_data_request,
+    output memory_request_t core_instr_request,
     input logic mmio_request_done [NUM_MMIO],
     input rv32_word mmio_data [NUM_MMIO]
 );
 
-logic instr_request_done;
-memory_request_t core_instr_request /*verilator public*/;
+logic instr_request_done /*verilator public*/;
 rv32_word instr /*verilator public*/;
 
 rv32_word core_data /*verilator public*/;
@@ -28,9 +30,10 @@ rv32_core core (
     .data(core_data)
 );
 
-logic mem_data_ready;
-rv32_word memory_data;
+logic mem_data_ready /*verilator public*/;
+rv32_word memory_data /*verilator public*/;
 
+/*
 rv32_main_memory memory (
     .clk(clk), .resetn(resetn),
 
@@ -42,6 +45,7 @@ rv32_main_memory memory (
     .data_ready(mem_data_ready),
     .data(memory_data)
 );
+*/
 
 always_comb begin
     core_data_ready = mem_data_ready;

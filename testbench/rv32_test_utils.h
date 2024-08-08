@@ -15,15 +15,19 @@
 #include <string>
 
 // Device under test headers
+#include "Vrv32_top_rv32_types.h"
+
 #include "Vrv32_top.h"
 #include "Vrv32_top_rv32_top.h"
 #include "Vrv32_top_rv32_core.h"
 #include "Vrv32_top_rv32_decode_stage.h"
 #include "Vrv32_top_rv32_exec_stage.h"
 #include "Vrv32_top_rv32_mem_stage.h"
+
+/*
 #include "Vrv32_top_rv32_main_memory.h"
 #include "Vrv32_top_bram_2_port__N100000.h"
-#include "Vrv32_top_rv32_types.h"
+*/
 
 namespace rv32_test {
 
@@ -73,7 +77,7 @@ inline uint32_t get_next_pc(const Vrv32_top* rvtop) {
 
 inline MemoryRequest get_instruction_request(const Vrv32_top* rvtop) {
     MemoryRequest instruction_request;
-    instruction_request.set(rvtop->rv32_top->core_instr_request);
+    instruction_request.set(rvtop->core_instr_request);
     return instruction_request;
 }
 
@@ -147,6 +151,68 @@ inline rv32_elf_program load_elf(const std::string filename) {
     return elf_program;
 }
 
+uint32_t read_aligned_word(const rv32_elf_program& elf_program, const uint32_t addr) {
+    return *reinterpret_cast<uint32_t*>(elf_program.memory.get() + (addr & (~3)));
+}
+
+template <typename T>
+void write_mem(rv32_elf_program& elf_program, const uint32_t addr, const uint32_t data) {
+    *reinterpret_cast<T*>(elf_program.memory.get() + addr) = static_cast<T>(data);
+}
+
+uint32_t read_instr = 0, read_mem_data = 0;
+
+inline void handle_main_memory_request_comb(Vrv32_top* rvtop, rv32_elf_program& elf_program) {
+    rvtop->rv32_top->instr = read_instr;
+    rvtop->rv32_top->memory_data = read_mem_data;
+
+    MemoryRequest mem_request = get_memory_request(rvtop);
+    MemoryRequest instr_request = get_instruction_request(rvtop);
+
+    rvtop->rv32_top->instr_request_done = 0;
+    rvtop->rv32_top->mem_data_ready = 0;
+
+    if (instr_request.addr <= elf_program.max_addr) {
+        rvtop->rv32_top->instr_request_done = 1;
+
+        // FlipFlop
+        if (rvtop->clk == 0 && instr_request.op == RV32Types::MEM_LW) {
+            read_instr = read_aligned_word(elf_program, instr_request.addr);
+        }
+    } else {
+        // Out of bounds memory request
+        // TODO add error msg
+        std::cout << "PANIC" << '\n';
+        exit(1);
+    }
+
+    if (mem_request.addr <= elf_program.max_addr) {
+        rvtop->rv32_top->mem_data_ready = 1;
+        
+        // FlipFlop
+        if (rvtop->clk == 0) {
+
+            read_mem_data = read_aligned_word(elf_program, mem_request.addr);
+
+            switch(mem_request.op) {
+                case RV32Types::MEM_SB:
+                    write_mem<uint8_t>(elf_program, mem_request.addr, mem_request.data);
+                    break;
+                case RV32Types::MEM_SH:
+                    write_mem<uint16_t>(elf_program, mem_request.addr, mem_request.data);
+                    break;
+                case RV32Types::MEM_SW:
+                    write_mem<uint32_t>(elf_program, mem_request.addr, mem_request.data);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+}
+
+/*
 inline void set_banked_memory(Vrv32_top* rvtop, const rv32_elf_program& elf_program) {
     assert(rvtop->rv32_top->memory->NUM_WORDS >= (elf_program.max_addr >> 2));
 
@@ -172,6 +238,7 @@ inline void set_banked_memory(Vrv32_top* rvtop, const rv32_elf_program& elf_prog
         bsel = (bsel + 1) % 4;
     }
 }
+*/
 
 // Bsp defines config
 #include "../bsp/include/riscv/config.h"
@@ -198,11 +265,11 @@ inline void handle_mmio_request(Vrv32_top* rvtop, uint64_t sim_time) {
 
     // Check request
     if (request.op == RV32Types::MEM_NOP) return;
-    
+
     // MMIO 0 Exit
     if (request.addr == EXIT_STATUS_ADDR) {
         rvtop->mmio_request_done[0] = 1;
-        if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
+        if (request.op == RV32Types::MEM_SW && rvtop->clk == 0) {
             std::cout << '\n' << "Exit status " << request.data << '\n';
             std::cout << "Sim time " << sim_time << '\n';
             print_profiler_counters();
@@ -212,7 +279,7 @@ inline void handle_mmio_request(Vrv32_top* rvtop, uint64_t sim_time) {
     // MMIO 1 Print
     if (request.addr == PRINT_REG_ADDR) {
         rvtop->mmio_request_done[1] = 1;
-        if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
+        if (request.op == RV32Types::MEM_SW && rvtop->clk == 0) {
             std::cout << static_cast<char>(request.data);
         }
     }
@@ -220,7 +287,7 @@ inline void handle_mmio_request(Vrv32_top* rvtop, uint64_t sim_time) {
     // Start
     if (request.addr == PROFILER_BASE_ADDR) {
         rvtop->mmio_request_done[1] = 1; // Tell the core the request is done
-        if (request.op == RV32Types::MEM_SB && rvtop->clk == 1) {
+        if (request.op == RV32Types::MEM_SB && rvtop->clk == 0) {
             uint8_t counter_id = static_cast<uint8_t>(request.data);
             profiler_counters_starts[counter_id] = sim_time;
         }
@@ -229,7 +296,7 @@ inline void handle_mmio_request(Vrv32_top* rvtop, uint64_t sim_time) {
     // Stop
     if (request.addr == (PROFILER_BASE_ADDR + 1)) {
         rvtop->mmio_request_done[1] = 1; // Tell the core the request is done
-        if (request.op == RV32Types::MEM_SB && rvtop->clk == 1) {
+        if (request.op == RV32Types::MEM_SB && rvtop->clk == 0) {
             uint8_t counter_id = static_cast<uint8_t>(request.data);
             profiler_counters[counter_id] += (sim_time - profiler_counters_starts[counter_id]) / 2;
         }

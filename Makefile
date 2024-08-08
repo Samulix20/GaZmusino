@@ -3,6 +3,7 @@ RUN_PARAMS ?=
 # Custom verilator instalation
 VERILATOR_ROOT := /home/samupp/Repos/verilator
 VV := ${VERILATOR_ROOT}/bin/verilator
+# VVOPT := -O3
 
 # Package manager verilator instalation
 #VV := verilator
@@ -27,9 +28,9 @@ obj_dir/.verilator.stamp: \
 	$(VERILOG_HEADERS)
 
 	${VV} -I $(VERILOG_MODULES) -Wall --top-module ${TOP_MODULE} \
-	-O3 --trace --trace-structs \
+	--trace --trace-structs $(VVOPT) \
 	--x-assign unique --x-initial unique \
-	--cc -CFLAGS "-O3 -std=c++20 -Wall -Wextra" --exe ${TOP_MODULE_SRC} $(CPP_SRC)
+	--cc -CFLAGS "-march=native -std=c++20 -Wall -Wextra" --exe ${TOP_MODULE_SRC} $(CPP_SRC)
 	@touch obj_dir/.verilator.stamp
 
 verilate: obj_dir/.verilator.stamp
