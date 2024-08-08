@@ -114,8 +114,8 @@ rv32_mul_unit mul_unit (
 rv32_word grng_result;
 clt_grng_16 grng (
     .clk(clk), .resetn(resetn), 
-    .enable(decode_exec_buff.decoded_instr.grng_enable),
-    .set_seed(decode_exec_buff.decoded_instr.grng_seed), .seed(reg_data[0]),
+    .ctrl(decode_exec_buff.decoded_instr.grng_ctrl),
+    .seed(reg_data[0]),
     .sample(grng_result)
 );
 

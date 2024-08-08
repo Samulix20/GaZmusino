@@ -141,6 +141,18 @@ function automatic int_alu_instr_t create_alu_nop_instr();
     return alu_instr;
 endfunction
 
+typedef struct packed {
+    logic enable;
+    logic set_seed;
+} grng_ctrl_t /*verilator public*/;
+
+function automatic grng_ctrl_t create_grng_nop_ctrl();
+    grng_ctrl_t grng_ctrl;
+    grng_ctrl.enable = 0;
+    grng_ctrl.set_seed = 0;
+    return grng_ctrl;
+endfunction
+
 // TODO rename to control_t or similar
 typedef struct packed {
     logic invalid;
@@ -152,11 +164,8 @@ typedef struct packed {
     branch_op_t branch_op;
     // Int Alu
     int_alu_instr_t int_alu_instr;
-    // TODO setup grng as struct
-    // GRNG advance
-    logic grng_enable;
-    // GRNG set seed
-    logic grng_seed;
+    // GRNG control
+    grng_ctrl_t grng_ctrl;
     // Memory
     mem_op_t mem_op;
     // Writeback source
@@ -177,14 +186,15 @@ function automatic decoded_instr_t create_nop_ctrl();
     instr.bypass_rs[2] = NO_BYPASS;
     instr.branch_op = OP_NOP;
     instr.int_alu_instr = create_alu_nop_instr();
+    instr.grng_ctrl = create_grng_nop_ctrl();
     instr.mem_op = MEM_NOP;
     instr.wb_result_src = WB_INT_ALU;
     instr.register_wb = 0;
-    instr.grng_enable = 0;
-    instr.grng_seed = 0;
     instr.csr_wb = 0;
     return instr;
 endfunction
+
+// TODO change rv32_word data names
 
 typedef struct packed {
     rv_csr_id_t id;

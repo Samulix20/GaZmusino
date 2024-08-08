@@ -171,12 +171,12 @@ always_comb begin
 
             case (instr.funct3)
                 3'b000: begin // Set seed
-                    decoded_instr.grng_seed = 1;
+                    decoded_instr.grng_ctrl.set_seed = 1;
                     use_rs[0] = 1;
                 end
                 3'b001: begin
                     decoded_instr.wb_result_src = WB_GRNG;
-                    decoded_instr.grng_enable = 1; 
+                    decoded_instr.grng_ctrl.enable = 1; 
                     decoded_instr.register_wb = 1;
                 end
                 default: begin

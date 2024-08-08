@@ -1,8 +1,10 @@
 /* verilator lint_off UNUSEDSIGNAL */
 
 module clt_grng_16 
+import rv32_types::*;
 (
-    input logic clk, resetn, enable, set_seed,
+    input logic clk, resetn,
+    input grng_ctrl_t ctrl,
     input logic[31:0] seed,
     output logic[31:0] sample
 );
@@ -26,7 +28,7 @@ always_comb begin
         next_state = 4;
         uc_set = 1;
     end
-    else if (set_seed) begin
+    else if (ctrl.set_seed) begin
         state_change = 1;
         next_state = 4;
         uc_set = 1;
@@ -39,7 +41,7 @@ always_comb begin
         uc_enable = 1;
     end 
     else begin 
-        uc_enable = enable;
+        uc_enable = ctrl.enable;
     end
 end
 always_ff @(posedge clk) begin

@@ -27,9 +27,9 @@ obj_dir/.verilator.stamp: \
 	$(VERILOG_HEADERS)
 
 	${VV} -I $(VERILOG_MODULES) -Wall --top-module ${TOP_MODULE} \
-	--trace --trace-structs \
+	-O3 --trace --trace-structs \
 	--x-assign unique --x-initial unique \
-	--cc -CFLAGS "-std=c++20 -Wall -Wextra" --exe ${TOP_MODULE_SRC} $(CPP_SRC)
+	--cc -CFLAGS "-O3 -std=c++20 -Wall -Wextra" --exe ${TOP_MODULE_SRC} $(CPP_SRC)
 	@touch obj_dir/.verilator.stamp
 
 verilate: obj_dir/.verilator.stamp
