@@ -93,7 +93,7 @@ inline void mmio_exit_request(Vrv32_top* rvtop, uint64_t sim_time) {
     MemoryRequest request = get_memory_request(rvtop);
     if (request.addr == EXIT_STATUS_ADDR) {
         rvtop->mmio_request_done[0] = 1;
-        if (request.op == RV32Types::MEM_SW && rvtop->clk == 0) {
+        if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
             std::cout << '\n' << "Exit status " << request.data << '\n';
             std::cout << "Sim time " << sim_time << '\n';
             print_profiler_counters();
@@ -106,7 +106,7 @@ inline void mmio_print_request(Vrv32_top* rvtop) {
     MemoryRequest request = get_memory_request(rvtop);
     if (request.addr == PRINT_REG_ADDR) {
         rvtop->mmio_request_done[0] = 1;
-        if (request.op == RV32Types::MEM_SW && rvtop->clk == 0) {
+        if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
             std::cout << static_cast<char>(request.data);
         }
     }
@@ -121,29 +121,35 @@ inline void handle_mmio_request(Vrv32_top* rvtop, uint64_t sim_time) {
 
 // Store the values for 1 cycle delay serve
 uint32_t read_instr = 0, read_mem_data = 0;
+uint32_t instr_wait_cyles = 0, data_wait_cyles = 0;
+bool aux = false;
 
 inline void handle_instruction_request(Vrv32_top* rvtop, rv32_memory& rvmem) {
 
     // Set up values with 1 cycle delay
     rvtop->rv32_top->instr = read_instr;
 
+    // Get request from system bus
+    MemoryRequest request = get_instruction_request(rvtop);
+
     // By default no request is served
     rvtop->rv32_top->instr_request_done = 0;
 
-    // Get request from system bus
-    MemoryRequest instr_request = get_instruction_request(rvtop);
+    // Ignore NOP operations
+    if (request.op == RV32Types::MEM_NOP) return;
 
-    if (instr_request.addr <= rvmem.max_addr) {
+    if (request.addr <= rvmem.max_addr) {
+
         rvtop->rv32_top->instr_request_done = 1;
 
         // Read instruction
-        if (rvtop->clk == 0 && instr_request.op == RV32Types::MEM_LW) {
-            read_instr = read_aligned_word(rvmem, instr_request.addr);
+        if (rvtop->clk == 1 && request.op == RV32Types::MEM_LW) {
+            read_instr = read_aligned_word(rvmem, request.addr);
         }
     } else {
         // Out of memory bounds request
         std::cout << "Out of bounds instruction address request ";
-        std::cout << std::format("{:<#10x}", instr_request.addr) << '\n';
+        std::cout << std::format("{:<#10x}", request.addr) << '\n';
         exit(255);
     }
 }
@@ -154,28 +160,42 @@ inline void handle_data_request(Vrv32_top* rvtop, rv32_memory& rvmem) {
     rvtop->rv32_top->memory_data = read_mem_data;
 
     // Get request from system bus
-    MemoryRequest mem_request = get_memory_request(rvtop);
+    MemoryRequest request = get_memory_request(rvtop);
 
     // By default no request is served
     rvtop->rv32_top->mem_data_ready = 0;
 
-    if (mem_request.addr <= rvmem.max_addr) {
+    // Ignore NOP operations
+    if (request.op == RV32Types::MEM_NOP) return;
+
+    if (request.addr <= rvmem.max_addr) {
+
+        // Delay control
+        /*
+        if (data_wait_cyles >= 1) {
+            if (rvtop->clk == 1) data_wait_cyles = 0;
+        } else {
+            if (rvtop->clk == 1) data_wait_cyles++;
+            return;
+        }
+        */
+
         rvtop->rv32_top->mem_data_ready = 1;
-        
+
         // Read/Write data memory
-        if (rvtop->clk == 0) {
+        if (rvtop->clk == 1) {
 
-            read_mem_data = read_aligned_word(rvmem, mem_request.addr);
+            read_mem_data = read_aligned_word(rvmem, request.addr);
 
-            switch(mem_request.op) {
+            switch(request.op) {
                 case RV32Types::MEM_SB:
-                    write_mem<uint8_t>(rvmem, mem_request.addr, mem_request.data);
+                    write_mem<uint8_t>(rvmem, request.addr, request.data);
                     break;
                 case RV32Types::MEM_SH:
-                    write_mem<uint16_t>(rvmem, mem_request.addr, mem_request.data);
+                    write_mem<uint16_t>(rvmem, request.addr, request.data);
                     break;
                 case RV32Types::MEM_SW:
-                    write_mem<uint32_t>(rvmem, mem_request.addr, mem_request.data);
+                    write_mem<uint32_t>(rvmem, request.addr, request.data);
                     break;
                 default:
                     break;

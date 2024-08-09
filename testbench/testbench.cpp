@@ -72,11 +72,8 @@ int main(int argc, char** argv) {
             rv32_test::set_memory_banks(dut, rvmem);
         }
 
-        // Update signals
-        dut->eval();
-
         // Memory bus signals
-        if(sim_time >= 5) {
+        if(!reset_on) {
             rv32_test::handle_memory_request(dut, rvmem, sim_time);
         }
 
@@ -85,7 +82,7 @@ int main(int argc, char** argv) {
 
         // Debug
         // Only on high clk and after reset
-        if (print_trace && !reset_on && dut->clk == 1) {
+        if (print_trace && !reset_on && dut->clk == 0) {
             rv32_test::trace_stages(dut, diassembly_map);
         }
 
