@@ -4,7 +4,7 @@ BUILD_DIR ?=		# Build directory
 EXTRA_FLAGS ?=		# Optional extra flags
 
 .PHONY: all
-all: $(BUILD_DIR)/linker.lds $(BUILD_DIR)/main.elf
+all: $(BUILD_DIR)/linker.lds $(BUILD_DIR)/main.elf $(BUILD_DIR)/main.dump
 
 # Setup BSP source dir
 BSP_DIR := $(shell dirname $(realpath $(MAKEFILE_LIST)))

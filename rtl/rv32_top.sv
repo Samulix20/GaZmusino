@@ -74,10 +74,11 @@ always_ff @(posedge clk) begin
 end
 
 always_comb begin
-    // Top priority
-    core_data = 0;
-    if (select_main_memory) core_data = memory_data;
-    else begin
+    // Default behaviour
+    core_data = memory_data;
+    // Memory is top priority
+    // Then MMIO N, MMIO N-1, ... MMIO 0
+    if (!select_main_memory) begin
         for(int idx = 0; idx < NUM_MMIO; idx = idx + 1) begin
             if (mmio_bus_selector[idx]) core_data = mmio_data[idx];
         end
