@@ -2,7 +2,7 @@
 
 module rv32_top
 import rv32_types::*;
-#(parameter int NUM_MMIO = 2)
+#(parameter int NUM_MMIO = 1)
 (
     input logic clk, resetn,
     // MMIO
