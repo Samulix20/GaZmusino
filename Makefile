@@ -8,7 +8,7 @@ VV := ${VERILATOR_ROOT}/bin/verilator
 #VV := verilator
 
 # Config flag for CPP simulated memory
-CPP_SIM_MEMORY := -DCPP_SIM_MEMORY
+CPP_MEMORY_SIM := -DCPP_MEMORY_SIM
 
 # Config flag for optimized verilator
 # Increases compile time
@@ -35,9 +35,9 @@ obj_dir/.verilator.stamp: \
 
 	${VV} -I $(VERILOG_MODULES) \
 	-Wall --top-module ${TOP_MODULE} \
-	$(CPP_SIM_MEMORY) --trace --trace-structs $(VVOPT) \
+	$(CPP_MEMORY_SIM) --trace --trace-structs $(VVOPT) \
 	--x-assign unique --x-initial unique \
-	--cc -CFLAGS "$(CPP_SIM_MEMORY) -march=native -std=c++20 -Wall -Wextra" \
+	--cc -CFLAGS "$(CPP_MEMORY_SIM) -march=native -std=c++20 -Wall -Wextra" \
 	--exe ${TOP_MODULE_SRC} $(CPP_SRC)
 
 	@touch obj_dir/.verilator.stamp

@@ -30,6 +30,9 @@
 #include "Vrv32_top_bram_2_port__N100000.h"
 #endif
 
+// Bsp defines config
+#include "../bsp/include/riscv/config.h"
+
 namespace rv32_test {
 
 // Utilty using statements
@@ -265,9 +268,6 @@ inline void set_banked_memory(Vrv32_top* rvtop, const rv32_elf_program& elf_prog
 
     #endif
 }
-
-// Bsp defines config
-#include "../bsp/include/riscv/config.h"
 
 uint64_t profiler_counters[255];
 uint64_t profiler_counters_starts[255];
