@@ -6,10 +6,9 @@
 // Verilator
 #include <verilated.h>
 #include <verilated_vcd_c.h>
-
 #include "Vrv32_top.h"
-#include "rv32_test_utils.h"
 
+#include "rv32_test_utils.h"
 #include "rv32_trace_stages.h"
 
 int main(int argc, char** argv) {
@@ -71,7 +70,7 @@ int main(int argc, char** argv) {
 
         if (sim_time == 5) {
             // Set bram contents
-            //rv32_test::set_banked_memory(dut, elf_program);
+            rv32_test::set_banked_memory(dut, elf_program);
         }
 
         // Update signals
@@ -80,7 +79,7 @@ int main(int argc, char** argv) {
         // Memory bus signals
         if(sim_time >= 5) {
             rv32_test::handle_mmio_request(dut, sim_time);
-            rv32_test::handle_main_memory_request_comb(dut, elf_program);
+            rv32_test::handle_main_memory_request(dut, elf_program);
         }
 
         // Update signals

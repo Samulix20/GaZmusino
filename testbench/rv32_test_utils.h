@@ -13,6 +13,7 @@
 #include <sstream>
 #include <string.h>
 #include <string>
+#include <format>
 
 // Device under test headers
 #include "Vrv32_top_rv32_types.h"
@@ -24,10 +25,10 @@
 #include "Vrv32_top_rv32_exec_stage.h"
 #include "Vrv32_top_rv32_mem_stage.h"
 
-/*
+#ifndef CPP_MEMORY_SIM
 #include "Vrv32_top_rv32_main_memory.h"
 #include "Vrv32_top_bram_2_port__N100000.h"
-*/
+#endif
 
 namespace rv32_test {
 
@@ -160,36 +161,50 @@ void write_mem(rv32_elf_program& elf_program, const uint32_t addr, const uint32_
     *reinterpret_cast<T*>(elf_program.memory.get() + addr) = static_cast<T>(data);
 }
 
+// Store the values for 1 cycle delay serve
 uint32_t read_instr = 0, read_mem_data = 0;
 
-inline void handle_main_memory_request_comb(Vrv32_top* rvtop, rv32_elf_program& elf_program) {
+inline void _handle_instruction_request(Vrv32_top* rvtop, rv32_elf_program& elf_program) {
+
+    // Set up values with 1 cycle delay
     rvtop->rv32_top->instr = read_instr;
-    rvtop->rv32_top->memory_data = read_mem_data;
 
-    MemoryRequest mem_request = get_memory_request(rvtop);
-    MemoryRequest instr_request = get_instruction_request(rvtop);
-
+    // By default no request is served
     rvtop->rv32_top->instr_request_done = 0;
-    rvtop->rv32_top->mem_data_ready = 0;
+
+    // Get request from system bus
+    MemoryRequest instr_request = get_instruction_request(rvtop);
 
     if (instr_request.addr <= elf_program.max_addr) {
         rvtop->rv32_top->instr_request_done = 1;
 
-        // FlipFlop
+        // Read instruction
         if (rvtop->clk == 0 && instr_request.op == RV32Types::MEM_LW) {
             read_instr = read_aligned_word(elf_program, instr_request.addr);
         }
     } else {
-        // Out of bounds memory request
-        // TODO add error msg
-        std::cout << "PANIC" << '\n';
-        exit(1);
+        // Out of memory bounds request
+        std::cout << "Out of bounds instruction address request ";
+        std::cout << std::format("{:<#10x}", instr_request.addr) << '\n';
+        exit(255);
     }
+}
+
+inline void _handle_data_request(Vrv32_top* rvtop, rv32_elf_program& elf_program) {
+    
+    // Set up values with 1 cycle delay
+    rvtop->rv32_top->memory_data = read_mem_data;
+
+    // Get request from system bus
+    MemoryRequest mem_request = get_memory_request(rvtop);
+
+    // By default no request is served
+    rvtop->rv32_top->mem_data_ready = 0;
 
     if (mem_request.addr <= elf_program.max_addr) {
         rvtop->rv32_top->mem_data_ready = 1;
         
-        // FlipFlop
+        // Read/Write data memory
         if (rvtop->clk == 0) {
 
             read_mem_data = read_aligned_word(elf_program, mem_request.addr);
@@ -209,11 +224,21 @@ inline void handle_main_memory_request_comb(Vrv32_top* rvtop, rv32_elf_program& 
             }
         }
     }
-
 }
 
-/*
+inline void handle_main_memory_request(Vrv32_top* rvtop, rv32_elf_program& elf_program) {
+    #ifdef CPP_MEMORY_SIM
+
+    _handle_instruction_request(rvtop, elf_program);
+    _handle_data_request(rvtop, elf_program);
+
+    #endif
+}
+
+
 inline void set_banked_memory(Vrv32_top* rvtop, const rv32_elf_program& elf_program) {
+    #ifndef CPP_MEMORY_SIM
+    
     assert(rvtop->rv32_top->memory->NUM_WORDS >= (elf_program.max_addr >> 2));
 
     uint8_t* memory = elf_program.memory.get();
@@ -237,8 +262,9 @@ inline void set_banked_memory(Vrv32_top* rvtop, const rv32_elf_program& elf_prog
         }
         bsel = (bsel + 1) % 4;
     }
+
+    #endif
 }
-*/
 
 // Bsp defines config
 #include "../bsp/include/riscv/config.h"

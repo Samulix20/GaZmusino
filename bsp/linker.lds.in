@@ -6,6 +6,8 @@
    are permitted in any medium without royalty provided the copyright
    notice and this notice are preserved.  */
 
+#include <riscv/config.h>
+
 OUTPUT_FORMAT("elf32-littleriscv", "elf32-littleriscv", "elf32-littleriscv")
 OUTPUT_ARCH(riscv)
 ENTRY(__rv_init) /* Setup rv init as entry point */
@@ -13,7 +15,7 @@ ENTRY(__rv_init) /* Setup rv init as entry point */
 /* Memory config of RISC-V CPU */
 MEMORY
 {
-  ram (wxa) : ORIGIN = 0x00000000, LENGTH = 4096k
+  ram (wxa) : ORIGIN = 0x00000000, LENGTH = MEM_SIZE
 }
 
 SECTIONS
@@ -210,7 +212,7 @@ SECTIONS
   .stack :
   {
     . = ALIGN(16);
-    . += 10240;
+    . += STACK_SIZE;
     _stack_top = .;
   } >ram
 }

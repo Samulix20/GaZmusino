@@ -33,7 +33,8 @@ rv32_core core (
 logic mem_data_ready /*verilator public*/;
 rv32_word memory_data /*verilator public*/;
 
-/*
+`ifndef CPP_MEMORY_SIM
+
 rv32_main_memory memory (
     .clk(clk), .resetn(resetn),
 
@@ -45,7 +46,8 @@ rv32_main_memory memory (
     .data_ready(mem_data_ready),
     .data(memory_data)
 );
-*/
+
+`endif
 
 always_comb begin
     core_data_ready = mem_data_ready;
