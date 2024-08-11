@@ -183,7 +183,7 @@ inline std::string wb_write_str(const Vrv32_top* rvtop) {
     auto wb_result = get_wb_result_data(rvtop);
 
     std::string s = "";
-    if (wbd.decoded_instr.register_wb) {
+    if (wbd.control.register_wb) {
         s += "x" + std::to_string(wbd.instr.rd) + 
             " <- " + std::format("{:<#10x}", wb_result);
     }
@@ -291,7 +291,7 @@ inline std::string trace_stages(const Vrv32_top* rvtop, const DissasemblyMap& dm
     if (decode_data.instr.get() != 0x33) {
         tc.canvas[1][2] = "Opcode " + opcode_str(decode_data.instr);
         tc.canvas[1][3] = decode_register_usage_str(rvtop);
-        tc.canvas[1][4] = bypass_str(decode_data.instr, decode_data.decoded_instr);
+        tc.canvas[1][4] = bypass_str(decode_data.instr, decode_data.control);
         tc.canvas[1][5] = get_decode_stall(rvtop) == 1 ? "STALL!" : "";
     }
 
@@ -300,10 +300,10 @@ inline std::string trace_stages(const Vrv32_top* rvtop, const DissasemblyMap& dm
         exec_data.pc, exec_data.instr.get());
     tc.canvas[2][1] = dissasembled_isntr(dmap, exec_data.pc, exec_data.instr.get());
     if (exec_data.instr.get() != 0x33) {
-        tc.canvas[2][2] = wb_src_str(exec_data.instr, exec_data.decoded_instr);
-        tc.canvas[2][3] = alu_op_str(exec_data.decoded_instr) + " " +
-            alu_input_str(exec_data.instr, exec_data.decoded_instr);
-        tc.canvas[2][4] = branch_op_str(exec_data.decoded_instr) + " " +
+        tc.canvas[2][2] = wb_src_str(exec_data.instr, exec_data.control);
+        tc.canvas[2][3] = alu_op_str(exec_data.control) + " " +
+            alu_input_str(exec_data.instr, exec_data.control);
+        tc.canvas[2][4] = branch_op_str(exec_data.control) + " " +
             (get_exec_jump(rvtop) == 1 ? "JUMP!" : "");
     }
 
@@ -312,7 +312,7 @@ inline std::string trace_stages(const Vrv32_top* rvtop, const DissasemblyMap& dm
         std::format("@ {:<#10x} I {:<#10x}", mem_data.pc, mem_data.instr.get());
     tc.canvas[3][1] = dissasembled_isntr(dmap, mem_data.pc, mem_data.instr.get());
     if (mem_data.instr.get() != 0x33) {
-        tc.canvas[3][2] = wb_src_str(mem_data.instr, mem_data.decoded_instr);
+        tc.canvas[3][2] = wb_src_str(mem_data.instr, mem_data.control);
         tc.canvas[3][3] = mem_op_str(rvtop);
         tc.canvas[3][5] = get_memory_stall(rvtop) == 1 ? "STALL!" : "";
     }

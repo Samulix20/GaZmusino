@@ -28,26 +28,26 @@ mem_wb_buffer_t internal_data /*verilator public*/;
 always_comb begin 
     csr_write_request.id = exec_mem_buff.instr[31:20];
     csr_write_request.value = exec_mem_buff.mem_addr;
-    csr_write_request.write = exec_mem_buff.decoded_instr.csr_wb;
+    csr_write_request.write = exec_mem_buff.control.csr_wb;
 end
 
 always_comb begin
     data_request.addr = exec_mem_buff.mem_addr;
-    data_request.op = exec_mem_buff.decoded_instr.mem_op;
+    data_request.op = exec_mem_buff.control.mem_op;
     data_request.data = exec_mem_buff.wb_result;
 end
 
 always_comb begin
     // Forward signals
     internal_data = exec_mem_buff;
-    if (exec_mem_buff.decoded_instr.mem_op == MEM_NOP) stall = 0;
+    if (exec_mem_buff.control.mem_op == MEM_NOP) stall = 0;
     else stall = ~request_done;
 end
 
 always_ff @(posedge clk) begin
     if(!resetn) begin
         mem_wb_buff.instr <= RV_NOP;
-        mem_wb_buff.decoded_instr <= create_nop_ctrl();
+        mem_wb_buff.control <= create_nop_ctrl();
         mem_wb_buff.pc <= 0;
     end
 

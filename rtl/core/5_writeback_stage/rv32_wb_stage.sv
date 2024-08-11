@@ -22,7 +22,7 @@ import rv32_types::*;
 rv32_word fixed_load;
 
 rv32_load_fix load_fix(
-    .op(mem_wb_buff.decoded_instr.mem_op),
+    .op(mem_wb_buff.control.mem_op),
     .addr(mem_wb_buff.mem_addr),
     .raw_load(mem_data),
     .fixed_load(fixed_load)
@@ -30,12 +30,12 @@ rv32_load_fix load_fix(
 
 always_comb begin
     // Register file write control
-    reg_write = mem_wb_buff.decoded_instr.register_wb;
+    reg_write = mem_wb_buff.control.register_wb;
     rd = mem_wb_buff.instr.rd;
 
     // Writeback data
     // Set mem load result if required
-    case (mem_wb_buff.decoded_instr.wb_result_src)
+    case (mem_wb_buff.control.wb_result_src)
         WB_MEM_DATA: wb_data = fixed_load;
         default: wb_data = mem_wb_buff.wb_result;
     endcase

@@ -16,7 +16,7 @@ module rv32_decoder
 import rv32_types::*;
 (
     input rv_instr_t instr,
-    output decoded_instr_t decoded_instr,
+    output rv_control_t decoded_instr,
     // Register use for dependecy detection
     output logic use_rs [3]
 );

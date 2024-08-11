@@ -7,7 +7,7 @@ import rv32_types::*;
 (
     input logic use_rs [3],
     input rv_instr_t current_instr,
-    input decoded_instr_t current_decoded_instr,
+    input rv_control_t current_decoded_instr,
     input decode_exec_buffer_t decode_exec_buff,
     input exec_mem_buffer_t exec_mem_buff,
     output logic stall,
@@ -28,16 +28,16 @@ always_comb begin
 
         // Check first mem cause it will get overwritten if required
         // rs dependency with instr at mem
-        if(rs == exec_mem_buff.instr.rd && exec_mem_buff.decoded_instr.register_wb)
+        if(rs == exec_mem_buff.instr.rd && exec_mem_buff.control.register_wb)
             bypass_rs[idx] = BYPASS_MEM_BUFF;
 
         // rs dependency with instr at exec
         if (rs == decode_exec_buff.instr.rd &&
-            decode_exec_buff.decoded_instr.register_wb) begin
+            decode_exec_buff.control.register_wb) begin
 
             bypass_rs[idx] = BYPASS_EXEC_BUFF;
             // Load use generates one nop bubble always
-            if (decode_exec_buff.decoded_instr.wb_result_src == WB_MEM_DATA)
+            if (decode_exec_buff.control.wb_result_src == WB_MEM_DATA)
                 stall_vec[idx] = 1;
         end
 
@@ -53,8 +53,8 @@ always_comb begin
     // CSR Hazzard detection
     // Only 1 CSR instruction ins allowed in the pipeline
     if (current_decoded_instr.wb_result_src == WB_CSR) begin
-        stall = stall | (decode_exec_buff.decoded_instr.wb_result_src == WB_CSR);
-        stall = stall | (exec_mem_buff.decoded_instr.wb_result_src == WB_CSR);
+        stall = stall | (decode_exec_buff.control.wb_result_src == WB_CSR);
+        stall = stall | (exec_mem_buff.control.wb_result_src == WB_CSR);
     end
 end
 

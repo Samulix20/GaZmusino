@@ -42,7 +42,7 @@ using WritebackStageData = MemoryStageData;
 using MemoryRequest = Vrv32_top_memory_request_t__struct__0;
 
 using Instruction = Vrv32_top_rv_instr_t__struct__0;
-using DecodedInstruction = Vrv32_top_decoded_instr_t__struct__0;
+using DecodedInstruction = Vrv32_top_rv_control_t__struct__0;
 using RV32Types = Vrv32_top_rv32_types;
 
 // Getters core internal data

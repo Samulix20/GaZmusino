@@ -29,7 +29,7 @@ import rv32_types::*;
 
 decode_exec_buffer_t internal_data /*verilator public*/;
 decode_exec_buffer_t output_internal_data /*verilator public*/;
-decoded_instr_t decoder_output;
+rv_control_t decoder_output;
 
 // Small logic to support fetch bubbles
 rv_instr_t internal_instr;
@@ -59,6 +59,7 @@ rv32_hazzard_detection_unit hazzard_detection(
 );
 
 // Decode logic
+// Final stall control and register write
 always_comb begin
     // Forward signals
     internal_data.pc = fetch_decode_buff.pc;
@@ -68,25 +69,22 @@ always_comb begin
     internal_data.reg_data = reg_data;
 
     // Default decode
-    internal_data.decoded_instr = decoder_output;
+    internal_data.control = decoder_output;
 
     // Hazard detection
-    internal_data.decoded_instr.bypass_rs = bypass_rs;
+    internal_data.control.bypass_rs = bypass_rs;
     stall = hazzard_stall;
 
     // If CSR instruction advance read csr
-    if (internal_data.decoded_instr.wb_result_src == WB_CSR) begin
+    if (internal_data.control.wb_result_src == WB_CSR) begin
         internal_data.reg_data[2] = csr_data;
     end
-end
 
-// Final stall control and register write
-always_comb begin
     output_internal_data = internal_data;
 
     if (stall | set_nop) begin
         output_internal_data.instr = RV_NOP;
-        output_internal_data.decoded_instr = create_nop_ctrl();
+        output_internal_data.control = create_nop_ctrl();
         if (set_nop) output_internal_data.pc = set_nop_pc;
     end
 
@@ -95,7 +93,7 @@ end
 always_ff @(posedge clk) begin
     if (!resetn) begin
         decode_exec_buff.instr <= RV_NOP;
-        decode_exec_buff.decoded_instr <= create_nop_ctrl();
+        decode_exec_buff.control <= create_nop_ctrl();
         decode_exec_buff.pc <= 0;
     end
     else if (!stop) begin

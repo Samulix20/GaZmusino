@@ -32,7 +32,7 @@ exec_mem_buffer_t output_internal_data;
 rv32_word reg_data[3];
 always_comb begin
     for(int idx = 0; idx < 3; idx = idx + 1) begin
-        case (decode_exec_buff.decoded_instr.bypass_rs[idx])
+        case (decode_exec_buff.control.bypass_rs[idx])
             BYPASS_EXEC_BUFF: reg_data[idx] = exec_mem_buff.wb_result;
             BYPASS_MEM_BUFF: reg_data[idx] = wb_bypass;
             default: reg_data[idx] = decode_exec_buff.reg_data[idx];
@@ -43,7 +43,7 @@ end
 // Immediate creation logic
 rv32_word immediate;
 rv32_immediate_gen immediate_gen(
-    .instr_type(decode_exec_buff.decoded_instr.t),
+    .instr_type(decode_exec_buff.control.t),
     .instruction(decode_exec_buff.instr),
     .immediate(immediate)
 );
@@ -72,7 +72,7 @@ rv32_zicsr_unit zicsr_unit (
 rv32_word alu_op[2];
 always_comb begin
     for(int idx = 0; idx < 2; idx = idx + 1) begin
-        case (decode_exec_buff.decoded_instr.int_alu_instr.xbar[idx])
+        case (decode_exec_buff.control.int_alu_instr.xbar[idx])
             ALU_IN_REG_1: alu_op[idx] = reg_data[0];
             ALU_IN_REG_2: alu_op[idx] = reg_data[1];
             ALU_IN_PC: alu_op[idx] = decode_exec_buff.pc;
@@ -84,14 +84,14 @@ end
 rv32_word int_alu_result;
 rv32_int_alu int_alu (
     .op1(alu_op[0]), .op2(alu_op[1]),
-    .opsel(decode_exec_buff.decoded_instr.int_alu_instr.op),
+    .opsel(decode_exec_buff.control.int_alu_instr.op),
     .result(int_alu_result)
 );
 
 // Branch unit
 rv32_branch_unit branch_unit (
     .op1(reg_data[0]), .op2(reg_data[1]),
-    .branch_op(decode_exec_buff.decoded_instr.branch_op),
+    .branch_op(decode_exec_buff.control.branch_op),
     .do_branch(do_jump)
 );
 always_comb begin
@@ -114,7 +114,7 @@ rv32_mul_unit mul_unit (
 rv32_word grng_result;
 clt_grng_16 grng (
     .clk(clk), .resetn(resetn), 
-    .ctrl(decode_exec_buff.decoded_instr.grng_ctrl),
+    .ctrl(decode_exec_buff.control.grng_ctrl),
     .seed(reg_data[0]),
     .sample(grng_result)
 );
@@ -123,11 +123,11 @@ clt_grng_16 grng (
 always_comb begin
     internal_data.instr = decode_exec_buff.instr;
     internal_data.pc = decode_exec_buff.pc;
-    internal_data.decoded_instr = decode_exec_buff.decoded_instr;
+    internal_data.control = decode_exec_buff.control;
     internal_data.mem_addr = int_alu_result;
 
     // Setup data for bypass
-    case(decode_exec_buff.decoded_instr.wb_result_src)
+    case(decode_exec_buff.control.wb_result_src)
         WB_PC4: internal_data.wb_result = decode_exec_buff.pc + 4;
         WB_INT_ALU: internal_data.wb_result = int_alu_result;
         WB_STORE: internal_data.wb_result = reg_data[1];
@@ -145,7 +145,7 @@ always_ff @(posedge clk) begin
     if (!resetn) begin
         exec_mem_buff.instr <= RV_NOP;
         exec_mem_buff.pc <= 0;
-        exec_mem_buff.decoded_instr <= create_nop_ctrl();
+        exec_mem_buff.control <= create_nop_ctrl();
     end
     else if (!stop) exec_mem_buff <= internal_data;
 end

@@ -1,7 +1,6 @@
 package rv32_types;
 
 // Definitions for all data types, structs, etc...
-// TODO divide into different files
 
 typedef logic[31:0] rv32_word;
 typedef rv32_word [1:0] rv64_word;
@@ -174,11 +173,11 @@ typedef struct packed {
     logic register_wb;
     // Final CSR write
     logic csr_wb;
-} decoded_instr_t /*verilator public*/;
+} rv_control_t /*verilator public*/;
 
 // Used for NOP generation
-function automatic decoded_instr_t create_nop_ctrl();
-    decoded_instr_t instr;
+function automatic rv_control_t create_nop_ctrl();
+    rv_control_t instr;
     instr.invalid = 0;
     instr.t = INSTR_R_TYPE;
     instr.bypass_rs[0] = NO_BYPASS;
@@ -210,14 +209,14 @@ typedef struct packed {
 typedef struct packed {
     rv_instr_t instr;
     rv32_word pc;
-    decoded_instr_t decoded_instr;
+    rv_control_t control;
     rv32_word[2:0] reg_data;
 } decode_exec_buffer_t /*verilator public*/;
 
 typedef struct packed {
     rv_instr_t instr;
     rv32_word pc;
-    decoded_instr_t decoded_instr;
+    rv_control_t control;
     rv32_word mem_addr;
     rv32_word wb_result;
 } exec_mem_buffer_t /*verilator public*/;
