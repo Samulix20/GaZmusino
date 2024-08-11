@@ -45,13 +45,13 @@ logic hazzard_stall;
 rv32_decoder decoder(
     .use_rs(use_rs),
     .instr(internal_instr),
-    .decoded_instr(decoder_output)
+    .control(decoder_output)
 );
 
 rv32_hazzard_detection_unit hazzard_detection(
     .use_rs(use_rs),
     .current_instr(internal_instr),
-    .current_decoded_instr(decoder_output),
+    .current_control(decoder_output),
     .decode_exec_buff(decode_exec_buff),
     .exec_mem_buff(exec_mem_buff),
     .stall(hazzard_stall),

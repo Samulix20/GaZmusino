@@ -7,7 +7,7 @@ import rv32_types::*;
 (
     input logic use_rs [3],
     input rv_instr_t current_instr,
-    input rv_control_t current_decoded_instr,
+    input rv_control_t current_control,
     input decode_exec_buffer_t decode_exec_buff,
     input exec_mem_buffer_t exec_mem_buff,
     output logic stall,
@@ -52,7 +52,7 @@ always_comb begin
 
     // CSR Hazzard detection
     // Only 1 CSR instruction ins allowed in the pipeline
-    if (current_decoded_instr.wb_result_src == WB_CSR) begin
+    if (current_control.wb_result_src == WB_CSR) begin
         stall = stall | (decode_exec_buff.control.wb_result_src == WB_CSR);
         stall = stall | (exec_mem_buff.control.wb_result_src == WB_CSR);
     end

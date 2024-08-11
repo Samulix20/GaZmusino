@@ -16,7 +16,7 @@ module rv32_decoder
 import rv32_types::*;
 (
     input rv_instr_t instr,
-    output rv_control_t decoded_instr,
+    output rv_control_t control,
     // Register use for dependecy detection
     output logic use_rs [3]
 );
@@ -26,7 +26,7 @@ always_comb begin
     logic is_srai = 0;
 
     // Default signals NOP Setup add x0, x0, 0;
-    decoded_instr = create_nop_ctrl();
+    control = create_nop_ctrl();
 
     use_rs[0] = 0; // rs1
     use_rs[1] = 0; // rs2
@@ -37,19 +37,19 @@ always_comb begin
         // ALU: 0 + U_IMM
         // RD = ALU
         OPCODE_LUI: begin
-            decoded_instr.t = INSTR_U_TYPE;
-            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
-            decoded_instr.register_wb = 1;
+            control.t = INSTR_U_TYPE;
+            control.int_alu_instr.xbar[1] = ALU_IN_IMM;
+            control.register_wb = 1;
         end
 
         // Load upper imm+pc
         // ALU: PC + U_IMM
         // RD = ALU
         OPCODE_AUIPC: begin
-            decoded_instr.t = INSTR_U_TYPE;
-            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_PC;
-            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
-            decoded_instr.register_wb = 1;
+            control.t = INSTR_U_TYPE;
+            control.int_alu_instr.xbar[0] = ALU_IN_PC;
+            control.int_alu_instr.xbar[1] = ALU_IN_IMM;
+            control.register_wb = 1;
         end
 
         // Jump and link
@@ -57,12 +57,12 @@ always_comb begin
         // PC = ALU
         // RD = PC + 4
         OPCODE_JAL: begin
-            decoded_instr.t = INSTR_J_TYPE;
-            decoded_instr.branch_op = OP_J;
-            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_PC;
-            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
-            decoded_instr.register_wb = 1;
-            decoded_instr.wb_result_src = WB_PC4;
+            control.t = INSTR_J_TYPE;
+            control.branch_op = OP_J;
+            control.int_alu_instr.xbar[0] = ALU_IN_PC;
+            control.int_alu_instr.xbar[1] = ALU_IN_IMM;
+            control.register_wb = 1;
+            control.wb_result_src = WB_PC4;
         end
 
         // Jump and link using register
@@ -70,12 +70,12 @@ always_comb begin
         // PC = ALU
         // RD = PC + 4
         OPCODE_JALR: begin
-            decoded_instr.t = INSTR_I_TYPE;
-            decoded_instr.branch_op = OP_J;
-            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_REG_1;
-            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
-            decoded_instr.register_wb = 1;
-            decoded_instr.wb_result_src = WB_PC4;
+            control.t = INSTR_I_TYPE;
+            control.branch_op = OP_J;
+            control.int_alu_instr.xbar[0] = ALU_IN_REG_1;
+            control.int_alu_instr.xbar[1] = ALU_IN_IMM;
+            control.register_wb = 1;
+            control.wb_result_src = WB_PC4;
             use_rs[0] = 1;
         end
 
@@ -84,10 +84,10 @@ always_comb begin
         // PC = ALU
         // B_UNIT: R1, R2
         OPCODE_BRANCH: begin
-            decoded_instr.t = INSTR_B_TYPE;
-            decoded_instr.branch_op = branch_op_t'({1'b0, instr.funct3});
-            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_PC;
-            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
+            control.t = INSTR_B_TYPE;
+            control.branch_op = branch_op_t'({1'b0, instr.funct3});
+            control.int_alu_instr.xbar[0] = ALU_IN_PC;
+            control.int_alu_instr.xbar[1] = ALU_IN_IMM;
             use_rs[0] = 1;
             use_rs[1] = 1;
         end
@@ -99,30 +99,30 @@ always_comb begin
             // SRAI instr is the only that sets alu_op to 1xxx
             if (instr.funct3 == 3'b101 && instr.funct7[5]) is_srai = 1;
             else is_srai = 0;
-            decoded_instr.t = INSTR_I_TYPE;
-            decoded_instr.int_alu_instr.op = int_alu_op_t'({is_srai, instr.funct3});
-            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_REG_1;
-            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
-            decoded_instr.register_wb = 1;
+            control.t = INSTR_I_TYPE;
+            control.int_alu_instr.op = int_alu_op_t'({is_srai, instr.funct3});
+            control.int_alu_instr.xbar[0] = ALU_IN_REG_1;
+            control.int_alu_instr.xbar[1] = ALU_IN_IMM;
+            control.register_wb = 1;
             use_rs[0] = 1;
         end
 
         // Integer register op register arithmetic
         OPCODE_INTEGER_REG: begin
 
-            decoded_instr.t = INSTR_R_TYPE;
-            decoded_instr.register_wb = 1;
+            control.t = INSTR_R_TYPE;
+            control.register_wb = 1;
             use_rs[0] = 1;
             use_rs[1] = 1;
 
             case (instr.funct7)
                 7'b0000001: begin // Mul extension
-                    decoded_instr.wb_result_src = WB_MUL_UNIT;
+                    control.wb_result_src = WB_MUL_UNIT;
                 end
                 default: begin // Base integer instructions
-                    decoded_instr.int_alu_instr.op = int_alu_op_t'({instr.funct7[5], instr.funct3});
-                    decoded_instr.int_alu_instr.xbar[0] = ALU_IN_REG_1;
-                    decoded_instr.int_alu_instr.xbar[1] = ALU_IN_REG_2;
+                    control.int_alu_instr.op = int_alu_op_t'({instr.funct7[5], instr.funct3});
+                    control.int_alu_instr.xbar[0] = ALU_IN_REG_1;
+                    control.int_alu_instr.xbar[1] = ALU_IN_REG_2;
                 end
             endcase
 
@@ -132,11 +132,11 @@ always_comb begin
         // ALU: R1 + S_IMM
         // MEM <- R2
         OPCODE_STORE: begin
-            decoded_instr.t = INSTR_S_TYPE;
-            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_REG_1;
-            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
-            decoded_instr.mem_op = mem_op_t'({1'b1, instr.funct3});
-            decoded_instr.wb_result_src = WB_STORE;
+            control.t = INSTR_S_TYPE;
+            control.int_alu_instr.xbar[0] = ALU_IN_REG_1;
+            control.int_alu_instr.xbar[1] = ALU_IN_IMM;
+            control.mem_op = mem_op_t'({1'b1, instr.funct3});
+            control.wb_result_src = WB_STORE;
             use_rs[0] = 1;
             use_rs[1] = 1;
         end
@@ -145,21 +145,21 @@ always_comb begin
         // ALU: R1 + I_IMM
         // RD = MEM
         OPCODE_LOAD: begin
-            decoded_instr.t = INSTR_I_TYPE;
-            decoded_instr.int_alu_instr.xbar[0] = ALU_IN_REG_1;
-            decoded_instr.int_alu_instr.xbar[1] = ALU_IN_IMM;
-            decoded_instr.mem_op = mem_op_t'({1'b0, instr.funct3});
-            decoded_instr.wb_result_src = WB_MEM_DATA;
-            decoded_instr.register_wb = 1;
+            control.t = INSTR_I_TYPE;
+            control.int_alu_instr.xbar[0] = ALU_IN_REG_1;
+            control.int_alu_instr.xbar[1] = ALU_IN_IMM;
+            control.mem_op = mem_op_t'({1'b0, instr.funct3});
+            control.wb_result_src = WB_MEM_DATA;
+            control.register_wb = 1;
             use_rs[0] = 1;
         end
 
         // Zicsr
         // RD = CSR
         OPCODE_ZICSR: begin
-            decoded_instr.register_wb = 1;
-            decoded_instr.csr_wb = 1;
-            decoded_instr.wb_result_src = WB_CSR;
+            control.register_wb = 1;
+            control.csr_wb = 1;
+            control.wb_result_src = WB_CSR;
             use_rs[0] = 1;
         end
 
@@ -167,31 +167,31 @@ always_comb begin
         // RD = GRNG
         // GRNG <- R1
         OPCODE_GRNG: begin
-            decoded_instr.t = INSTR_R_TYPE;
+            control.t = INSTR_R_TYPE;
 
             case (instr.funct3)
                 3'b000: begin // Set seed
-                    decoded_instr.grng_ctrl.set_seed = 1;
+                    control.grng_ctrl.set_seed = 1;
                     use_rs[0] = 1;
                 end
                 3'b001: begin
-                    decoded_instr.wb_result_src = WB_GRNG;
-                    decoded_instr.grng_ctrl.enable = 1; 
-                    decoded_instr.register_wb = 1;
+                    control.wb_result_src = WB_GRNG;
+                    control.grng_ctrl.enable = 1; 
+                    control.register_wb = 1;
                 end
                 default: begin
-                    decoded_instr.invalid = 1;
+                    control.invalid = 1;
                 end
             endcase
         end
 
         default: begin
             // Invalid instruction detection
-            decoded_instr.invalid = 1;
+            control.invalid = 1;
         end
     endcase
 
-    if (instr.rd == 0) decoded_instr.register_wb = 0;
+    if (instr.rd == 0) control.register_wb = 0;
 end
 
 
