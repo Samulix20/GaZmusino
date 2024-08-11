@@ -123,6 +123,8 @@ run_all_folder_tests
 test_folder="cpp_tests"
 run_all_folder_tests
 
-# EXTRA TEST SECTION
-#test_folder="extra"
-#run_all_folder_tests
+if [ "$1" == "--extra" ]; then
+    # EXTRA TEST SECTION
+    test_folder="extra"
+    run_all_folder_tests
+fi
