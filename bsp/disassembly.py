@@ -5,7 +5,7 @@ import sys
 def disassembly(elf_file):
     # run objdump to get disassembly
     r = subprocess.run(
-        ["riscv32-unknown-elf-objdump", "-d", elf_file],
+        ["riscv64-unknown-elf-objdump", "-d", elf_file],
         check=False,
         capture_output=True
     )

@@ -12,6 +12,11 @@ fi
 # Get source files
 SRCS="$(find $1 -name '*.c') $(find $1 -name '*.S') $(find $1 -name '*.cpp')"
 
+shift 1
+if [ "$1" == "-t" ]; then
+    EXTRA_ARGS="-t -d build/sim/main.dump.csv"
+fi
+
 # Remove previous built simulation elf
 rm -rf build/sim
 
@@ -23,4 +28,4 @@ make
 
 # Run simulation
 echo ""
-./obj_dir/Vrv32_top -e build/sim/main.elf
+./obj_dir/Vrv32_top -e build/sim/main.elf $EXTRA_ARGS

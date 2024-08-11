@@ -258,7 +258,7 @@ class TraceCanvas {
         }
     }
 
-    void print() {
+    std::string get_string() {
         std::string s = "";
         for(uint32_t j = 0; j < lines; j++) {
             for(uint32_t i = 0; i < stages; i++) {
@@ -271,11 +271,11 @@ class TraceCanvas {
             s += std::format("|{:=^30}", "");
         }
         s += "|\n";
-        std::cout << s;
+        return s;
     }
 };
 
-inline void trace_stages(const Vrv32_top* rvtop, const DissasemblyMap& dmap) {
+inline std::string trace_stages(const Vrv32_top* rvtop, const DissasemblyMap& dmap) {
     auto tc = TraceCanvas(5, 6);
 
     auto instr_request = get_instruction_request(rvtop);
@@ -325,7 +325,7 @@ inline void trace_stages(const Vrv32_top* rvtop, const DissasemblyMap& dmap) {
         tc.canvas[4][2] = wb_write_str(rvtop);
     }
 
-    tc.print();
+    return tc.get_string();
 }
 }
 

@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
         // Debug
         // Only on high clk and after reset
         if (print_trace && !reset_on && dut->clk == 0) {
-            rv32_test::trace_stages(dut, diassembly_map);
+            std::cout << rv32_test::trace_stages(dut, diassembly_map);
         }
 
         // Trace waveform
