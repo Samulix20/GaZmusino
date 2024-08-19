@@ -23,7 +23,7 @@ rv32_word fixed_load;
 
 rv32_load_fix load_fix(
     .op(mem_wb_buff.control.mem_op),
-    .addr(mem_wb_buff.mem_addr),
+    .addr(mem_wb_buff.data_result[1]),
     .raw_load(mem_data),
     .fixed_load(fixed_load)
 );
@@ -37,7 +37,7 @@ always_comb begin
     // Set mem load result if required
     case (mem_wb_buff.control.wb_result_src)
         WB_MEM_DATA: wb_data = fixed_load;
-        default: wb_data = mem_wb_buff.wb_result;
+        default: wb_data = mem_wb_buff.data_result[0];
     endcase
 end
 

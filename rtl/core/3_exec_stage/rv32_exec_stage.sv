@@ -33,7 +33,7 @@ rv32_word reg_data[3];
 always_comb begin
     for(int idx = 0; idx < 3; idx = idx + 1) begin
         case (decode_exec_buff.control.bypass_rs[idx])
-            BYPASS_EXEC_BUFF: reg_data[idx] = exec_mem_buff.wb_result;
+            BYPASS_EXEC_BUFF: reg_data[idx] = exec_mem_buff.data_result[0];
             BYPASS_MEM_BUFF: reg_data[idx] = wb_bypass;
             default: reg_data[idx] = decode_exec_buff.reg_data[idx];
         endcase
@@ -124,20 +124,20 @@ always_comb begin
     internal_data.instr = decode_exec_buff.instr;
     internal_data.pc = decode_exec_buff.pc;
     internal_data.control = decode_exec_buff.control;
-    internal_data.mem_addr = int_alu_result;
+    internal_data.data_result[1] = int_alu_result;
 
     // Setup data for bypass
     case(decode_exec_buff.control.wb_result_src)
-        WB_PC4: internal_data.wb_result = decode_exec_buff.pc + 4;
-        WB_INT_ALU: internal_data.wb_result = int_alu_result;
-        WB_STORE: internal_data.wb_result = reg_data[1];
-        WB_MUL_UNIT: internal_data.wb_result = mul_unit_result;
-        WB_GRNG: internal_data.wb_result = grng_result;
+        WB_PC4: internal_data.data_result[0] = decode_exec_buff.pc + 4;
+        WB_INT_ALU: internal_data.data_result[0] = int_alu_result;
+        WB_STORE: internal_data.data_result[0] = reg_data[1];
+        WB_MUL_UNIT: internal_data.data_result[0] = mul_unit_result;
+        WB_GRNG: internal_data.data_result[0] = grng_result;
         WB_CSR: begin 
-            internal_data.wb_result = zicsr_reg_result;
-            internal_data.mem_addr = zicsr_csr_result;
+            internal_data.data_result[0] = zicsr_reg_result;
+            internal_data.data_result[1] = zicsr_csr_result;
         end
-        default: internal_data.wb_result = 0;
+        default: internal_data.data_result[0] = 0;
     endcase
 end
 

@@ -27,14 +27,15 @@ mem_wb_buffer_t internal_data /*verilator public*/;
 // CSR instructions commit at memory
 always_comb begin 
     csr_write_request.id = exec_mem_buff.instr[31:20];
-    csr_write_request.value = exec_mem_buff.mem_addr;
+    csr_write_request.value = exec_mem_buff.data_result[1];
     csr_write_request.write = exec_mem_buff.control.csr_wb;
 end
 
+// Send data request to memory bus
 always_comb begin
-    data_request.addr = exec_mem_buff.mem_addr;
+    data_request.addr = exec_mem_buff.data_result[1];
     data_request.op = exec_mem_buff.control.mem_op;
-    data_request.data = exec_mem_buff.wb_result;
+    data_request.data = exec_mem_buff.data_result[0];
 end
 
 always_comb begin

@@ -217,8 +217,7 @@ typedef struct packed {
     rv_instr_t instr;
     rv32_word pc;
     rv_control_t control;
-    rv32_word mem_addr;
-    rv32_word wb_result;
+    rv32_word [1:0] data_result;
 } exec_mem_buffer_t /*verilator public*/;
 
 typedef exec_mem_buffer_t mem_wb_buffer_t /*verilator public*/;

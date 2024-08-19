@@ -12,9 +12,11 @@ import rv32_types::*;
     input rv32_word mmio_data [NUM_MMIO]
 );
 
+// Memory bus signals
 logic instr_request_done /*verilator public*/;
 rv32_word instr /*verilator public*/;
 
+// Data bus signals
 rv32_word core_data /*verilator public*/;
 logic core_data_ready;
 
@@ -49,6 +51,7 @@ rv32_main_memory memory (
 
 `endif
 
+// Setup ready flag for core memory stage
 always_comb begin
     core_data_ready = mem_data_ready;
     for(int idx = 0; idx < NUM_MMIO; idx = idx + 1) begin
