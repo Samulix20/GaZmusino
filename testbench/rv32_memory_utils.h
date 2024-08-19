@@ -1,8 +1,14 @@
 #ifndef RV32_MEMORY_UTILS
 #define RV32_MEMORY_UTILS
 
+#include <iostream>
+#include <format>
+
 #include "rv32_test_utils.h"
 #include "rv32_mmio_profiler.h"
+
+// Bsp defines config
+#include "../bsp/include/riscv/config.h"
 
 namespace rv32_test {
 

@@ -1,18 +1,14 @@
 #ifndef RV32_TEST_UTILS
 #define RV32_TEST_UTILS
 
-#include <cstddef>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <elf.h>
 #include <cassert>
 #include <fstream>
-#include <iostream>
-#include <memory>
 #include <sstream>
 #include <string>
-#include <format>
 
 // Device under test headers
 #include "Vrv32_top_rv32_types.h"
@@ -28,9 +24,6 @@
 #include "Vrv32_top_rv32_main_memory.h"
 #include "Vrv32_top_bram_2_port__N100000.h"
 #endif
-
-// Bsp defines config
-#include "../bsp/include/riscv/config.h"
 
 namespace rv32_test {
 

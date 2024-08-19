@@ -1,7 +1,11 @@
 #ifndef RV32_MMIO_PROFILER
 #define RV32_MMIO_PROFILER
 
+#include <iostream>
+
 #include "rv32_test_utils.h"
+
+#include "../bsp/include/riscv/config.h"
 
 namespace rv32_test {
 

@@ -7,7 +7,6 @@
 #include <cstdint>
 #include <unordered_map>
 #include <format>
-#include <iostream>
 
 namespace rv32_test {
 

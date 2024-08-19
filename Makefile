@@ -1,7 +1,7 @@
 RUN_PARAMS ?=
 
 # Custom verilator instalation
-VERILATOR_ROOT := /home/samupp/Repos/verilator
+VERILATOR_ROOT := /home/samuelpp/opt/verilator
 VV := ${VERILATOR_ROOT}/bin/verilator
 
 # Package manager verilator instalation
@@ -11,14 +11,14 @@ VV := ${VERILATOR_ROOT}/bin/verilator
 CPP_MEMORY_SIM := -DCPP_MEMORY_SIM
 
 # Config flag for optimized verilator
-# Increases compile time
+# !! Increases compile time
 # VVOPT := -O3
 
 TOP_MODULE := rv32_top
 TOP_MODULE_SRC := rtl/${TOP_MODULE}.sv
 VERILATED_MODULE := V${TOP_MODULE}
 VERILOG_MODULES := rtl/rv32_types.sv \
-	$(shell find rtl/core -name '*.sv')\
+	$(shell find rtl/core -name '*.sv') \
 	$(shell find rtl/memory -name '*.sv')
 
 CPP_SRC := $(shell find testbench -name '*.cpp')
