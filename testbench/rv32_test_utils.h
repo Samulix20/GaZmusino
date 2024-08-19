@@ -34,8 +34,10 @@ using MemoryStageData = Vrv32_top_exec_mem_buffer_t__struct__0;
 using WritebackStageData = MemoryStageData;
 using MemoryRequest = Vrv32_top_memory_request_t__struct__0;
 
+using RegisterFileWriteRequest = Vrv32_top_register_write_request_t__struct__0;
+
 using Instruction = Vrv32_top_rv_instr_t__struct__0;
-using DecodedInstruction = Vrv32_top_rv_control_t__struct__0;
+using CoreControlSignals = Vrv32_top_rv_control_t__struct__0;
 using RV32Types = Vrv32_top_rv32_types;
 
 // Getters core internal data
@@ -64,7 +66,9 @@ inline WritebackStageData get_wb_stage_data(const Vrv32_top* rvtop) {
 }
 
 inline uint32_t get_wb_result_data(const Vrv32_top* rvtop) {
-    return rvtop->rv32_top->core->wb_data;
+    RegisterFileWriteRequest rfwr;
+    rfwr.set(rvtop->rv32_top->core->rf_write_request);
+    return rfwr.data;
 }
 
 inline uint32_t get_next_pc(const Vrv32_top* rvtop) {

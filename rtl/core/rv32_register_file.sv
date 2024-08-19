@@ -9,22 +9,20 @@
 module rv32_register_file
 import rv32_types::*;
 (
-    input   logic clk,
+    input logic clk,
     // Read ports
-    input   rv_reg_id_t [2:0] rs,
-    output  rv32_word [2:0] o,
+    input rv_reg_id_t [2:0] rs,
+    output rv32_word [2:0] o,
     // Write port
-    input logic   write,
-    input   rv_reg_id_t rw,
-    input   rv32_word d
+    input register_write_request_t write_request
 );
 
 rv32_word register_file [32];
 
 // Write logic
 always_ff @(negedge clk) begin
-    if (write) begin
-        register_file[rw] <= d;
+    if (write_request.write) begin
+        register_file[write_request.id] <= write_request.data;
         // x0 is always 0
         register_file[0] <= 0;
     end

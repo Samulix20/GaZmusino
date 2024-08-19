@@ -14,9 +14,7 @@ import rv32_types::*;
     // Mem data input
     input rv32_word mem_data,
     // Register File I/O
-    output logic reg_write,
-    output rv_reg_id_t rd,
-    output rv32_word wb_data
+    output register_write_request_t rf_write_request
 );
 
 rv32_word fixed_load;
@@ -30,14 +28,14 @@ rv32_load_fix load_fix(
 
 always_comb begin
     // Register file write control
-    reg_write = mem_wb_buff.control.register_wb;
-    rd = mem_wb_buff.instr.rd;
+    rf_write_request.write = mem_wb_buff.control.register_wb;
+    rf_write_request.id = mem_wb_buff.instr.rd;
 
     // Writeback data
     // Set mem load result if required
     case (mem_wb_buff.control.wb_result_src)
-        WB_MEM_DATA: wb_data = fixed_load;
-        default: wb_data = mem_wb_buff.data_result[0];
+        WB_MEM_DATA: rf_write_request.data = fixed_load;
+        default: rf_write_request.data = mem_wb_buff.data_result[0];
     endcase
 end
 

@@ -31,7 +31,7 @@ inline std::string opcode_str(Instruction instr) {
     return str;
 }
 
-inline std::string bypass_str(Instruction instr, DecodedInstruction dec_instr) {
+inline std::string bypass_str(Instruction instr, CoreControlSignals dec_instr) {
     static const std::unordered_map<RV32Types::bypass_t, std::string> str_map = {
         {RV32Types::NO_BYPASS, "NO"},
         {RV32Types::BYPASS_EXEC_BUFF, "EXEC"},
@@ -64,7 +64,7 @@ inline std::string bypass_str(Instruction instr, DecodedInstruction dec_instr) {
     return s;
 }
 
-inline std::string rename_imm_str(std::string op, DecodedInstruction dec_instr) {
+inline std::string rename_imm_str(std::string op, CoreControlSignals dec_instr) {
     static const std::unordered_map<RV32Types::instr_type_t, std::string> str_map = {
         {RV32Types::INSTR_R_TYPE, "???"},
         {RV32Types::INSTR_I_TYPE, "I_IMM"},
@@ -82,7 +82,7 @@ inline std::string rename_imm_str(std::string op, DecodedInstruction dec_instr) 
     return op;
 }
 
-inline std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr) {
+inline std::string alu_input_str(Instruction instr, CoreControlSignals dec_instr) {
     std::string op1, op2;
     static const std::unordered_map<RV32Types::int_alu_xbar_t, std::string> str_map = {
         {RV32Types::ALU_IN_ZERO, "0"},
@@ -113,7 +113,7 @@ inline std::string alu_input_str(Instruction instr, DecodedInstruction dec_instr
     return op1 + " " + op2;
 }
 
-inline std::string alu_op_str(DecodedInstruction instr) {
+inline std::string alu_op_str(CoreControlSignals instr) {
     std::string str;
     static const std::unordered_map<RV32Types::int_alu_op_t, std::string> str_map = {
         {RV32Types::ALU_OP_ADD, "ADD"},
@@ -134,7 +134,7 @@ inline std::string alu_op_str(DecodedInstruction instr) {
 }
 
 // If jump != NOP "[BRANCH_OP]"
-inline std::string branch_op_str(DecodedInstruction instr) {
+inline std::string branch_op_str(CoreControlSignals instr) {
     std::string str;
     static const std::unordered_map<RV32Types::branch_op_t, std::string> str_map = {
         {RV32Types::OP_BEQ, "BEQ"},
@@ -154,7 +154,7 @@ inline std::string branch_op_str(DecodedInstruction instr) {
 }
 
 // If writeback "[WB_SRC] -> x[rd]"
-inline std::string wb_src_str(Instruction instr, DecodedInstruction dec_instr) {
+inline std::string wb_src_str(Instruction instr, CoreControlSignals dec_instr) {
     std::string s = "";
 
     static const std::unordered_map<RV32Types::wb_result_t, std::string> str_map = {

@@ -13,11 +13,11 @@ typedef logic [6:0] opcode_t;
 // Decoding defaults to R-Type
 typedef struct packed {
     logic [6:0] funct7;     // [31:25]
-    rv_reg_id_t rs2;           // [24:20]
-    rv_reg_id_t rs1;           // [19:15]
+    rv_reg_id_t rs2;        // [24:20]
+    rv_reg_id_t rs1;        // [19:15]
     logic [2:0] funct3;     // [14:12]
-    rv_reg_id_t rd;            // [11:7]
-    opcode_t opcode;        // [6:0]
+    rv_reg_id_t rd;         // [11:07]
+    opcode_t opcode;        // [06:00]
 } rv_instr_t /*verilator public*/;
 
 // Nop operation add x0 x0, 0 (0x00000033)
@@ -152,7 +152,6 @@ function automatic grng_ctrl_t create_grng_nop_ctrl();
     return grng_ctrl;
 endfunction
 
-// TODO rename to control_t or similar
 typedef struct packed {
     logic invalid;
     // Immediate generation
@@ -193,7 +192,11 @@ function automatic rv_control_t create_nop_ctrl();
     return instr;
 endfunction
 
-// TODO change rv32_word data names
+typedef struct packed {
+    logic write;
+    rv_reg_id_t id;
+    rv32_word data;
+} register_write_request_t /*verilator public*/;
 
 typedef struct packed {
     rv_csr_id_t id;

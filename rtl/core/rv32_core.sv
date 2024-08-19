@@ -65,15 +65,14 @@ always_comb begin
     rs[1] = instr.rs2;
     rs[2] = instr.rd;
 end
-rv_reg_id_t wb_rd;
-rv32_word wb_data /*verilator public*/;
-logic wb_we;
+
+register_write_request_t rf_write_request /*verilator public*/;
 rv32_register_file rf(
     .clk(clk),
     // Decode (read) interface
     .rs(rs), .o(reg_data),
     // Writeback (write) interface
-    .write(wb_we), .d(wb_data), .rw(wb_rd)
+    .write_request(rf_write_request)
 );
 
 // CSR
@@ -142,7 +141,7 @@ rv32_exec_stage exec_stage(
     .do_jump(exec_jump),
     .jump_addr(exec_jump_addr),
     // Bypass
-    .wb_bypass(wb_data)
+    .wb_bypass(rf_write_request.data)
 );
 
 // MEMORY STAGE
@@ -167,7 +166,7 @@ rv32_wb_stage wb_stage(
     // Memory I
     .mem_data(data),
     // Register File O
-    .reg_write(wb_we), .rd(wb_rd), .wb_data(wb_data)
+    .rf_write_request(rf_write_request)
 );
 
 endmodule
