@@ -1,4 +1,3 @@
-// TODO group MMIO in struct
 
 module rv32_top
 import rv32_types::*;

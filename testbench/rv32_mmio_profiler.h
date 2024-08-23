@@ -11,8 +11,8 @@ namespace rv32_test {
 
 constexpr uint32_t NUM_MMIO_PROFILER_COUNTERS = 255;
 
-uint64_t profiler_counters[NUM_MMIO_PROFILER_COUNTERS];
-uint64_t profiler_counters_starts[NUM_MMIO_PROFILER_COUNTERS];
+static uint64_t profiler_counters[NUM_MMIO_PROFILER_COUNTERS];
+static uint64_t profiler_counters_starts[NUM_MMIO_PROFILER_COUNTERS];
 
 inline void init_profiler_counters() {
     std::memset(profiler_counters, 0, NUM_MMIO_PROFILER_COUNTERS * sizeof(uint64_t));

@@ -12,7 +12,7 @@ CPP_MEMORY_SIM := -DCPP_MEMORY_SIM
 
 # Config flag for optimized verilator
 # !! Increases compile time
-# VVOPT := -O3
+VVOPT := -O3
 
 TOP_MODULE := rv32_top
 TOP_MODULE_SRC := rtl/${TOP_MODULE}.sv

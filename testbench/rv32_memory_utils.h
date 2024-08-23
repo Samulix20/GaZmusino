@@ -57,6 +57,9 @@ inline rv32_memory load_elf(const std::string filename) {
 }
 
 inline void set_memory_banks(Vrv32_top* rvtop, const rv32_memory& rvmem) {
+    // Remove unused parameters warnings
+    (void) rvtop; (void) rvmem;
+
     #ifndef CPP_MEMORY_SIM
     
     assert(rvtop->rv32_top->memory->NUM_WORDS >= (rvmem.max_addr >> 2));
@@ -86,7 +89,7 @@ inline void set_memory_banks(Vrv32_top* rvtop, const rv32_memory& rvmem) {
     #endif
 }
 
-uint32_t read_aligned_word(const rv32_memory& rvmem, const uint32_t addr) {
+inline uint32_t read_aligned_word(const rv32_memory& rvmem, const uint32_t addr) {
     return *reinterpret_cast<uint32_t*>(rvmem.memory.get() + (addr & (~3)));
 }
 
@@ -126,9 +129,9 @@ inline void handle_mmio_request(Vrv32_top* rvtop, uint64_t sim_time) {
 }
 
 // Store the values for 1 cycle delay serve
-uint32_t read_instr = 0, read_mem_data = 0;
-uint32_t instr_wait_cyles = 0, data_wait_cyles = 0;
-bool aux = false;
+static uint32_t read_instr = 0, read_mem_data = 0;
+static uint32_t instr_wait_cyles = 0, data_wait_cyles = 0;
+static bool aux = false;
 
 inline void handle_instruction_request(Vrv32_top* rvtop, rv32_memory& rvmem) {
 
