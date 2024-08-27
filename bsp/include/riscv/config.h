@@ -23,7 +23,8 @@
 
 // Profiler counter MMIO
 #define PROFILER_BASE_ADDR 0x10700000
-#define PROFILER_COUNTER_START *((volatile uint8_t *) PROFILER_BASE_ADDR)
-#define PROFILER_COUNTER_STOP *((volatile uint8_t *) (PROFILER_BASE_ADDR + 1))
+#define PROFILER_COUNTER_START *((volatile uint32_t *) PROFILER_BASE_ADDR)
+#define PROFILER_STOP_ADDR (PROFILER_BASE_ADDR + 4)
+#define PROFILER_COUNTER_STOP *((volatile uint32_t *) PROFILER_STOP_ADDR)
 
 #endif

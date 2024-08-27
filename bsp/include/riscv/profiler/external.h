@@ -4,11 +4,11 @@
 #include <riscv/types.h>
 #include <riscv/config.h>
 
-inline void start_external_counter(const uint8 id) {
+inline void start_external_counter(const uint32 id) {
     PROFILER_COUNTER_START = id;
 }
 
-inline void stop_external_counter(const uint8 id) {
+inline void stop_external_counter(const uint32 id) {
     PROFILER_COUNTER_STOP = id;
 }
 

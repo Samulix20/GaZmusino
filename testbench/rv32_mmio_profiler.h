@@ -30,16 +30,16 @@ inline void mmio_profiler_request(Vrv32_top* rvtop, uint64_t sim_time) {
     // Start
     if (request.addr == PROFILER_BASE_ADDR) {
         rvtop->mmio_request_done[0] = 1; // Tell the core the request is done
-        if (rvtop->clk == 1 && request.op == RV32Types::MEM_SB) {
+        if (rvtop->clk == 1 && request.op == RV32Types::MEM_SW) {
             uint8_t counter_id = static_cast<uint8_t>(request.data);
             profiler_counters_starts[counter_id] = sim_time;
         }
         
     }
     // Stop
-    if (request.addr == (PROFILER_BASE_ADDR + 1)) {
+    if (request.addr == PROFILER_STOP_ADDR) {
         rvtop->mmio_request_done[0] = 1; // Tell the core the request is done
-        if (rvtop->clk == 1 && request.op == RV32Types::MEM_SB) {
+        if (rvtop->clk == 1 && request.op == RV32Types::MEM_SW) {
             uint8_t counter_id = static_cast<uint8_t>(request.data);
             profiler_counters[counter_id] += (sim_time - profiler_counters_starts[counter_id]) / 2;
         }

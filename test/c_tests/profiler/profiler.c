@@ -1,3 +1,4 @@
+#include "riscv/profiler/external.h"
 #include <stdio.h>
 
 #include <riscv/profiler/internal.h>
