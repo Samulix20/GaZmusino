@@ -1,5 +1,11 @@
 package rv32_types;
 
+// Core Config
+// Number of MMIO ports of controller
+localparam int NUM_MMIO = 1;
+// Register file num outputs
+localparam int CORE_RF_NUM_READ = 4;
+
 // Definitions for all data types, structs, etc...
 
 typedef logic[31:0] rv32_word;
@@ -19,6 +25,16 @@ typedef struct packed {
     rv_reg_id_t rd;         // [11:07]
     opcode_t opcode;        // [06:00]
 } rv_instr_t /*verilator public*/;
+
+typedef struct packed {
+    rv_reg_id_t rs3;
+    logic [1:0] fmt;
+    rv_reg_id_t rs2;
+    rv_reg_id_t rs1;
+    logic [2:0] rm;
+    rv_reg_id_t rd;
+    opcode_t opcode;
+} rv_r4_instr_t /*verilator public*/;
 
 // Nop operation add x0 x0, 0 (0x00000033)
 const rv_instr_t RV_NOP = 'h33;
@@ -157,7 +173,7 @@ typedef struct packed {
     // Immediate generation
     instr_type_t t;
     // Bypass
-    bypass_t [2:0] bypass_rs;
+    bypass_t [CORE_RF_NUM_READ - 1:0] bypass_rs;
     // Branch
     branch_op_t branch_op;
     // Int Alu
@@ -179,9 +195,11 @@ function automatic rv_control_t create_nop_ctrl();
     rv_control_t instr;
     instr.invalid = 0;
     instr.t = INSTR_R_TYPE;
-    instr.bypass_rs[0] = NO_BYPASS;
-    instr.bypass_rs[1] = NO_BYPASS;
-    instr.bypass_rs[2] = NO_BYPASS;
+
+    for(int idx = 0; idx < CORE_RF_NUM_READ; idx = idx + 1) begin
+        instr.bypass_rs[idx] = NO_BYPASS;
+    end
+
     instr.branch_op = OP_NOP;
     instr.int_alu_instr = create_alu_nop_instr();
     instr.grng_ctrl = create_grng_nop_ctrl();
@@ -213,7 +231,7 @@ typedef struct packed {
     rv_instr_t instr;
     rv32_word pc;
     rv_control_t control;
-    rv32_word[2:0] reg_data;
+    rv32_word[CORE_RF_NUM_READ - 1:0] reg_data;
 } decode_exec_buffer_t /*verilator public*/;
 
 typedef struct packed {

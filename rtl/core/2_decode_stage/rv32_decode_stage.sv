@@ -20,7 +20,7 @@ import rv32_types::*;
     // Memory I
     input rv_instr_t instr,
     // Register file data input
-    input rv32_word [2:0] reg_data,
+    input rv32_word [CORE_RF_NUM_READ - 1:0] reg_data,
     // CSR file data input
     input rv32_word csr_data,
     // Hazzard detection I/O
@@ -38,8 +38,8 @@ always_comb begin
     else internal_instr = instr;
 end
 
-logic use_rs [3] /*verilator public*/;
-bypass_t [2:0] bypass_rs;
+logic use_rs [CORE_RF_NUM_READ] /*verilator public*/;
+bypass_t [CORE_RF_NUM_READ - 1:0] bypass_rs;
 logic hazzard_stall;
 
 rv32_decoder decoder(

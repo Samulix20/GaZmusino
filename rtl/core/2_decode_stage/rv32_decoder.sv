@@ -18,7 +18,7 @@ import rv32_types::*;
     input rv_instr_t instr,
     output rv_control_t control,
     // Register use for dependecy detection
-    output logic use_rs [3]
+    output logic use_rs [CORE_RF_NUM_READ]
 );
 
 always_comb begin
@@ -28,9 +28,9 @@ always_comb begin
     // Default signals NOP Setup add x0, x0, 0;
     control = create_nop_ctrl();
 
-    use_rs[0] = 0; // rs1
-    use_rs[1] = 0; // rs2
-    use_rs[2] = 0; // rs3 == rd
+    for (int idx = 0; idx < CORE_RF_NUM_READ; idx = idx + 1) begin
+        use_rs[idx] = 0; // rs1, rs2, rs3, rd
+    end
 
     case(instr.opcode)
         // Load upper imm

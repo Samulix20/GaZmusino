@@ -58,16 +58,18 @@ always_ff @(posedge clk) begin
 end
 
 // Register file
-rv_reg_id_t [2:0] rs;
-rv32_word [2:0] reg_data;
+rv_reg_id_t [CORE_RF_NUM_READ - 1:0] rs;
+rv32_word [CORE_RF_NUM_READ - 1:0] reg_data;
 always_comb begin
-    rs[0] = instr.rs1;
-    rs[1] = instr.rs2;
-    rs[2] = instr.rd;
+    rv_r4_instr_t r4_instr = instr; // R4-Encoding
+    rs[0] = r4_instr.rs1;
+    rs[1] = r4_instr.rs2;
+    rs[2] = r4_instr.rs3;
+    rs[3] = instr.rd;
 end
 
 register_write_request_t rf_write_request /*verilator public*/;
-rv32_register_file rf(
+rv32_register_file #(.NUM_READ_PORTS(CORE_RF_NUM_READ)) rf(
     .clk(clk),
     // Decode (read) interface
     .rs(rs), .o(reg_data),

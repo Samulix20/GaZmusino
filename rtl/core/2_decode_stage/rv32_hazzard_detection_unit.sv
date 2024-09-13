@@ -5,20 +5,20 @@
 module rv32_hazzard_detection_unit
 import rv32_types::*;
 (
-    input logic use_rs [3],
+    input logic use_rs [CORE_RF_NUM_READ],
     input rv_instr_t current_instr,
     input rv_control_t current_control,
     input decode_exec_buffer_t decode_exec_buff,
     input exec_mem_buffer_t exec_mem_buff,
     output logic stall,
-    output bypass_t [2:0] bypass_rs
+    output bypass_t [CORE_RF_NUM_READ - 1:0] bypass_rs
 );
 
 always_comb begin
     // Data Hazzard detection
-    logic stall_vec[3] = '{default: 0};
+    logic stall_vec[CORE_RF_NUM_READ] = '{default: 0};
 
-    for(int idx = 0; idx < 3; idx = idx + 1) begin
+    for(int idx = 0; idx < CORE_RF_NUM_READ; idx = idx + 1) begin
         rv_reg_id_t rs;
         bypass_rs[idx] = NO_BYPASS;
 
