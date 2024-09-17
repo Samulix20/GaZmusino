@@ -65,7 +65,6 @@ always_comb begin
     rs[0] = r4_instr.rs1;
     rs[1] = r4_instr.rs2;
     rs[2] = r4_instr.rs3;
-    rs[3] = instr.rd;
 end
 
 register_write_request_t rf_write_request /*verilator public*/;

@@ -163,10 +163,11 @@ always_comb begin
             use_rs[0] = 1;
         end
 
-        // GRNG Custom extension
-        // RD = GRNG
-        // GRNG <- R1
-        OPCODE_GRNG: begin
+        OPCODE_CUSTOM_0: begin
+
+            // GRNG Custom extension
+            // RD = GRNG
+            // GRNG <- R1
             control.t = INSTR_R_TYPE;
 
             case (instr.funct3)
@@ -183,6 +184,11 @@ always_comb begin
                     control.invalid = 1;
                 end
             endcase
+
+        end
+
+        OPCODE_CUSTOM_1: begin
+
         end
 
         default: begin

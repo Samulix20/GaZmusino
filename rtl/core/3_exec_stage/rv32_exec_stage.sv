@@ -110,6 +110,7 @@ rv32_mul_unit mul_unit (
     .result(mul_unit_result)
 );
 
+// Custom extension functional units
 // GRNG unit
 rv32_word grng_result;
 clt_grng_16 grng (
@@ -118,7 +119,6 @@ clt_grng_16 grng (
     .seed(reg_data[0]),
     .sample(grng_result)
 );
-
 
 always_comb begin
     internal_data.instr = decode_exec_buff.instr;
@@ -132,11 +132,14 @@ always_comb begin
         WB_INT_ALU: internal_data.data_result[0] = int_alu_result;
         WB_STORE: internal_data.data_result[0] = reg_data[1];
         WB_MUL_UNIT: internal_data.data_result[0] = mul_unit_result;
-        WB_GRNG: internal_data.data_result[0] = grng_result;
         WB_CSR: begin 
             internal_data.data_result[0] = zicsr_reg_result;
             internal_data.data_result[1] = zicsr_csr_result;
         end
+
+        // Custom functional unit outputs
+        WB_GRNG: internal_data.data_result[0] = grng_result;
+
         default: internal_data.data_result[0] = 0;
     endcase
 end

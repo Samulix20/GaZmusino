@@ -4,7 +4,7 @@ package rv32_types;
 // Number of MMIO ports of controller
 localparam int NUM_MMIO = 1;
 // Register file num outputs
-localparam int CORE_RF_NUM_READ = 4;
+localparam int CORE_RF_NUM_READ = 3;
 
 // Definitions for all data types, structs, etc...
 
@@ -15,6 +15,20 @@ typedef logic [4:0] rv_reg_id_t;
 typedef logic [11:0] rv_csr_id_t;
 
 typedef logic [6:0] opcode_t;
+
+// CUSTOM EXTENSION STUCTS AND CONTROL
+
+typedef struct packed {
+    logic enable;
+    logic set_seed;
+} grng_ctrl_t /*verilator public*/;
+
+function automatic grng_ctrl_t create_grng_nop_ctrl();
+    grng_ctrl_t grng_ctrl;
+    grng_ctrl.enable = 0;
+    grng_ctrl.set_seed = 0;
+    return grng_ctrl;
+endfunction
 
 // Decoding defaults to R-Type
 typedef struct packed {
@@ -51,7 +65,8 @@ typedef enum logic [6:0] {
     OPCODE_INTEGER_REG = 7'b0110011,
     OPCODE_ZICSR = 7'b1110011,
     OPCODE_BARRIER = 7'b0001111,
-    OPCODE_GRNG = 7'b0001011
+    OPCODE_CUSTOM_0 = 7'b0001011,
+    OPCODE_CUSTOM_1 = 7'b0101011
 } valid_opcodes_t /*verilator public*/;
 
 typedef enum logic [2:0] {
@@ -128,12 +143,15 @@ typedef enum logic [2:0] {
 } int_alu_xbar_t /*verilator public*/;
 
 typedef enum logic [2:0] {
+    // Custom functional units outputs
+    WB_GRNG,
+
+    // Standard outputs
     WB_PC4,
     WB_INT_ALU,
     WB_MEM_DATA,
     WB_STORE,
     WB_MUL_UNIT,
-    WB_GRNG,
     WB_CSR
 } wb_result_t /*verilator public*/;
 
@@ -157,18 +175,6 @@ function automatic int_alu_instr_t create_alu_nop_instr();
 endfunction
 
 typedef struct packed {
-    logic enable;
-    logic set_seed;
-} grng_ctrl_t /*verilator public*/;
-
-function automatic grng_ctrl_t create_grng_nop_ctrl();
-    grng_ctrl_t grng_ctrl;
-    grng_ctrl.enable = 0;
-    grng_ctrl.set_seed = 0;
-    return grng_ctrl;
-endfunction
-
-typedef struct packed {
     logic invalid;
     // Immediate generation
     instr_type_t t;
@@ -178,8 +184,6 @@ typedef struct packed {
     branch_op_t branch_op;
     // Int Alu
     int_alu_instr_t int_alu_instr;
-    // GRNG control
-    grng_ctrl_t grng_ctrl;
     // Memory
     mem_op_t mem_op;
     // Writeback source
@@ -188,6 +192,11 @@ typedef struct packed {
     logic register_wb;
     // Final CSR write
     logic csr_wb;
+
+    // Control for custom extensions
+    // GRNG control
+    grng_ctrl_t grng_ctrl;
+
 } rv_control_t /*verilator public*/;
 
 // Used for NOP generation
@@ -202,11 +211,14 @@ function automatic rv_control_t create_nop_ctrl();
 
     instr.branch_op = OP_NOP;
     instr.int_alu_instr = create_alu_nop_instr();
-    instr.grng_ctrl = create_grng_nop_ctrl();
     instr.mem_op = MEM_NOP;
     instr.wb_result_src = WB_INT_ALU;
     instr.register_wb = 0;
     instr.csr_wb = 0;
+
+    // Custom instructions control signals
+    instr.grng_ctrl = create_grng_nop_ctrl();
+
     return instr;
 endfunction
 
