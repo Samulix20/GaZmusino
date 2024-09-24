@@ -38,15 +38,28 @@ always_comb begin
     else internal_instr = instr;
 end
 
-logic use_rs [CORE_RF_NUM_READ] /*verilator public*/;
+logic tb_dec  /*verilator public*/;
+logic tb_use_rs [CORE_RF_NUM_READ] /*verilator public*/;
+
+logic decoder_use_rs [CORE_RF_NUM_READ];
 bypass_t [CORE_RF_NUM_READ - 1:0] bypass_rs;
 logic hazzard_stall;
 
 rv32_decoder decoder(
-    .use_rs(use_rs),
+    .use_rs(decoder_use_rs),
     .instr(internal_instr),
     .control(decoder_output)
 );
+
+logic use_rs  [CORE_RF_NUM_READ] /*verilator public*/;
+always_comb begin
+    if (tb_dec) begin 
+        use_rs = tb_use_rs;
+    end else begin 
+        use_rs = decoder_use_rs;
+    end
+end
+
 
 rv32_hazzard_detection_unit hazzard_detection(
     .use_rs(use_rs),

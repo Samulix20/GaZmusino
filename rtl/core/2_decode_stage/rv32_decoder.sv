@@ -188,7 +188,7 @@ always_comb begin
         end
 
         OPCODE_CUSTOM_1: begin
-
+            control.invalid = 1;
         end
 
         default: begin

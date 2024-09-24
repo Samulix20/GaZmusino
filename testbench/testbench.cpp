@@ -72,6 +72,50 @@ int main(int argc, char** argv) {
             rv32_test::set_memory_banks(dut, rvmem);
         }
 
+        // Custom instruction DE stage sim
+        if (!reset_on) {
+            dut->rv32_top->core->decode_stage->tb_dec = 0;
+
+            rv32_test::DecodeStageData dec_data;
+            dec_data.set(dut->rv32_top->core->decode_stage->internal_data);
+
+            if (dec_data.control.invalid) {
+                dut->rv32_top->core->decode_stage->tb_dec = 1;
+    
+                dut->rv32_top->core->decode_stage->tb_use_rs[0] = 1;
+                dut->rv32_top->core->decode_stage->tb_use_rs[1] = 1;
+                dut->rv32_top->core->decode_stage->tb_use_rs[2] = 1;
+            }
+        }
+
+        // Custom instruction EX stage sim
+        if (!reset_on) {
+            dut->rv32_top->core->exec_stage->tb_exec = 0;
+
+            // Input
+            rv32_test::DecodeStageData dec_data;
+            dec_data.set(dut->rv32_top->core->decode_exec_buff);
+
+            if (dec_data.control.invalid) {
+
+                uint32_t a = dut->rv32_top->core->exec_stage->reg_data[0];
+                uint32_t b = dut->rv32_top->core->exec_stage->reg_data[1];
+                uint32_t c = dut->rv32_top->core->exec_stage->reg_data[2];
+                uint32_t r = a + b + c;
+
+                rv32_test::ExecutionStageData exec_data;
+                exec_data.set(dut->rv32_top->core->exec_stage->internal_data);
+
+                exec_data.data_result[0] = r;
+                exec_data.control.register_wb = 1;
+
+                std::cout << exec_data.data_result[0] << " --\n";
+
+                dut->rv32_top->core->exec_stage->internal_data = exec_data.get();
+
+            }
+        } 
+
         // Memory bus signals
         if(!reset_on) {
             rv32_test::handle_memory_request(dut, rvmem, sim_time);

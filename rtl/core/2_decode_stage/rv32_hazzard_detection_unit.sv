@@ -17,13 +17,16 @@ import rv32_types::*;
 always_comb begin
     // Data Hazzard detection
     logic stall_vec[CORE_RF_NUM_READ] = '{default: 0};
+    rv_r4_instr_t r4_instr = current_instr;
 
     for(int idx = 0; idx < CORE_RF_NUM_READ; idx = idx + 1) begin
         rv_reg_id_t rs;
         bypass_rs[idx] = NO_BYPASS;
 
+        // Encoding fields related to registers ids
         if (idx == 0) rs = current_instr.rs1;
         else if (idx == 1) rs = current_instr.rs2;
+        else if (idx == 2) rs = r4_instr.rs3;
         else rs = current_instr.rd;
 
         // Check first mem cause it will get overwritten if required

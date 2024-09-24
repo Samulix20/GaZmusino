@@ -189,6 +189,7 @@ inline std::string wb_write_str(const Vrv32_top* rvtop) {
     return s;
 }
 
+// TODO update usage to be generic
 inline std::string decode_register_usage_str(const Vrv32_top* rvtop) {
     std::string s = "";
     auto usage = rvtop->rv32_top->core->decode_stage->use_rs;

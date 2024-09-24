@@ -1,11 +1,11 @@
 RUN_PARAMS ?=
 
 # Custom verilator instalation
-VERILATOR_ROOT := /home/samuelpp/opt/verilator
-VV := ${VERILATOR_ROOT}/bin/verilator
+#VERILATOR_ROOT := /home/samuelpp/opt/verilator
+#VV := ${VERILATOR_ROOT}/bin/verilator
 
 # Package manager verilator instalation
-#VV := verilator
+VV := verilator
 
 # Config flag for CPP simulated memory
 CPP_MEMORY_SIM := -DCPP_MEMORY_SIM
@@ -46,6 +46,9 @@ verilate: obj_dir/.verilator.stamp
 
 wave:
 	gtkwave waveform.vcd >/dev/null 2>/dev/null &
+
+bear: clean
+	bear -- make test
 
 clean:
 	rm -rf obj_dir build waveform.vcd

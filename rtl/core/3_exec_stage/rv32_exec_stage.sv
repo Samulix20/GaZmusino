@@ -26,10 +26,9 @@ import rv32_types::*;
 );
 
 exec_mem_buffer_t internal_data /*verilator public*/;
-exec_mem_buffer_t output_internal_data;
 
 // Operand bypass
-rv32_word reg_data[3];
+rv32_word reg_data[3] /*verilator public*/;
 always_comb begin
     for(int idx = 0; idx < 3; idx = idx + 1) begin
         case (decode_exec_buff.control.bypass_rs[idx])
@@ -120,28 +119,39 @@ clt_grng_16 grng (
     .sample(grng_result)
 );
 
+// Custom signal for simulation of custom isntructions
+logic tb_exec /*verilator public*/;
+
 always_comb begin
     internal_data.instr = decode_exec_buff.instr;
     internal_data.pc = decode_exec_buff.pc;
-    internal_data.control = decode_exec_buff.control;
-    internal_data.data_result[1] = int_alu_result;
 
-    // Setup data for bypass
-    case(decode_exec_buff.control.wb_result_src)
-        WB_PC4: internal_data.data_result[0] = decode_exec_buff.pc + 4;
-        WB_INT_ALU: internal_data.data_result[0] = int_alu_result;
-        WB_STORE: internal_data.data_result[0] = reg_data[1];
-        WB_MUL_UNIT: internal_data.data_result[0] = mul_unit_result;
-        WB_CSR: begin 
-            internal_data.data_result[0] = zicsr_reg_result;
-            internal_data.data_result[1] = zicsr_csr_result;
-        end
 
-        // Custom functional unit outputs
-        WB_GRNG: internal_data.data_result[0] = grng_result;
+    if (tb_exec == 0) begin
 
-        default: internal_data.data_result[0] = 0;
-    endcase
+        internal_data.control = decode_exec_buff.control;
+        internal_data.data_result[1] = int_alu_result;
+
+        // Setup data for bypass
+        case(decode_exec_buff.control.wb_result_src)
+            WB_PC4: internal_data.data_result[0] = decode_exec_buff.pc + 4;
+            WB_INT_ALU: internal_data.data_result[0] = int_alu_result;
+            WB_STORE: internal_data.data_result[0] = reg_data[1];
+            WB_MUL_UNIT: internal_data.data_result[0] = mul_unit_result;
+            WB_CSR: begin 
+                internal_data.data_result[0] = zicsr_reg_result;
+                internal_data.data_result[1] = zicsr_csr_result;
+            end
+
+            // Custom functional unit outputs
+            WB_GRNG: internal_data.data_result[0] = grng_result;
+
+            default: internal_data.data_result[0] = 0;
+        endcase
+
+    end
+
+
 end
 
 always_ff @(posedge clk) begin
