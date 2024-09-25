@@ -13,4 +13,5 @@ build
 # Others
 waveform.vcd
 test/c_tests/bnn
-
+test/extra/bnn
+test.txt

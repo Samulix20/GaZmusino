@@ -2,9 +2,9 @@ package rv32_types;
 
 // Core Config
 // Number of MMIO ports of controller
-localparam int NUM_MMIO = 1;
+localparam int NUM_MMIO /*verilator public*/ = 1;
 // Register file num outputs
-localparam int CORE_RF_NUM_READ = 3;
+localparam int CORE_RF_NUM_READ /*verilator public*/ = 3;
 
 // Definitions for all data types, structs, etc...
 

@@ -41,10 +41,41 @@ using CoreControlSignals = Vrv32_top_rv_control_t__struct__0;
 using RV32Types = Vrv32_top_rv32_types;
 
 // Getters core internal data
+
+inline Instruction get_decoder_input(const Vrv32_top* rvtop) {
+    Instruction i;
+    i.set(rvtop->rv32_top->core->decode_stage->internal_instr);
+    return i;
+}
+
+inline CoreControlSignals get_decoder_output(const Vrv32_top* rvtop) {
+    CoreControlSignals decoder_output;
+    decoder_output.set(rvtop->rv32_top->core->decode_stage->decoder_output);
+    return decoder_output;
+}
+
 inline DecodeStageData get_decode_stage_data(const Vrv32_top* rvtop) {
     DecodeStageData d;
     d.set(rvtop->rv32_top->core->decode_stage->internal_data);
     return d;
+}
+
+inline DecodeStageData get_exec_stage_input(const Vrv32_top* rvtop) {
+    DecodeStageData d;
+    d.set(rvtop->rv32_top->core->decode_exec_buff);
+    return d;
+}
+
+struct BypassRegisterData {
+    uint32_t reg_data[RV32Types::CORE_RF_NUM_READ];
+};
+
+inline BypassRegisterData get_exec_bypass_register_data(const Vrv32_top* rvtop) {
+    BypassRegisterData r;
+    for(size_t i = 0; i < RV32Types::CORE_RF_NUM_READ; i++) {
+        r.reg_data[i] = rvtop->rv32_top->core->exec_stage->reg_data[i];
+    }
+    return r;
 }
 
 inline ExecutionStageData get_exec_stage_data(const Vrv32_top* rvtop) {

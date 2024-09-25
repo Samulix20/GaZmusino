@@ -35,7 +35,7 @@ done
 shift "$((OPTIND-1))"
 
 # Build elf
-make -f $BSP_DIR/Makefile\
-    SRCS="$@"\
-    BUILD_DIR=$BUILD_DIR\
-    EXTRA_FLAGS="$EXTRA_FLAGS"
+# Exported Makefile parameters
+export SRCS="$@"
+export EXTRA_FLAGS
+make -f $BSP_DIR/Makefile BUILD_DIR=$BUILD_DIR

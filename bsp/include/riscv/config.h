@@ -1,7 +1,7 @@
 #ifndef RV_CONFIG_H
 #define RV_CONFIG_H
 
-#define MEM_SIZE 1024k
+#define MEM_SIZE 20480k
 #define STACK_SIZE 10240
 // #define HEAP_SIZE TODO
 

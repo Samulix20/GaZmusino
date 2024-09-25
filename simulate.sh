@@ -11,6 +11,7 @@ fi
 
 # Get source files
 SRCS="$(find $1 -name '*.c') $(find $1 -name '*.S') $(find $1 -name '*.cpp')"
+LIB_INCLUDE="-I $1/lib"
 
 shift 1
 if [ "$1" == "-t" ]; then
@@ -21,7 +22,7 @@ fi
 rm -rf build/sim
 
 # Compile source files + bsp and store results in build/sim
-bash compiler.sh -b build/sim -f "-I $1/libs" $SRCS
+bash compiler.sh -b build/sim -f "$LIB_INCLUDE" $SRCS
 
 # Build CPU using verilator
 make

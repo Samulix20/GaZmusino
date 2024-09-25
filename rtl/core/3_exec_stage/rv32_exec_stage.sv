@@ -88,14 +88,12 @@ rv32_int_alu int_alu (
 );
 
 // Branch unit
+logic branch_unit_out;
 rv32_branch_unit branch_unit (
     .op1(reg_data[0]), .op2(reg_data[1]),
     .branch_op(decode_exec_buff.control.branch_op),
-    .do_branch(do_jump)
+    .do_branch(branch_unit_out)
 );
-always_comb begin
-    jump_addr = int_alu_result;
-end
 
 // Mul unit
 mul_op_t mul_unit_op;
@@ -121,11 +119,15 @@ clt_grng_16 grng (
 
 // Custom signal for simulation of custom isntructions
 logic tb_exec /*verilator public*/;
+exec_mem_buffer_t tb_data /*verilator public*/;
 
 always_comb begin
     internal_data.instr = decode_exec_buff.instr;
     internal_data.pc = decode_exec_buff.pc;
 
+    // Addr for jumps and jump signal
+    jump_addr = int_alu_result;
+    do_jump = branch_unit_out;
 
     if (tb_exec == 0) begin
 
@@ -148,6 +150,10 @@ always_comb begin
 
             default: internal_data.data_result[0] = 0;
         endcase
+
+    end else begin
+
+        internal_data = tb_data;
 
     end
 
