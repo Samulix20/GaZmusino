@@ -165,6 +165,9 @@ always_comb begin
 
         OPCODE_CUSTOM_0: begin
 
+            control.invalid = 1;
+
+            /*
             // GRNG Custom extension
             // RD = GRNG
             // GRNG <- R1
@@ -184,6 +187,7 @@ always_comb begin
                     control.invalid = 1;
                 end
             endcase
+            */
 
         end
 

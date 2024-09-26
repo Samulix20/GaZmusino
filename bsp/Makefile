@@ -63,10 +63,10 @@ $(BUILD_DIR)/main.dump.csv: $(BUILD_DIR)/main.elf
 	@mkdir -p $(@D)
 	python $(BSP_DIR)/disassembly.py $< > $@
 
-# Dump assembly
+# Custom assembly parser
 $(BUILD_DIR)/main.dump: $(BUILD_DIR)/main.elf
 	@mkdir -p $(@D)
-	$(DUMP) -D $< > $(BUILD_DIR)/main.dump
+	python $(BSP_DIR)/disassembly.py $< --custom > $@
 
 # Basic build C/C++ build rules
 $(BUILD_DIR)/%.o: %.c

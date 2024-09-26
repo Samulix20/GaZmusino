@@ -2,9 +2,6 @@
 #include <cstdint>
 #include <vector>
 
-
-#include <iostream>
-
 namespace rv32_test {
 
     struct SimulatedControlSignals {
@@ -49,14 +46,14 @@ namespace rv32_test {
       private:
       
         uint8_t scales_register_file[8] = {
+            0,
             1,
             2,
             3,
             4,
             5,
             6,
-            7,
-            8
+            7
         };
       
       public:
@@ -85,8 +82,31 @@ namespace rv32_test {
         }
     };
 
+    class Instr_genum : public SimulatedInstruction {
+      public:
+        bool match(const Instruction& i) {
+            return i.opcode == RV32Types::OPCODE_CUSTOM_0;
+        }
+
+        SimulatedControlSignals decode() {
+            return {
+            {false, false, false}, true
+            };
+        }
+
+        uint32_t execute(
+            const DecodeStageData& pipeline_input, 
+            const BypassRegisterData& bypass_data
+        ) {
+
+            return 7;
+
+        }
+    };
+
     std::vector<SimulatedInstruction*> simulated_instruction_list = {
-        new Instr_fxmadd
+        new Instr_fxmadd,
+        new Instr_genum
     };
 
     inline bool invalid_decode(const Vrv32_top* rvtop) {

@@ -66,7 +66,9 @@ typedef enum logic [6:0] {
     OPCODE_ZICSR = 7'b1110011,
     OPCODE_BARRIER = 7'b0001111,
     OPCODE_CUSTOM_0 = 7'b0001011,
-    OPCODE_CUSTOM_1 = 7'b0101011
+    OPCODE_CUSTOM_1 = 7'b0101011,
+    OPCODE_CUSTOM_2 = 7'b1011011,
+    OPCODE_CUSTOM_3 = 7'b1111011
 } valid_opcodes_t /*verilator public*/;
 
 typedef enum logic [2:0] {
