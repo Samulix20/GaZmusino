@@ -52,7 +52,6 @@ inline i32 clt_normal_sample(u8 S) {
     return acc;
 }
 
-
 inline i32 fxmadd(i32 a, i32 b, i32 c, u8 s_id) {
     i32 x;
     asm volatile(
@@ -75,6 +74,16 @@ inline i32 genum_fxmadd(i32 x, i32 a, i32 b, i32 c, u8 s_id) {
     return x;
 }
 
+inline i32 dsample_fxmadd(i32 x, i32 a, i32 b, i32 c, u8 s_id) {
+    asm volatile (
+        ".insn r4 CUSTOM_2, %[s_id], 1, t6, x0, %[a], %[b]\n"
+        ".insn r4 CUSTOM_2, %[s_id], 0, %[x], t6, %[c], %[x]\n"
+        : [x] "+r"(x)
+        : [a] "r"(a), [b] "r"(b), [c] "r"(c), [s_id] "i"(s_id)
+        : "t6"
+    );
+    return x;
+}
 
 inline i32 g_uniform() {
     return uniform_sample(12);
@@ -119,6 +128,10 @@ inline i32 f_instr_reoder(i32 x, i32 a, i32 b, i32 c, u8 s) {
     return genum_fxmadd(x, a, b, c, s);
 }
 
+inline i32 f_instr_comb(i32 x, i32 a, i32 b, i32 c, u8 s) {
+    return dsample_fxmadd(x,  a, b, c, s);
+}
+
 int main() {
     i32 x;
 
@@ -148,6 +161,15 @@ int main() {
     }
     vec_res[2] = x;
     stop_external_counter(2);
+
+    start_external_counter(3);
+    x = 0;
+    for(i32 i = 0; i < TEST_SIZE; i++) {
+        i32 a = vec_a[i], b = vec_b[i], c = vec_c[i];
+        x = f_instr_comb(x, a, b, c, 2);
+    }
+    vec_res[2] = x;
+    stop_external_counter(3);
 
     return 0;
 }

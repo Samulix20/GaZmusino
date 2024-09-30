@@ -4,7 +4,7 @@ BUILD_DIR ?=		# Build directory
 EXTRA_FLAGS ?=		# Optional extra flags
 
 .PHONY: all
-all: $(BUILD_DIR)/linker.lds $(BUILD_DIR)/main.elf $(BUILD_DIR)/main.dump $(BUILD_DIR)/main.dump.csv
+all: $(BUILD_DIR)/linker.lds $(BUILD_DIR)/main.elf $(BUILD_DIR)/main.dump
 
 # Setup BSP source dir
 BSP_DIR := $(shell dirname $(realpath $(MAKEFILE_LIST)))
@@ -58,15 +58,10 @@ $(BUILD_DIR)/linker.lds:
 	@mkdir -p $(@D)
 	$(CC) -E -P -x c -I $(BSP_DIR)/include $(BSP_DIR)/linker.lds.in > $(BUILD_DIR)/linker.lds
 
-# Assembly to CSV
-$(BUILD_DIR)/main.dump.csv: $(BUILD_DIR)/main.elf
-	@mkdir -p $(@D)
-	python $(BSP_DIR)/disassembly.py $< > $@
-
 # Custom assembly parser
 $(BUILD_DIR)/main.dump: $(BUILD_DIR)/main.elf
 	@mkdir -p $(@D)
-	python $(BSP_DIR)/disassembly.py $< --custom > $@
+	python $(BSP_DIR)/disassembly.py $< > $@
 
 # Basic build C/C++ build rules
 $(BUILD_DIR)/%.o: %.c

@@ -1,6 +1,7 @@
 import subprocess
 import re
 import sys
+import os
 
 # Custom instructions (reserved for custom extensions)
 RV_CUSTOM_0   = 0b0001011 
@@ -47,7 +48,7 @@ def get_bits(value, start, nbits):
     mask = ((1 << (nbits + 1)) - 1) >> 1
     return (value >> start) & mask
 
-def print_instr(instr):
+def print_instr_fields(instr):
     for k, v in vars(instr).items():
         print(f"\"{k}\": {v}, ", end="")
     print()
@@ -71,7 +72,7 @@ class RV_r4_instr:
         self.rs3 = RV_register(get_bits(instr, 27, 5))
 
     def print(self):
-        print_instr(self)
+        print_instr_fields(self)
 
 class RV_r_instr:
 
@@ -84,7 +85,7 @@ class RV_r_instr:
         self.func7 = get_bits(instr, 25, 7)
     
     def print(self):
-        print_instr(self)
+        print_instr_fields(self)
 
 
 def run_objdump(elf_file):
@@ -94,31 +95,43 @@ def run_objdump(elf_file):
         capture_output=True
     )
 
-def genum(instr: int) -> (bool, str):
+def genum(instr: int) -> tuple[bool, str]:
     d = RV_r_instr(instr)
     if d.opcode == RV_CUSTOM_0:
         return True, f"genum\t{d.rd}"
     return False, ""
 
-def fxmadd(instr: int) -> (bool, str):
+def fxmadd(instr: int) -> tuple[bool, str]:
     d = RV_r4_instr(instr)
     if d.opcode == RV_CUSTOM_1:
         return True, f"fxmadd\t{d.rd}, {d.rs1}, {d.rs2}, {d.rs3}, {d.func3}"
     return False, ""
 
+def fxmadd_dsample(instr: int) -> tuple[bool, str]:
+    d = RV_r4_instr(instr)
+    if d.opcode == RV_CUSTOM_2:
+        if d.func2 == 1:
+                return True, f"dsample\t{d.rd}, {d.rs2}, {d.rs3}, {d.func3}"
+        else:
+                return True, f"fxmadd\t{d.rd}, {d.rs1}, {d.rs2}, {d.rs3}, {d.func3}"
+    return False, ""
+
 CUSTOM_INSTRUCTION_DECODERS = [
     genum,
-    fxmadd
+    fxmadd,
+    fxmadd_dsample
 ]
 
-INSN_REGEX = r"^([\s\t]*[0-9a-f]+:[\s\t]*[0-9a-f]+[\s\t]*)(\.insn\t4, )([^<#]+)[<#]*"
+INSTR_REGEX = r"^[\s\t]*([0-9a-f]+):[\s\t]*[0-9a-f]+[\s\t]*([^<#]+)[<#]*"
+CUSTOM_INSN_REGEX = r"^([\s\t]*[0-9a-f]+:[\s\t]*[0-9a-f]+[\s\t]*)(\.insn\t4, )([^<#]+)[<#]*"
 
-def disassembly_custom(elf_file):
+def disassembly_custom(elf_file) -> str:
+    s = ""
     r = run_objdump(elf_file)
     for l in r.stdout.splitlines():
         l = l.decode("utf-8")
         # Check for special .insn instructions
-        m = re.search(INSN_REGEX, l)
+        m = re.search(CUSTOM_INSN_REGEX, l)
         if m:
             prefix = m.groups()[0]
             raw_instr = int(m.groups()[2], 16)
@@ -126,34 +139,38 @@ def disassembly_custom(elf_file):
             for decoder in CUSTOM_INSTRUCTION_DECODERS:
                 m, instr = decoder(raw_instr)
                 if m:
-                    print(f"{prefix}{instr}")
+                    s += f"{prefix}{instr}\n"
                     break
-
             # Print .insn version if could not decode
             if not m:
-                print(l)
+                s += l + '\n'
 
         else:
-            print(l)
+            s += l  + '\n'
+    return s
 
-INSTR_REGEX = r"^[\s\t]*([0-9a-f]+):[\s\t]*[0-9a-f]+[\s\t]*([^<#]+)[<#]*"
-
-def disassembly(elf_file):
-    # run objdump to get disassembly
-    r = run_objdump(elf_file)
-    for l in r.stdout.splitlines():
-        l = l.decode("utf-8")
+def disassembly_csv(text: str):
+    s = ""
+    for l in text.splitlines():
         #  pc:  raw_instr  instr_str  <tag>  #comment
         m = re.search(INSTR_REGEX, l)
         if m:
             # pc;raw_instr;instr
             pc = int(m.groups()[0], base=16)
             instr = m.groups()[1].replace('\t', ' ')
-            print(f'{pc};{instr}')
+            s += f'{pc};{instr}\n'
+    return s
 
 # usage disassembly.py elf_filename
 if __name__ == "__main__":
-    if len(sys.argv) > 2 and sys.argv[2] == "--custom":
-        disassembly_custom(sys.argv[1])
-    else:
-        disassembly(sys.argv[1])
+    elf_file = sys.argv[1]
+    dump = disassembly_custom(sys.argv[1])
+    csv = disassembly_csv(dump)
+    
+    dirname = os.path.dirname(elf_file)
+    basename = os.path.basename(elf_file)
+
+    with open(f"{elf_file}.dump", "w") as f:
+        f.write(dump)
+    with open(f"{elf_file}.dump.csv", "w") as f:
+        f.write(csv)

@@ -27,6 +27,12 @@
 
 namespace rv32_test {
 
+// Rust type definitions
+using i32 = int32_t;
+using u32 = uint32_t;
+using i8 = int8_t;
+using u8 = uint8_t;
+
 // Utilty using statements
 using DecodeStageData = Vrv32_top_decode_exec_buffer_t__struct__0;
 using ExecutionStageData = Vrv32_top_exec_mem_buffer_t__struct__0;
@@ -37,10 +43,17 @@ using MemoryRequest = Vrv32_top_memory_request_t__struct__0;
 using RegisterFileWriteRequest = Vrv32_top_register_write_request_t__struct__0;
 
 using Instruction = Vrv32_top_rv_instr_t__struct__0;
+using InstructionR4 = Vrv32_top_rv_r4_instr_t__struct__0;
 using CoreControlSignals = Vrv32_top_rv_control_t__struct__0;
 using RV32Types = Vrv32_top_rv32_types;
 
 // Getters core internal data
+
+inline InstructionR4 instr_to_r4(const Instruction& instr) {
+    InstructionR4 r;
+    r.set(instr.get());
+    return r;
+}
 
 inline Instruction get_decoder_input(const Vrv32_top* rvtop) {
     Instruction i;
