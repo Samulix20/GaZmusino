@@ -134,6 +134,14 @@ namespace rv32_test {
         }
     };
 
+    /*
+    std::vector<SimulatedInstruction*> simulated_instruction_list = {
+        new Instr_fxmadd,
+        new Instr_genum,
+        new Instr_dsample_fxmadd
+    };
+    */
+
     std::vector<SimulatedInstruction*> simulated_instruction_list = {
         new Instr_fxmadd,
         new Instr_genum,
