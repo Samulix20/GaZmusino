@@ -8,7 +8,7 @@
 #include "rv32_mmio_profiler.h"
 
 // Bsp defines config
-#include "../bsp/include/riscv/config.h"
+#include <riscv/config.h>
 
 namespace rv32_test {
 

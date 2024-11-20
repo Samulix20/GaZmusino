@@ -5,7 +5,7 @@
 
 #include "rv32_test_utils.h"
 
-#include "../bsp/include/riscv/config.h"
+#include <riscv/config.h>
 
 namespace rv32_test {
 

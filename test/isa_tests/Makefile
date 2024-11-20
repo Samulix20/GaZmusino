@@ -15,7 +15,7 @@ CFLAGS := \
 	-Wall\
 	-march=rv32i_zmmul_zicsr -mabi=ilp32\
 	-fopt-info-optimized=comp_report.txt\
-	-I macros -I $(BSP_DIR)/include\
+	-I macros -I $(BSP_DIR)\
 	-ffreestanding -nostartfiles -T linker.lds
 
 all: $(TEST_BUILD).dump
