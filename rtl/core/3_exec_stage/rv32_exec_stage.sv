@@ -107,16 +107,6 @@ rv32_mul_unit mul_unit (
     .result(mul_unit_result)
 );
 
-// Custom extension functional units
-// GRNG unit
-rv32_word grng_result;
-clt_grng_16 grng (
-    .clk(clk), .resetn(resetn), 
-    .ctrl(decode_exec_buff.control.grng_ctrl),
-    .seed(reg_data[0]),
-    .sample(grng_result)
-);
-
 // Custom signal for simulation of custom isntructions
 logic tb_exec /*verilator public*/;
 exec_mem_buffer_t tb_data /*verilator public*/;
@@ -146,7 +136,7 @@ always_comb begin
             end
 
             // Custom functional unit outputs
-            WB_GRNG: internal_data.data_result[0] = grng_result;
+            // ...
 
             default: internal_data.data_result[0] = 0;
         endcase

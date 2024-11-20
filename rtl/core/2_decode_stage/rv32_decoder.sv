@@ -164,31 +164,7 @@ always_comb begin
         end
 
         OPCODE_CUSTOM_0: begin
-
             control.invalid = 1;
-
-            /*
-            // GRNG Custom extension
-            // RD = GRNG
-            // GRNG <- R1
-            control.t = INSTR_R_TYPE;
-
-            case (instr.funct3)
-                3'b000: begin // Set seed
-                    control.grng_ctrl.set_seed = 1;
-                    use_rs[0] = 1;
-                end
-                3'b001: begin
-                    control.wb_result_src = WB_GRNG;
-                    control.grng_ctrl.enable = 1; 
-                    control.register_wb = 1;
-                end
-                default: begin
-                    control.invalid = 1;
-                end
-            endcase
-            */
-
         end
 
         OPCODE_CUSTOM_1: begin

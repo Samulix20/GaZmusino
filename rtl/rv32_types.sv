@@ -17,18 +17,7 @@ typedef logic [11:0] rv_csr_id_t;
 typedef logic [6:0] opcode_t;
 
 // CUSTOM EXTENSION STUCTS AND CONTROL
-
-typedef struct packed {
-    logic enable;
-    logic set_seed;
-} grng_ctrl_t /*verilator public*/;
-
-function automatic grng_ctrl_t create_grng_nop_ctrl();
-    grng_ctrl_t grng_ctrl;
-    grng_ctrl.enable = 0;
-    grng_ctrl.set_seed = 0;
-    return grng_ctrl;
-endfunction
+// ...
 
 // Decoding defaults to R-Type
 typedef struct packed {
@@ -145,9 +134,6 @@ typedef enum logic [2:0] {
 } int_alu_xbar_t /*verilator public*/;
 
 typedef enum logic [2:0] {
-    // Custom functional units outputs
-    WB_GRNG,
-
     // Standard outputs
     WB_PC4,
     WB_INT_ALU,
@@ -194,11 +180,6 @@ typedef struct packed {
     logic register_wb;
     // Final CSR write
     logic csr_wb;
-
-    // Control for custom extensions
-    // GRNG control
-    grng_ctrl_t grng_ctrl;
-
 } rv_control_t /*verilator public*/;
 
 // Used for NOP generation
@@ -217,9 +198,6 @@ function automatic rv_control_t create_nop_ctrl();
     instr.wb_result_src = WB_INT_ALU;
     instr.register_wb = 0;
     instr.csr_wb = 0;
-
-    // Custom instructions control signals
-    instr.grng_ctrl = create_grng_nop_ctrl();
 
     return instr;
 endfunction

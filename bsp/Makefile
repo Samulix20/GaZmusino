@@ -21,7 +21,7 @@ OPTFLAGS := \
 	-Wall -Wextra -O3 \
 	-fopt-info-optimized=$(BUILD_DIR)/comp_report.txt
 ARCHFLAGS := -march=rv32i_zmmul_zicsr -mabi=ilp32
-BSPFLAGS := -I $(BSP_DIR)/include -T $(BUILD_DIR)/linker.lds
+BSPFLAGS := -I $(BSP_DIR) -T $(BUILD_DIR)/linker.lds
 
 CFLAGS := $(OPTFLAGS) $(ARCHFLAGS) $(BSPFLAGS) $(EXTRA_FLAGS)
 CXXFLAGS := $(CFLAGS) -fno-exceptions -fno-unwind-tables -fno-rtti
@@ -56,7 +56,7 @@ $(BUILD_DIR)/main.elf: $(OBJS)
 # Linker script generation rule
 $(BUILD_DIR)/linker.lds:
 	@mkdir -p $(@D)
-	$(CC) -E -P -x c -I $(BSP_DIR)/include $(BSP_DIR)/linker.lds.in > $(BUILD_DIR)/linker.lds
+	$(CC) -E -P -x c -I $(BSP_DIR) $(BSP_DIR)/linker.lds.in > $(BUILD_DIR)/linker.lds
 
 # Custom assembly parser
 $(BUILD_DIR)/main.dump: $(BUILD_DIR)/main.elf
