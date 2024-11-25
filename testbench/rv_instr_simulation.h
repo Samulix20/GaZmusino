@@ -129,18 +129,10 @@ namespace rv32_test {
             const BypassRegisterData& bypass_data
         ) {
 
-            return 7;
+            return 7; // Random placeholder value
 
         }
     };
-
-    /*
-    std::vector<SimulatedInstruction*> simulated_instruction_list = {
-        new Instr_fxmadd,
-        new Instr_genum,
-        new Instr_dsample_fxmadd
-    };
-    */
 
     std::vector<SimulatedInstruction*> simulated_instruction_list = {
         new Instr_fxmadd,
