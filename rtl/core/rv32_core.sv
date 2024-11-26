@@ -88,7 +88,9 @@ rv32_csr csr_file(
     .clk(clk), .resetn(resetn),
     .read_id(csr_read_id), .read_value(csr_read_data),
     .write_request(csr_write_request),
-    .instr_retired(instr_retired)
+    .instr_retired(instr_retired),
+    .dec_stall(dec_stall),
+    .jump_taken(exec_jump)
 );
 
 // FETCH STAGE

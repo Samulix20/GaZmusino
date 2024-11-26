@@ -13,7 +13,9 @@ import rv32_types::*;
     // Always available signals, mstatus...
     // TODO
     // Performance counters...
-    input logic instr_retired
+    input logic instr_retired,
+    input logic dec_stall,
+    input logic jump_taken
 );
 
 // CSR LIST
@@ -41,6 +43,11 @@ mcountinhibit_t mcountinhibit, next_mcountinhibit;
 rv64_word mcycle /*verilator public*/;
 rv64_word minstret /*verilator public*/;
 rv64_word next_mcycle, next_minstret;
+
+// TODO make them standard hardware counters
+rv64_word mdecstall /*verilator public*/;
+rv64_word mjmp /*verilator public*/;
+rv64_word next_mdecstall, next_mjmp;
 
 always_comb begin
     read_value = 0;
@@ -72,6 +79,10 @@ end
 
 // Write logic
 always_comb begin
+
+    // Special counters for simulation
+    if (jump_taken) next_mjmp = mjmp + 1;
+    else if (dec_stall) next_mdecstall = mdecstall + 1;
 
     // Counters default behaviour
     if (!mcountinhibit.cy) next_mcycle = mcycle + 1;
@@ -115,6 +126,9 @@ always_ff @(posedge clk) begin
         minstret <= next_minstret;
         mcountinhibit <= next_mcountinhibit;
         mscratch <= next_mscratch;
+        
+        mdecstall <= next_mdecstall;
+        mjmp <= next_mjmp;
     end
 end
 

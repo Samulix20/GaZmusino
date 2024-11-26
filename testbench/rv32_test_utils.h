@@ -164,6 +164,15 @@ inline uint64_t get_minstret (const Vrv32_top* rvtop) {
     return rvtop->rv32_top->core->csr_file->minstret;
 }
 
+inline uint64_t get_mdecstall (const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->csr_file->mdecstall;
+}
+
+inline uint64_t get_mjmp (const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->csr_file->mjmp;
+}
+
+
 using DissasemblyMap = std::unordered_map<uint32_t, std::string>;
 
 inline DissasemblyMap load_dissasembly(std::string filename) {

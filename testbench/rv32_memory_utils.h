@@ -109,7 +109,7 @@ inline void mmio_exit_request(Vrv32_top* rvtop, uint64_t sim_time, time_point_ns
 
             std::cout << '\n' << "Exit status " << request.data << '\n';
             std::cout << "Sim cycles " << sim_time / 2 << '\n';
-            std::cout << "Sim time " << std::format("{:%T}", time_elapsed) << '\n';
+            std::cout << "Sim time " << std::format("{:%T}", time_elapsed) << "\n\n";
             print_profiler_counters();
             exit(request.data);
         }
