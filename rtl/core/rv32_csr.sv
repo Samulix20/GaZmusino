@@ -38,8 +38,9 @@ typedef struct packed {
 mcountinhibit_t mcountinhibit, next_mcountinhibit;
 
 // Counters
-rv64_word mcycle, next_mcycle;
-rv64_word minstret, next_minstret;
+rv64_word mcycle /*verilator public*/;
+rv64_word minstret /*verilator public*/;
+rv64_word next_mcycle, next_minstret;
 
 always_comb begin
     read_value = 0;
@@ -74,7 +75,7 @@ always_comb begin
 
     // Counters default behaviour
     if (!mcountinhibit.cy) next_mcycle = mcycle + 1;
-    if (!mcountinhibit.ir && instr_retired) next_minstret <= minstret + 1;
+    if (!mcountinhibit.ir && instr_retired) next_minstret = minstret + 1;
 
     // User write logic
     if (write_request.write) begin

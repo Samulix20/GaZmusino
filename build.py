@@ -113,13 +113,19 @@ def compile_bsp(buildir):
 
 #####
 
-def compile_and_link_test(testdir, buildir, targetname):
+def compile_and_link_test(testdir, buildir, targetname, *extra_args):
     bsp_srcs, bsp_objs, lds = compile_bsp(f"{buildir}/bsp")
-    srcs, objs = compile_dir(testdir, f"{buildir}/{testdir}")
+    srcs, objs = compile_dir(testdir, f"{buildir}/{testdir}", *extra_args)
     target = f"{buildir}/{testdir}/{targetname}"
     rvlink(srcs, bsp_objs + objs, lds, target)
     shell_redir(f"{target}.dump", RV_DMP, "-d", target)
 
+def run_test(testdir, logfile, *extra_args):
+    compile_and_link_test(testdir, "build", "main.elf", *extra_args)
+    os.system(f"""
+        ./obj_dir/Vrv32_top -e build/{testdir}/main.elf > {logfile}
+    """)
+
 if __name__ == "__main__":
-    # Argparse
     return
+

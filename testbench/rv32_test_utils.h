@@ -1,6 +1,7 @@
 #ifndef RV32_TEST_UTILS
 #define RV32_TEST_UTILS
 
+#include <chrono>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -16,6 +17,7 @@
 #include "Vrv32_top.h"
 #include "Vrv32_top_rv32_top.h"
 #include "Vrv32_top_rv32_core.h"
+#include "Vrv32_top_rv32_csr.h"
 #include "Vrv32_top_rv32_decode_stage.h"
 #include "Vrv32_top_rv32_exec_stage.h"
 #include "Vrv32_top_rv32_mem_stage.h"
@@ -26,6 +28,9 @@
 #endif
 
 namespace rv32_test {
+
+// Time point in nanoseconds
+using time_point_ns = std::chrono::time_point<std::chrono::system_clock, std::chrono::nanoseconds>;
 
 // Rust type definitions
 using i32 = int32_t;
@@ -149,6 +154,14 @@ inline uint8_t get_decode_stall(const Vrv32_top* rvtop) {
 
 inline uint8_t get_exec_jump(const Vrv32_top* rvtop) {
     return rvtop->rv32_top->core->exec_jump;
+}
+
+inline uint64_t get_mcycle(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->csr_file->mcycle;
+}
+
+inline uint64_t get_minstret (const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->csr_file->minstret;
 }
 
 using DissasemblyMap = std::unordered_map<uint32_t, std::string>;

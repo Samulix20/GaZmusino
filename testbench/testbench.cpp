@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <iostream>
 
+#include <chrono>
+
 // Verilator
 #include <verilated.h>
 #include <verilated_vcd_c.h>
@@ -57,6 +59,8 @@ int main(int argc, char** argv) {
 
     rv32_test::init_profiler_counters();
 
+    auto clk_start = std::chrono::high_resolution_clock::now();
+
     // Testbench simulation loop
     while (forever || sim_time < max_sim_time) {
 
@@ -74,7 +78,7 @@ int main(int argc, char** argv) {
 
         // Memory bus signals
         if(!reset_on) {
-            rv32_test::handle_memory_request(dut, rvmem, sim_time);
+            rv32_test::handle_memory_request(dut, rvmem, sim_time, clk_start);
         }
 
         // Update signals

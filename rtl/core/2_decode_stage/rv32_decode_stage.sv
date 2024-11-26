@@ -101,7 +101,7 @@ always_comb begin
 
     if (stall | set_nop) begin
         output_internal_data.instr = RV_NOP;
-        output_internal_data.control = create_nop_ctrl();
+        output_internal_data.control = create_bubble_ctrl();
         if (set_nop) output_internal_data.pc = set_nop_pc;
     end
 
@@ -110,7 +110,7 @@ end
 always_ff @(posedge clk) begin
     if (!resetn) begin
         decode_exec_buff.instr <= RV_NOP;
-        decode_exec_buff.control <= create_nop_ctrl();
+        decode_exec_buff.control <= create_bubble_ctrl();
         decode_exec_buff.pc <= 0;
     end
     else if (!stop) begin

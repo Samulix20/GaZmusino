@@ -154,7 +154,7 @@ always_ff @(posedge clk) begin
     if (!resetn) begin
         exec_mem_buff.instr <= RV_NOP;
         exec_mem_buff.pc <= 0;
-        exec_mem_buff.control <= create_nop_ctrl();
+        exec_mem_buff.control <= create_bubble_ctrl();
     end
     else if (!stop) exec_mem_buff <= internal_data;
 end

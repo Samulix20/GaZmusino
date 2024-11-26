@@ -1,6 +1,7 @@
 #ifndef RV32_MEMORY_UTILS
 #define RV32_MEMORY_UTILS
 
+#include <chrono>
 #include <iostream>
 #include <format>
 
@@ -98,13 +99,17 @@ void write_mem(rv32_memory& rvmem, const uint32_t addr, const uint32_t data) {
     *reinterpret_cast<T*>(rvmem.memory.get() + addr) = static_cast<T>(data);
 }
 
-inline void mmio_exit_request(Vrv32_top* rvtop, uint64_t sim_time) {
+inline void mmio_exit_request(Vrv32_top* rvtop, uint64_t sim_time, time_point_ns clk_start) {
     MemoryRequest request = get_memory_request(rvtop);
     if (request.addr == EXIT_STATUS_ADDR) {
         rvtop->mmio_request_done[0] = 1;
         if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
+            auto end_clk = std::chrono::high_resolution_clock::now();
+            auto time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>( end_clk - clk_start);
+
             std::cout << '\n' << "Exit status " << request.data << '\n';
-            std::cout << "Sim time " << sim_time << '\n';
+            std::cout << "Sim cycles " << sim_time / 2 << '\n';
+            std::cout << "Sim time " << std::format("{:%T}", time_elapsed) << '\n';
             print_profiler_counters();
             exit(request.data);
         }
@@ -121,11 +126,11 @@ inline void mmio_print_request(Vrv32_top* rvtop) {
     }
 }
 
-inline void handle_mmio_request(Vrv32_top* rvtop, uint64_t sim_time) {
+inline void handle_mmio_request(Vrv32_top* rvtop, uint64_t sim_time, time_point_ns clk_start) {
     rvtop->mmio_request_done[0] = 0;
-    mmio_exit_request(rvtop, sim_time);
+    mmio_exit_request(rvtop, sim_time, clk_start);
     mmio_print_request(rvtop);
-    mmio_profiler_request(rvtop, sim_time);
+    mmio_profiler_request(rvtop);
 }
 
 // Store the values for 1 cycle delay serve
@@ -213,9 +218,9 @@ inline void handle_data_request(Vrv32_top* rvtop, rv32_memory& rvmem) {
     }
 }
 
-inline void handle_memory_request(Vrv32_top* rvtop, rv32_memory& rvmem, uint64_t sim_time) {
+inline void handle_memory_request(Vrv32_top* rvtop, rv32_memory& rvmem, uint64_t sim_time, time_point_ns clk_start) {
 
-    handle_mmio_request(rvtop, sim_time);
+    handle_mmio_request(rvtop, sim_time, clk_start);
 
     #ifdef CPP_MEMORY_SIM
 

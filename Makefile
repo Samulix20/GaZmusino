@@ -34,10 +34,9 @@ obj_dir/${VERILATED_MODULE}: obj_dir/.verilator.stamp
 obj_dir/.verilator.stamp: \
 	$(CPP_SRC) $(CPP_HDR) ${TOP_MODULE_SRC} $(VERILOG_MODULES) \
 	$(VERILOG_HEADERS)
-
 	${VV} -I $(VERILOG_MODULES) \
 	-Wall --top-module ${TOP_MODULE} \
-	$(CPP_MEMORY_SIM) --trace --trace-structs $(VVOPT) \
+	$(CPP_MEMORY_SIM) $(VVOPT) \
 	--x-assign unique --x-initial unique \
 	--cc -CFLAGS "-I$(RV_BSP_PATH) $(CPP_MEMORY_SIM) -march=native -std=c++20 -Wall -Wextra" \
 	--exe ${TOP_MODULE_SRC} $(CPP_SRC)
@@ -50,7 +49,7 @@ wave:
 	gtkwave waveform.vcd >/dev/null 2>/dev/null &
 
 bear: clean
-	bear -- make test
+	bear -- make
 
 clean:
 	rm -rf obj_dir build waveform.vcd

@@ -19,7 +19,8 @@ import rv32_types::*;
     output memory_request_t data_request,
     input logic request_done,
     // CSR file O
-    output csr_write_request_t csr_write_request
+    output csr_write_request_t csr_write_request,
+    output logic instr_retired
 );
 
 mem_wb_buffer_t internal_data /*verilator public*/;
@@ -43,12 +44,16 @@ always_comb begin
     internal_data = exec_mem_buff;
     if (exec_mem_buff.control.mem_op == MEM_NOP) stall = 0;
     else stall = ~request_done;
+
+    // Consolidation Point
+    // Check if instruction is retiring for counters
+    instr_retired = ~(internal_data.control.is_bubble | stall);
 end
 
 always_ff @(posedge clk) begin
     if(!resetn) begin
         mem_wb_buff.instr <= RV_NOP;
-        mem_wb_buff.control <= create_nop_ctrl();
+        mem_wb_buff.control <= create_bubble_ctrl();
         mem_wb_buff.pc <= 0;
     end
 

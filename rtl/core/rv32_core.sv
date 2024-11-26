@@ -80,6 +80,7 @@ rv32_register_file #(.NUM_READ_PORTS(CORE_RF_NUM_READ)) rf(
 rv32_word csr_read_data;
 rv_csr_id_t csr_read_id;
 csr_write_request_t csr_write_request;
+logic instr_retired = 0;
 always_comb begin 
     csr_read_id = instr[31:20];
 end
@@ -87,7 +88,7 @@ rv32_csr csr_file(
     .clk(clk), .resetn(resetn),
     .read_id(csr_read_id), .read_value(csr_read_data),
     .write_request(csr_write_request),
-    .instr_retired(0)
+    .instr_retired(instr_retired)
 );
 
 // FETCH STAGE
@@ -158,7 +159,8 @@ rv32_mem_stage mem_stage(
     .data_request(data_request),
     .request_done(data_request_done),
     // CSR File O
-    .csr_write_request(csr_write_request)
+    .csr_write_request(csr_write_request),
+    .instr_retired(instr_retired)
 );
 
 // WRITEBACK STAGE

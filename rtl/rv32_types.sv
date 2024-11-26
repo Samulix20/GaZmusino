@@ -164,6 +164,8 @@ endfunction
 
 typedef struct packed {
     logic invalid;
+    // Bubble bit
+    logic is_bubble;
     // Immediate generation
     instr_type_t t;
     // Bypass
@@ -186,6 +188,7 @@ typedef struct packed {
 function automatic rv_control_t create_nop_ctrl();
     rv_control_t instr;
     instr.invalid = 0;
+    instr.is_bubble = 0;
     instr.t = INSTR_R_TYPE;
 
     for(int idx = 0; idx < CORE_RF_NUM_READ; idx = idx + 1) begin
@@ -199,6 +202,12 @@ function automatic rv_control_t create_nop_ctrl();
     instr.register_wb = 0;
     instr.csr_wb = 0;
 
+    return instr;
+endfunction
+
+function automatic rv_control_t create_bubble_ctrl();
+    rv_control_t instr = create_nop_ctrl();
+    instr.is_bubble = 1;
     return instr;
 endfunction
 

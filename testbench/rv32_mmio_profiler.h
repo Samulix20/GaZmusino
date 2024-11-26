@@ -11,28 +11,36 @@ namespace rv32_test {
 
 constexpr uint32_t NUM_MMIO_PROFILER_COUNTERS = 255;
 
-static uint64_t profiler_counters[NUM_MMIO_PROFILER_COUNTERS];
-static uint64_t profiler_counters_starts[NUM_MMIO_PROFILER_COUNTERS];
+struct profiler_counters {
+    uint64_t cycles;
+    uint64_t instructions;
+};
+
+static profiler_counters counters [NUM_MMIO_PROFILER_COUNTERS];
+static profiler_counters counters_starts[NUM_MMIO_PROFILER_COUNTERS];
 
 inline void init_profiler_counters() {
-    std::memset(profiler_counters, 0, NUM_MMIO_PROFILER_COUNTERS * sizeof(uint64_t));
+    std::memset(counters, 0, NUM_MMIO_PROFILER_COUNTERS * sizeof(profiler_counters));
 }
 
 inline void print_profiler_counters() {
     for(size_t i = 0; i < NUM_MMIO_PROFILER_COUNTERS; i++) {
-        if (profiler_counters[i] == 0) continue; // Ignore unused counters
-        std::cout << "Counter " << i << " " << profiler_counters[i] << '\n';
+        if (counters[i].cycles == 0) continue; // Ignore unused counters
+        std::cout << "Counter " << i << " Cycles " << counters[i].cycles;
+        std::cout << " Instructions " << counters[i].instructions << '\n';
     }
 }
 
-inline void mmio_profiler_request(Vrv32_top* rvtop, uint64_t sim_time) {
+inline void mmio_profiler_request(Vrv32_top* rvtop) {
     MemoryRequest request = get_memory_request(rvtop);
     // Start
     if (request.addr == PROFILER_BASE_ADDR) {
         rvtop->mmio_request_done[0] = 1; // Tell the core the request is done
         if (rvtop->clk == 1 && request.op == RV32Types::MEM_SW) {
             uint8_t counter_id = static_cast<uint8_t>(request.data);
-            profiler_counters_starts[counter_id] = sim_time;
+            
+            counters_starts[counter_id].cycles = get_mcycle(rvtop);
+            counters_starts[counter_id].instructions = get_minstret(rvtop);
         }
         
     }
@@ -41,7 +49,9 @@ inline void mmio_profiler_request(Vrv32_top* rvtop, uint64_t sim_time) {
         rvtop->mmio_request_done[0] = 1; // Tell the core the request is done
         if (rvtop->clk == 1 && request.op == RV32Types::MEM_SW) {
             uint8_t counter_id = static_cast<uint8_t>(request.data);
-            profiler_counters[counter_id] += (sim_time - profiler_counters_starts[counter_id]) / 2;
+            
+            counters[counter_id].cycles += get_mcycle(rvtop) - counters_starts[counter_id].cycles;
+            counters[counter_id].instructions += get_minstret(rvtop) - counters_starts[counter_id].instructions;
         }
     }
 }
