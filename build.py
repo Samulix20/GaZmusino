@@ -120,13 +120,29 @@ def compile_and_link_test(testdir, buildir, targetname, *extra_args):
     rvlink(srcs, bsp_objs + objs, lds, target)
     shell_redir(f"{target}.dump", RV_DMP, "-d", target)
 
-def run_test(testdir, logfile, *extra_args):
+def run_test_log(testdir, logfile, *extra_args):
     compile_and_link_test(testdir, "build", "main.elf", *extra_args)
     os.system(f"""
         ./obj_dir/Vrv32_top -e build/{testdir}/main.elf > {logfile}
     """)
 
+def run_test(testdir, *extra_args):
+    compile_and_link_test(testdir, "build", "main.elf", *extra_args)
+    os.system(f"""
+        ./obj_dir/Vrv32_top -e build/{testdir}/main.elf
+    """)
+
 from multiprocessing import Process
 
 if __name__ == "__main__":
-    pass
+    os.system("make")
+    
+    if (True):
+        p = "test/extra/bnn"
+        for d in os.listdir(p):
+            proc = Process(
+                target=run_test_log, 
+                args=(f"{p}/{d}", f"testlog/{d}.log", "-D", "PROFILING_MODE=1", f"-I{p}/{d}",)
+            )
+            proc.start()
+
