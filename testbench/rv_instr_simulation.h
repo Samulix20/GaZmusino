@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <vector>
 
+#include <iostream>
+
 namespace rv32_test {
 
     struct SimulatedControlSignals {
@@ -18,101 +20,25 @@ namespace rv32_test {
         virtual SimulatedControlSignals decode(const Instruction& i) = 0;
 
         virtual uint32_t execute(
-            const DecodeStageData& pipeline_input, 
-            const BypassRegisterData& bypass_data) = 0;
-    };
-
-    class Instr_Sum3 : public SimulatedInstruction {
-      public:
-        bool match(const Instruction& i) {
-            (void) i;
-            return true;
-        }
-
-        SimulatedControlSignals decode(const Instruction& i) {
-            return {
-            {true, true, true}, true
-            };
-        }
-
-        uint32_t execute(
+            const u8 clk,
             const DecodeStageData& pipeline_input, 
             const BypassRegisterData& bypass_data
-        ) {
-            (void) pipeline_input;
-            return bypass_data.reg_data[0] + bypass_data.reg_data[1] + bypass_data.reg_data[2];
-        }
-    };
-
-    static u8 scales_register_file[8] = {
-        0, 1, 2, 3, 4, 5, 6, 7
-    };
-
-    class Instr_dsample_fxmadd : public SimulatedInstruction {
-      public:
-        bool match(const Instruction& i) {
-            return i.opcode == RV32Types::OPCODE_CUSTOM_2;
-        }
-
-        SimulatedControlSignals decode(const Instruction& i) {
-            InstructionR4 instr = instr_to_r4(i);
-            bool use_rs1 = instr.fmt != 1;
-            return {
-                {use_rs1, true, true}, true
-            };
-        }
-
-        uint32_t execute(
-            const DecodeStageData& pipeline_input, 
-            const BypassRegisterData& bypass_data
-        ) {
-
-            InstructionR4 instr = instr_to_r4(pipeline_input.instr);
-
-            uint8_t s_id = instr.rm;
-
-            i32 op_a;
-            if (instr.fmt == 1) op_a = 7;
-            else op_a = bypass_data.reg_data[0];
-
-
-            int32_t m = op_a * bypass_data.reg_data[1];
-            m = m >> scales_register_file[s_id];
-
-            return m + bypass_data.reg_data[2];
-
-        }
-
-    };
-
-    class Instr_fxmadd : public SimulatedInstruction {
-      public:
-        bool match(const Instruction& i) {
-            return i.opcode == RV32Types::OPCODE_CUSTOM_1;
-        }
-
-        SimulatedControlSignals decode(const Instruction& i) {
-            return {
-                {true, true, true}, true
-            };
-        }
-
-        uint32_t execute(
-            const DecodeStageData& pipeline_input, 
-            const BypassRegisterData& bypass_data
-        ) {
-
-            uint8_t s_id = pipeline_input.instr.funct3;
-
-            int32_t m = bypass_data.reg_data[0] * bypass_data.reg_data[1];
-            m = m >> scales_register_file[s_id];
-
-            return m + bypass_data.reg_data[2];
-
-        }
+        ) = 0;
     };
 
     class Instr_genum : public SimulatedInstruction {
+
+        u32 rng_seed = 0xDEADBEEF;
+
+        // https://en.wikipedia.org/wiki/Xorshift
+        u32 xorshift32(u32 seed) {
+            u32 x = seed;
+            x ^= x << 13;
+            x ^= x >> 17;
+            x ^= x << 5;
+            return x;
+        }
+
       public:
         bool match(const Instruction& i) {
             return i.opcode == RV32Types::OPCODE_CUSTOM_0;
@@ -125,19 +51,17 @@ namespace rv32_test {
         }
 
         uint32_t execute(
+            const u8 clk,
             const DecodeStageData& pipeline_input, 
             const BypassRegisterData& bypass_data
         ) {
-
-            return 7; // Random placeholder value
-
+            if (clk == 1) rng_seed = xorshift32(rng_seed);
+            return rng_seed >> (32 - 10);
         }
     };
 
     std::vector<SimulatedInstruction*> simulated_instruction_list = {
-        new Instr_fxmadd,
         new Instr_genum,
-        new Instr_dsample_fxmadd
     };
 
     inline bool invalid_decode(const Vrv32_top* rvtop) {
@@ -199,7 +123,7 @@ namespace rv32_test {
             BypassRegisterData reg_data = get_exec_bypass_register_data(rvtop);
 
             // Run instruction function
-            uint32_t result = sim_instr->execute(exec_input, reg_data);
+            uint32_t result = sim_instr->execute(rvtop->clk, exec_input, reg_data);
 
             // Setup core signals
             exec_output.data_result[0] = result;

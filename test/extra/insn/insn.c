@@ -1,6 +1,8 @@
 #include <stdint.h>
 
 #include "test_vec.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 // Rust types
 
@@ -13,7 +15,7 @@ typedef uint8 u8;
 uint32 seed = DEFAULT_SEED;
 
 // https://en.wikipedia.org/wiki/Xorshift
-inline uint32 xorshift32(uint32 seed) {
+uint32 xorshift32(uint32 seed) {
     uint32 x = seed;
 	x ^= x << 13;
 	x ^= x >> 17;
@@ -34,7 +36,6 @@ inline i32 bernoulli_sample(u8 S, i32 q, i32 p) {
 
 // Uniform sample scaled at S
 inline i32 uniform_sample(u8 S) {
-    extern uint32 seed;
     // Seed can be iterpreted as scaled at S = 32
     seed = xorshift32(seed);
     return (i32) (seed >> (32 - S));
@@ -132,7 +133,7 @@ inline i32 f_instr_comb(i32 x, i32 a, i32 b, i32 c, u8 s) {
     return dsample_fxmadd(x,  a, b, c, s);
 }
 
-int main() {
+int benchmark_1() {
     i32 x;
 
     start_external_counter(0);
@@ -172,4 +173,27 @@ int main() {
     stop_external_counter(3);
 
     return 0;
+}
+
+inline u32 custom_generator() {
+    u32 x = 0;
+    asm volatile (
+        ".insn r CUSTOM_0, 0, 0, %0, x0, x0\n"
+        : "=r" (x)
+        :
+        :
+    );
+    return x;
+}
+
+
+int main() {
+    for (int i = 0; i < 100; i++){
+        u32 a = uniform_sample(10);
+        u32 b = custom_generator();
+        if (a != b) {
+            printf("%u, %u\n", a, b);
+            exit(1);
+        }
+    }
 }

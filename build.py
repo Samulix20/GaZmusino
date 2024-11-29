@@ -38,6 +38,8 @@ RV_BARE_CXX_FLAGS = [
 RV_CC_FLAGS = OPT_FLAGS + ARCH_FLAGS
 RV_CXX_FLAGS = RV_CC_FLAGS + RV_BARE_CXX_FLAGS
 
+path_common = "test/bringup-bench/common"
+
 ####
 
 def remove_all(l, v):
@@ -112,6 +114,13 @@ def compile_bsp(buildir):
     return *compile_dir(f"{BSP_DIR}", buildir), lds
 
 #####
+def compile_and_link_test_bringup_bench(testdir, buildir, targetname, *extra_args):
+    bsp_srcs, bsp_objs, lds = compile_bsp(f"{buildir}/{testdir}/bsp")
+    common_srcs, common_objs = compile_dir(path_common,f"{buildir}/{testdir}/common")
+    srcs, objs = compile_dir(testdir, f"{buildir}/{testdir}", *extra_args)
+    target = f"{buildir}/{testdir}/{targetname}"
+    rvlink(srcs, bsp_objs + objs + common_objs, lds, target)
+    shell_redir(f"{target}.dump", RV_DMP, "-d", target)
 
 def compile_and_link_test(testdir, buildir, targetname, *extra_args):
     bsp_srcs, bsp_objs, lds = compile_bsp(f"{buildir}/{testdir}/bsp")
@@ -119,6 +128,12 @@ def compile_and_link_test(testdir, buildir, targetname, *extra_args):
     target = f"{buildir}/{testdir}/{targetname}"
     rvlink(srcs, bsp_objs + objs, lds, target)
     shell_redir(f"{target}.dump", RV_DMP, "-d", target)
+
+def run_test_bringup_bench(testdir, logfile, *extra_args):
+    compile_and_link_test_bringup_bench(testdir, "build", "main.elf", *extra_args)
+    os.system(f"""
+        ./obj_dir/Vrv32_top -e build/{testdir}/main.elf > {logfile}
+    """)
 
 def run_test_log(testdir, logfile, *extra_args):
     compile_and_link_test(testdir, "build", "main.elf", *extra_args)
