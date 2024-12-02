@@ -135,10 +135,10 @@ def run_test_bringup_bench(testdir, logfile, *extra_args):
         ./obj_dir/Vrv32_top -e build/{testdir}/main.elf > {logfile}
     """)
 
-def run_test_log(testdir, logfile, *extra_args):
+def run_test_log(testdir, stdout_file, profiling_file, *extra_args):
     compile_and_link_test(testdir, "build", "main.elf", *extra_args)
     os.system(f"""
-        ./obj_dir/Vrv32_top -e build/{testdir}/main.elf > {logfile}
+        ./obj_dir/Vrv32_top -e build/{testdir}/main.elf --out {stdout_file} --prof {profiling_file}
     """)
 
 def run_test(testdir, *extra_args):
@@ -151,13 +151,6 @@ from multiprocessing import Process
 
 if __name__ == "__main__":
     os.system("make")
-    
-    if (True):
-        p = "test/extra/bnn"
-        for d in os.listdir(p):
-            proc = Process(
-                target=run_test_log, 
-                args=(f"{p}/{d}", f"testlog/{d}.log", "-D", "PROFILING_MODE=1", f"-I{p}/{d}",)
-            )
-            proc.start()
+
+    run_test_log("test/c_tests/hello", "test.log", "test.yaml")
 

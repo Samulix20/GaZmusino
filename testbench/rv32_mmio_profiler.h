@@ -2,6 +2,7 @@
 #define RV32_MMIO_PROFILER
 
 #include <iostream>
+#include <sstream>
 
 #include "rv32_test_utils.h"
 
@@ -25,16 +26,18 @@ inline void init_profiler_counters() {
     std::memset(counters, 0, NUM_MMIO_PROFILER_COUNTERS * sizeof(profiler_counters));
 }
 
-inline void print_profiler_counters() {
+inline std::string profiler_counters_yaml() {
+    std::stringstream ss;
+    ss << "counters:" << "\n";
     for(size_t i = 0; i < NUM_MMIO_PROFILER_COUNTERS; i++) {
         if (counters[i].cycles == 0) continue; // Ignore unused counters
-        std::cout << "Counter" << i << '\n';
-        std::cout << "\tCycles " << counters[i].cycles << '\n';
-        std::cout << "\tInstructions " << counters[i].instructions << '\n';
-        std::cout << "\tStalls " << counters[i].dec_stalls << '\n';
-        std::cout << "\tJumps Taken " << counters[i].jumps_taken << '\n';
-        std::cout << "\n\n";
+        ss << "- id: " << i << "\n";
+        ss << "  cycles: " << counters[i].cycles << '\n';
+        ss << "  instructions: "<< counters[i].instructions << '\n';
+        ss << "  stalls: " << counters[i].dec_stalls << '\n';
+        ss << "  jumps_taken: " << counters[i].jumps_taken << '\n';
     }
+    return ss.str();
 }
 
 inline void mmio_profiler_request(Vrv32_top* rvtop) {

@@ -60,7 +60,7 @@ namespace rv32_test {
         }
     };
 
-    std::vector<SimulatedInstruction*> simulated_instruction_list = {
+    static std::vector<SimulatedInstruction*> simulated_instruction_list = {
         new Instr_genum,
     };
 

@@ -1,7 +1,6 @@
 #ifndef RV32_MEMORY_UTILS
 #define RV32_MEMORY_UTILS
 
-#include <chrono>
 #include <iostream>
 #include <format>
 
@@ -9,14 +8,10 @@
 #include "rv32_mmio_profiler.h"
 
 // Bsp defines config
+#include <ostream>
 #include <riscv/config.h>
 
 namespace rv32_test {
-
-struct rv32_memory {
-    uint32_t max_addr;
-    std::unique_ptr<uint8_t> memory;
-};
 
 inline rv32_memory load_elf(const std::string filename) {
     std::ifstream f(filename, std::ios::binary);
@@ -99,38 +94,32 @@ void write_mem(rv32_memory& rvmem, const uint32_t addr, const uint32_t data) {
     *reinterpret_cast<T*>(rvmem.memory.get() + addr) = static_cast<T>(data);
 }
 
-inline void mmio_exit_request(Vrv32_top* rvtop, uint64_t sim_time, time_point_ns clk_start) {
-    MemoryRequest request = get_memory_request(rvtop);
+inline void mmio_exit_request(SimulationData& sim_data) {
+    MemoryRequest request = get_memory_request(sim_data.dut);
     if (request.addr == EXIT_STATUS_ADDR) {
-        rvtop->mmio_request_done[0] = 1;
-        if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
-            auto end_clk = std::chrono::high_resolution_clock::now();
-            auto time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>( end_clk - clk_start);
+        sim_data.dut->mmio_request_done[0] = 1;
 
-            std::cout << '\n' << "Exit status " << request.data << '\n';
-            std::cout << "Sim cycles " << sim_time / 2 << '\n';
-            std::cout << "Sim time " << std::format("{:%T}", time_elapsed) << "\n\n";
-            print_profiler_counters();
-            exit(request.data);
+        if (request.op == RV32Types::MEM_SW && sim_data.dut->clk == 1) {
+            simulation_exit(sim_data, request.data);
         }
     }
 }
 
-inline void mmio_print_request(Vrv32_top* rvtop) {
+inline void mmio_print_request(Vrv32_top* rvtop, std::ostream& fout) {
     MemoryRequest request = get_memory_request(rvtop);
     if (request.addr == PRINT_REG_ADDR) {
         rvtop->mmio_request_done[0] = 1;
         if (request.op == RV32Types::MEM_SW && rvtop->clk == 1) {
-            std::cout << static_cast<char>(request.data);
+            fout << static_cast<char>(request.data);
         }
     }
 }
 
-inline void handle_mmio_request(Vrv32_top* rvtop, uint64_t sim_time, time_point_ns clk_start) {
-    rvtop->mmio_request_done[0] = 0;
-    mmio_exit_request(rvtop, sim_time, clk_start);
-    mmio_print_request(rvtop);
-    mmio_profiler_request(rvtop);
+inline void handle_mmio_request(SimulationData& sim_data) {
+    sim_data.dut->mmio_request_done[0] = 0;
+    mmio_exit_request(sim_data);
+    mmio_print_request(sim_data.dut, *sim_data.stdout_file_ptr);
+    mmio_profiler_request(sim_data.dut);
 }
 
 // Store the values for 1 cycle delay serve
@@ -218,14 +207,14 @@ inline void handle_data_request(Vrv32_top* rvtop, rv32_memory& rvmem) {
     }
 }
 
-inline void handle_memory_request(Vrv32_top* rvtop, rv32_memory& rvmem, uint64_t sim_time, time_point_ns clk_start) {
+inline void handle_memory_request(SimulationData& sim_data) {
 
-    handle_mmio_request(rvtop, sim_time, clk_start);
+    handle_mmio_request(sim_data);
 
     #ifdef CPP_MEMORY_SIM
 
-    handle_instruction_request(rvtop, rvmem);
-    handle_data_request(rvtop, rvmem);
+    handle_instruction_request(sim_data.dut, sim_data.mem);
+    handle_data_request(sim_data.dut, sim_data.mem);
 
     #endif
 }
