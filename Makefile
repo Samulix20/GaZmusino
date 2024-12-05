@@ -25,6 +25,7 @@ CPP_SRC := $(shell find testbench -name '*.cpp')
 CPP_HDR := $(shell find testbench -name '*.h')
 
 RV_BSP_PATH := $(realpath bsp)
+PWD := $(shell pwd)
 
 .PHONY: test clean run
 
@@ -38,7 +39,7 @@ obj_dir/.verilator.stamp: \
 	-Wall --top-module ${TOP_MODULE} \
 	$(CPP_MEMORY_SIM) $(VVOPT) \
 	--x-assign unique --x-initial unique \
-	--cc -CFLAGS "-I$(RV_BSP_PATH) $(CPP_MEMORY_SIM) -march=native -std=c++20 -Wall -Wextra" \
+	--cc -CFLAGS "-I$(RV_BSP_PATH) -I$(PWD) $(CPP_MEMORY_SIM) -march=native -std=c++20 -Wall -Wextra" \
 	--exe ${TOP_MODULE_SRC} $(CPP_SRC)
 
 	@touch obj_dir/.verilator.stamp

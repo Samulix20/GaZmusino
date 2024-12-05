@@ -1,8 +1,9 @@
 #ifndef MTIMER_H
 #define MTIMER_H
 
+#include <rvtarget.h>
+
 #include "types.h"
-#include "config.h"
 
 // mtimer bit in mie
 #define MIE_MTIMER (1 << 7)

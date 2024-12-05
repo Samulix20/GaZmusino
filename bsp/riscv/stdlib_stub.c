@@ -5,7 +5,7 @@
 #undef errno
 extern int errno;
 
-#include <riscv/config.h>
+#include <rvtarget.h>
 
 // Stubs for C stdlib syscalls
 // Most of this functions do nothing

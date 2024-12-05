@@ -5,8 +5,7 @@
 #include <sstream>
 
 #include "rv32_test_utils.h"
-
-#include <riscv/config.h>
+#include "../rvtarget.h"
 
 namespace rv32_test {
 
