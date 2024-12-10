@@ -28,9 +28,9 @@ import rv32_types::*;
 exec_mem_buffer_t internal_data /*verilator public*/;
 
 // Operand bypass
-rv32_word reg_data[3] /*verilator public*/;
+rv32_word reg_data[CORE_RF_NUM_READ] /*verilator public*/;
 always_comb begin
-    for(int idx = 0; idx < 3; idx = idx + 1) begin
+    for(int idx = 0; idx < CORE_RF_NUM_READ; idx = idx + 1) begin
         case (decode_exec_buff.control.bypass_rs[idx])
             BYPASS_EXEC_BUFF: reg_data[idx] = exec_mem_buff.data_result[0];
             BYPASS_MEM_BUFF: reg_data[idx] = wb_bypass;

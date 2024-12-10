@@ -151,6 +151,14 @@ from multiprocessing import Process
 
 if __name__ == "__main__":
     os.system("make")
+    
+    if (True):
+        p = "test/extra/bnn"
+        for d in os.listdir(p):
+            proc = Process(
+                target=run_test_log, 
+                args=(f"{p}/{d}", f"testlog/{d}.log", f"testlog/{d}.yaml", "-D", "PROFILING_MODE=1", f"-I{p}/{d}",)
+            )
+            proc.start()
 
-    run_test_log("test/c_tests/hello", "test.log", "test.yaml")
 

@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
     sim_data.prof_file_ptr = &std::cout;
     sim_data.stdout_file_ptr = &std::cout;
 
-    constexpr uint64_t max_sim_time = 10000000;
+    constexpr uint64_t max_sim_time = 20;
     uint64_t sim_time = 0;
 
     bool forever = true;
@@ -59,24 +59,24 @@ int main(int argc, char** argv) {
     //bool print_trace = false;
     //auto diassembly_map = rv32_test::load_dissasembly(rv_disassembly_file);
 
-    // Waveform tracing
-    // trace signals 5 levels under dut
-    //Verilated::traceEverOn(true);
-    //VerilatedVcdC *m_trace = new VerilatedVcdC;
-    //dut->trace(m_trace, 5);
-    //m_trace->open("waveform.vcd");
-
     // Create device under test
     Vrv32_top *dut = new Vrv32_top;
     sim_data.dut = dut;
     sim_data.mem = rv32_test::load_elf(rv_elf_executable);
+
+    // Waveform tracing
+    // trace signals 5 levels under dut
+    Verilated::traceEverOn(true);
+    VerilatedVcdC *m_trace = new VerilatedVcdC;
+    dut->trace(m_trace, 5);
+    m_trace->open("waveform.vcd");
 
     rv32_test::init_profiler_counters();
 
     sim_data.sim_start = std::chrono::high_resolution_clock::now();
 
     // Testbench simulation loop
-    while (forever || sim_time < max_sim_time) {
+    while (sim_time < max_sim_time) {
         sim_data.sim_time = sim_time;
 
         // Clk signal
@@ -118,14 +118,14 @@ int main(int argc, char** argv) {
         //}
 
         // Trace waveform
-        //m_trace->dump(sim_time);
+        m_trace->dump(sim_time);
         
         // Advance simulation loop
         sim_time++;
     }
 
     // Close waveform file
-    //m_trace->close();
+    m_trace->close();
 
     // Exit end
     std::cerr << "Max sim time reached" << "\n";

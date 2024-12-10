@@ -171,6 +171,10 @@ always_comb begin
             control.invalid = 1;
         end
 
+        OPCODE_CUSTOM_2: begin
+            control.invalid = 1;
+        end
+
         default: begin
             // Invalid instruction detection
             control.invalid = 1;
