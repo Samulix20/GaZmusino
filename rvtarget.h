@@ -1,5 +1,5 @@
-#ifndef RV_CONFIG_H
-#define RV_CONFIG_H
+#ifndef RV_TARGET_H
+#define RV_TARGET_H
 
 #define MEM_SIZE 20480k
 #define STACK_SIZE 10240

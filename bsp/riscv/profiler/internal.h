@@ -1,8 +1,8 @@
 #ifndef PROFILER_INTERNAL_H
 #define PROFILER_INTERNAL_H
 
+#include <rvtarget.h>
 #include <riscv/csr.h>
-#include <riscv/config.h>
 
 // Private real functions
 void _start_internal_counter(const uint8 id);

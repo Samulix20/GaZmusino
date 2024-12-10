@@ -3,7 +3,7 @@
 
 #define __riscv_xlen 32
 
-#include <riscv/config.h>
+#include <rvtarget.h>
 #define MTIMER_BASE MTIMER_BASE_ADDR
 
 #define CAUSE_MISALIGNED_FETCH 0x0
