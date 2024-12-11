@@ -2,8 +2,8 @@
 #define RV_TARGET_H
 
 #define MEM_SIZE 20480k
-#define STACK_SIZE 10240
-// #define HEAP_SIZE TODO
+#define STACK_SIZE 1000k
+#define HEAP_SIZE 1000k
 
 // Profiler internal counters
 #define NUM_PROFILER_COUNTERS 8

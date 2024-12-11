@@ -1,11 +1,15 @@
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <stdio.h>
 
 #include <errno.h>
 #undef errno
 extern int errno;
 
 #include <rvtarget.h>
+
+#define ALIGNMENT 16
+#define ALIGN(x) (((x) + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1))
 
 // Stubs for C stdlib syscalls
 // Most of this functions do nothing
@@ -15,10 +19,26 @@ void _exit(int status) {
     while(1) {}
 }
 
-unsigned _sbrk(int inc) {
-    (void) inc;
-    errno = ENOMEM;
-    return -1;
+// Overwrites sbrk from libc
+void* _sbrk(int inc) {
+    extern char _heap_start; // Defined by the linker
+    extern char _heap_end; //Defined by the linker
+    static char *heap_top = 0;
+    char *prev_heap_top;
+
+    if (heap_top == 0) {
+        heap_top = &_heap_start;
+    }
+
+    prev_heap_top = heap_top;
+    
+    if ((heap_top + inc) > &_heap_end) {
+        errno = ENOMEM;
+        return (void*)-1;
+    }
+    
+    heap_top += ALIGN(inc);
+    return (void*)prev_heap_top;
 }
 
 int _kill(int pid, int sig) {

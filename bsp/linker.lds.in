@@ -209,6 +209,14 @@ SECTIONS
   _end = .; PROVIDE (end = .);
   . = DATA_SEGMENT_END (.);
 
+  .heap :
+  {
+    . = ALIGN(16);
+    _heap_start = .;
+    . += HEAP_SIZE;
+    _heap_end = .;
+  } >ram
+  
   .stack :
   {
     . = ALIGN(16);
