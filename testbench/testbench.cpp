@@ -24,7 +24,6 @@ int main(int argc, char** argv) {
     sim_data.prof_file_ptr = &std::cout;
     sim_data.stdout_file_ptr = &std::cout;
 
-    constexpr uint64_t max_sim_time = 20;
     uint64_t sim_time = 0;
 
     bool forever = true;
@@ -76,7 +75,7 @@ int main(int argc, char** argv) {
     sim_data.sim_start = std::chrono::high_resolution_clock::now();
 
     // Testbench simulation loop
-    while (sim_time < max_sim_time) {
+    while (1) {
         sim_data.sim_time = sim_time;
 
         // Clk signal

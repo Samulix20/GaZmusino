@@ -4,6 +4,7 @@ import os
 import build
 import shutil
 import filecmp
+import argparse
 from pathlib import Path
 
 RED = "\033[31m"
@@ -11,8 +12,18 @@ GREEN = "\033[32m"
 
 path_testbench = "test/bringup-bench"
 path_common = path_testbench + "/common"
+path_target = path_testbench + "/target"
 path_build = "build/bringup-bench"
 common_headers = ["libmin.h", "libtarg.h"]
+
+# Lists of all tests
+short_tests = ["ackermann", "audio-codec", "avl-tree", "banner", "blake2b", "boyer-moore-search", "bubble-sort", "cipher", "dhrystone", "distinctness", "fft-int", "flood-fill", "frac-calc", "fuzzy-match",
+               "fy-shuffle", "gcd-list", "graph-tests", "hanoi", "heapsort", "indirect-test", "kadane", "kepler", "knapsack", "knights-tour", "knights-tour", "longdiv", "max-subseq", "mersenne", "minspan", "murmur-hash",
+               "pascal", "priority-queue", "qsort-demo", "quaternions", "quine", "rabinkarp-search", "regex-parser", "rle-compress", "shortest-path", "sieve", "simple-grep", "skeleton", "topo-sort", "totient",
+               "vectors-3d", "weekday"]
+medium_tests = ["bloom-filter", "grad-descent", "k-means", "", "nr-solver", "parrondo", "spirograph", "life", "primal-test"]
+long_tests = ["rho-factor", "mandelbrot", "natlog", "satomi", "pi-calc", "tiny-NN"]
+error_tests = ["anagram", "checkers" , "spelt2num", "strange", "donut"]
 
 #Adds libmin.h and libtarg.h to the target directory
 def add_common_headers(target):
@@ -60,20 +71,22 @@ def print_results(num_test, num_pass, num_fail):
         print(f"{GREEN}[" + str(num_pass) + "/" + str(num_test) + "] TEST PASSED")
     else:
         print(f"{GREEN}ALL [" + str(num_pass) + "/" + str(num_test) + "] TESTS PASSED")
+
+def add_target_files_to_common():
+    for file in os.listdir(path_target):
+        if file.endswith(".c") or file.endswith(".h"):
+            shutil.copy2(os.path.join(path_target, file), path_common)
         
 #Run all test on bringup-bench
-def run_tests():
+def run_tests(sub_dirs):
+    add_target_files_to_common()
     num_test = 0
     num_pass = 0
     num_fail = 0
     
-    path = Path("test/bringup-bench/")
-    #Get the name of all directories that we want to test
-    sub_dirs = [str(d) for d in path.iterdir() if (d.is_dir() and str(d) != path_common and 
-                str(d) != path_testbench + "/target" and str(d) != path_testbench + "/scripts")]
     for sub_dir in sub_dirs:
         add_common_headers(sub_dir)
-        build.run_test_bringup_bench(sub_dir, sub_dir + "/output.out") # Build and run test
+        build.run_test_bringup_bench(sub_dir, sub_dir + "/output.out", "-D", "TARGET_HOST") # Build and run test
         remove_common_headers(sub_dir)
         if(check_test(sub_dir)):
             num_pass += 1
@@ -88,5 +101,20 @@ def run_tests():
     print_results(num_test, num_pass, num_fail)
     
 if __name__ == "__main__":
-    run_tests()
+    parser = argparse.ArgumentParser(description="Run tests on bringup-bench")
+    parser.add_argument("--short", help="Run short tests (~ 4mins)", action="store_true")
+    parser.add_argument("--medium", help="Run medium tests(30-60 mins)", action="store_true")
+    parser.add_argument("--long", help="Run long tests(3+ hours)", action="store_true")
+
+    sub_dirs = []
+    if parser.parse_args().short:
+        sub_dirs += ["test/bringup-bench/" + dir for dir in short_tests]
+    elif parser.parse_args().medium:
+        sub_dirs += ["test/bringup-bench/" + dir for dir in medium_tests]
+    elif parser.parse_args().long:
+        sub_dirs += ["test/bringup-bench/" + dir for dir in long_tests]
+    else:
+        parser.print_help()
+    
+    run_tests(sub_dirs)
     pass

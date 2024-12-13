@@ -31,6 +31,7 @@ OPT_FLAGS = [
     "-Wall",
     "-Wextra",
     "-O3",
+    "-DTARGET_HOST",
 ]
 
 RV_BARE_CXX_FLAGS = [
