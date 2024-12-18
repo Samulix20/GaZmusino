@@ -5,6 +5,8 @@ compile_commands.json
 
 # Python env
 pyenv
+# Python cache
+__pycache__
 
 # Build directories
 obj_dir

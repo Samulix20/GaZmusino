@@ -164,7 +164,11 @@ always_comb begin
         end
 
         OPCODE_CUSTOM_0: begin
-            control.invalid = 1;
+            control.wb_result_src = WB_FXMADD;
+            control.register_wb = 1;
+            use_rs[0] = 1;
+            use_rs[1] = 1;
+            use_rs[2] = 1;
         end
 
         OPCODE_CUSTOM_1: begin

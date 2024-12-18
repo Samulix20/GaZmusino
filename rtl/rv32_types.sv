@@ -140,7 +140,8 @@ typedef enum logic [2:0] {
     WB_MEM_DATA,
     WB_STORE,
     WB_MUL_UNIT,
-    WB_CSR
+    WB_CSR,
+    WB_FXMADD
 } wb_result_t /*verilator public*/;
 
 typedef enum logic [2:0] {

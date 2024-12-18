@@ -107,6 +107,19 @@ rv32_mul_unit mul_unit (
     .result(mul_unit_result)
 );
 
+
+rv32_word fxmadd_result;
+rv32_fxmadd_unit fxmadd (
+    .clk(clk),
+    .mul_op_1(reg_data[0]),
+    .mul_op_2(reg_data[1]),
+    .add_op(reg_data[2]),
+    .selected_scale(decode_exec_buff.instr.funct3),
+    .write_enable(0),
+    .new_scale(0),
+    .result(fxmadd_result)
+);
+
 // Custom signal for simulation of custom isntructions
 logic tb_exec /*verilator public*/;
 exec_mem_buffer_t tb_data /*verilator public*/;
@@ -136,7 +149,7 @@ always_comb begin
             end
 
             // Custom functional unit outputs
-            // ...
+            WB_FXMADD: internal_data.data_result[0] = fxmadd_result;
 
             default: internal_data.data_result[0] = 0;
         endcase

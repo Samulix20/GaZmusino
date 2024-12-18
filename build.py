@@ -184,4 +184,3 @@ if __name__ == "__main__":
     # --srcs list of files to compile, default []
     # --proj directory from which extract files, default null
     # --bdir build directory, default build
-
