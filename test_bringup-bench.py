@@ -1,7 +1,8 @@
 #!python
 
-import os
 import build
+
+import os
 import shutil
 import filecmp
 import argparse
@@ -116,5 +117,5 @@ if __name__ == "__main__":
     else:
         parser.print_help()
     
+    build.log_enabled = False
     run_tests(sub_dirs)
-    pass

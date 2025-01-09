@@ -53,8 +53,14 @@ def remove_all(l, v):
 ####
 
 log_count = 0
+log_enabled = True
+
 def print_log(r, *args):
-    global log_count
+    global log_count, log_enabled
+
+    if not log_enabled:
+        return
+
     log_count += 1
     print(f"[{log_count}]", *args)
     print(r, end='')
@@ -123,12 +129,16 @@ def compile_dir(d, buildir, *extra_args):
     objs = [rvcomp(src, buildir, *extra_args) for src in srcs]
     return srcs, objs
 
-def compile_bsp(buildir):
+def create_linker_script(buildir):
     shell("mkdir", "-p", buildir)
     lds = f"{buildir}/linker.lds"
     with open(lds, "w") as f:
         o, _ = shell(RV_CC, "-E", "-P", "-x", "c", "-I.", f"{BSP_DIR}/linker.lds.in")
         f.write(o)
+    return lds
+
+def compile_bsp(buildir):
+    lds = create_linker_script(buildir)
     return *compile_dir(f"{BSP_DIR}", buildir), lds
 
 #####
@@ -142,9 +152,11 @@ def build_project(projectdir, buildir, targetname, *extra_args):
 # TODO implement function that takes a list of source files instead of a directory
 # and produces an executable file
 def build_srcs(srcs, buildir, targetname, *extra_args):
-    return
+    objs = []
+    for src in srcs:
+        objs.append(rvcomp(src, buildir, *extra_args))
 
-##### TODO move these to test.py
+##### # TODO rename test for project
 
 def compile_and_link_test_bringup_bench(testdir, buildir, targetname, *extra_args):
     bsp_srcs, bsp_objs, lds = compile_bsp(f"{buildir}/{testdir}/bsp")
@@ -171,16 +183,17 @@ def run_test_log(testdir, stdout_file, profiling_file, *extra_args):
         ./obj_dir/Vrv32_top -e build/{testdir}/main.elf --out {stdout_file} --prof {profiling_file}
     """)
 
-def run_test(testdir, *extra_args):
-    compile_and_link_test(testdir, "build", "main.elf", *extra_args)
+def run_project(projdir, *extra_args):
+    compile_and_link_test(projdir, "build", "main.elf", *extra_args)
     os.system(f"""
         make
-        ./obj_dir/Vrv32_top -e build/{testdir}/main.elf
+        ./obj_dir/Vrv32_top -e build/{projdir}/main.elf
     """)
 
 if __name__ == "__main__":
-    #run_test_log("test/c_tests/hello", "stdout.txt", "prof.yaml")
-    run_test("test/extra/fxmadd")
+    run_project("examples/c_hello_world")
+    run_project("examples/cpp_hello_world")
+
     # TODO setup argument parse
     # --elf target file name, default main.elf
     # --objs object files to link, default []

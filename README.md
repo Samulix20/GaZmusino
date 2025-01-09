@@ -11,7 +11,14 @@
 
 ### RISC-V Compiler Configure Flags
 
-./configure --prefix=/home/samupp/opt/gcc-riscv --enable-multilib --with-multilib-generator="rv32i_zmmul_zicsr-ilp32--"
+./configure --enable-multilib --with-multilib-generator="rv32i_zmmul_zicsr-ilp32--"
+
+## Test
+
+RISC-V ISA Test https://github.com/riscv-software-src/riscv-tests
+Bringup-bench https://github.com/toddmaustin/bringup-bench
+Check https://github.com/eembc/coremark
+
 
 ## References
 1. Verilator Tutorial https://itsembedded.com/dhd/verilator_1/
