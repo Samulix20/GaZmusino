@@ -56,8 +56,3 @@ bear: clean
 clean:
 	rm -rf obj_dir build waveform.vcd
 
-run: obj_dir/${VERILATED_MODULE}
-	./obj_dir/${VERILATED_MODULE} +verilator+rand+reset+2 $(RUN_PARAMS)
-
-test: obj_dir/${VERILATED_MODULE}
-	@cd test && bash test.sh
