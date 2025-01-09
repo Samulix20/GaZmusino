@@ -166,8 +166,10 @@ namespace rv32_test {
         rvtop->rv32_top->core->decode_stage->tb_dec = 0;
 
         // Check invalid instruction
-        if (!invalid_decode(rvtop)) return;
-
+        if (!invalid_decode(rvtop)){
+            //std::cout << std::hex << std::showbase << rvtop->rv32_top->core->next_pc << std::endl;
+            return;
+        }
         Instruction instr = get_decoder_input(rvtop);
         CoreControlSignals core_ctrl = get_decoder_output(rvtop);
 

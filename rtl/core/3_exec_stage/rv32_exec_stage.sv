@@ -107,16 +107,14 @@ rv32_mul_unit mul_unit (
     .result(mul_unit_result)
 );
 
-
+rv_r4_instr_t instr_r4 = decode_exec_buff.instr;
 rv32_word fxmadd_result;
 rv32_fxmadd_unit fxmadd (
-    .clk(clk),
     .mul_op_1(reg_data[0]),
     .mul_op_2(reg_data[1]),
     .add_op(reg_data[2]),
-    .selected_scale(decode_exec_buff.instr.funct3),
-    .write_enable(0),
-    .new_scale(0),
+    .low_bits_selected_scale(instr_r4.rm),
+    .high_bit_selected_scale(instr_r4.fmt),
     .result(fxmadd_result)
 );
 
