@@ -13,9 +13,10 @@ import rv32_types::*;
 );
 
 logic[31:0] res_mul, res_mul_shifted;
-logic[4:0] shift_value = {high_bit_selected_scale, low_bits_selected_scale};
+logic[4:0] shift_value;
 
 always_comb begin
+    shift_value = {high_bit_selected_scale, low_bits_selected_scale};
     res_mul = $signed(mul_op_1) * $signed(mul_op_2);
     res_mul_shifted = $signed(res_mul) >>> shift_value;
     result = $signed(res_mul_shifted) + $signed(add_op);

@@ -174,11 +174,13 @@ def run_test_log(testdir, stdout_file, profiling_file, *extra_args):
 def run_test(testdir, *extra_args):
     compile_and_link_test(testdir, "build", "main.elf", *extra_args)
     os.system(f"""
+        make
         ./obj_dir/Vrv32_top -e build/{testdir}/main.elf
     """)
 
 if __name__ == "__main__":
-    run_test_log("test/c_tests/hello", "stdout.txt", "prof.yaml")
+    #run_test_log("test/c_tests/hello", "stdout.txt", "prof.yaml")
+    run_test("test/extra/fxmadd")
     # TODO setup argument parse
     # --elf target file name, default main.elf
     # --objs object files to link, default []
