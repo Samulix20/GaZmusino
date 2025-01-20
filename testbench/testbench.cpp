@@ -65,10 +65,10 @@ int main(int argc, char** argv) {
 
     // Waveform tracing
     // trace signals 5 levels under dut
-    Verilated::traceEverOn(true);
-    VerilatedVcdC *m_trace = new VerilatedVcdC;
-    dut->trace(m_trace, 5);
-    m_trace->open("waveform.vcd");
+    //Verilated::traceEverOn(true);
+    //VerilatedVcdC *m_trace = new VerilatedVcdC;
+    //dut->trace(m_trace, 5);
+    //m_trace->open("waveform.vcd");
 
     rv32_test::init_profiler_counters();
 
@@ -117,14 +117,14 @@ int main(int argc, char** argv) {
         //}
 
         // Trace waveform
-        m_trace->dump(sim_time);
+        //m_trace->dump(sim_time);
         
         // Advance simulation loop
         sim_time++;
     }
 
     // Close waveform file
-    m_trace->close();
+    //m_trace->close();
 
     // Exit end
     std::cerr << "Max sim time reached" << "\n";

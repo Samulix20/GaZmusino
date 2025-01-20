@@ -90,17 +90,14 @@ def run_examples():
             continue
         
         print(f"{UNDERLINE}Example {project}{NC}")
-        build.run_project(f"{examples_path}/{project}")
+        build.run_project(f"{examples_path}/{project}", "build")
         print("")
 
 
 if __name__ == "__main__":
     build.log_enabled = False
 
-    v = os.system("make")
-    if v != 0:
-        print(f"{RED}RTL BUILD ERROR{NC}")
-        exit(v)
+    build.shell("make")
 
     for test_group in test_groups_list:
         run_isa_test_folder(test_group)

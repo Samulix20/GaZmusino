@@ -77,7 +77,21 @@ def add_target_files_to_common():
     for file in os.listdir(path_target):
         if file.endswith(".c") or file.endswith(".h"):
             shutil.copy2(os.path.join(path_target, file), path_common)
-        
+
+# Build, Link, Run 
+def compile_and_link_test_bringup_bench(testdir, buildir, targetname, *extra_args):
+    bsp_srcs, bsp_objs, lds = build.compile_bsp(f"{buildir}/{testdir}/bsp")
+    common_srcs, common_objs = build.compile_dir(path_common,f"{buildir}/{testdir}/common")
+    srcs, objs = build.compile_dir(testdir, f"{buildir}/{testdir}", *extra_args)
+    target = f"{buildir}/{testdir}/{targetname}"
+    build.rvlink(srcs, bsp_objs + objs + common_objs, lds, target)
+
+def run_test_bringup_bench(testdir, logfile, *extra_args):
+    compile_and_link_test_bringup_bench(testdir, "build", "main.elf", *extra_args)
+    os.system(f"""
+        ./obj_dir/Vrv32_top -e build/{testdir}/main.elf > {logfile}
+    """)
+
 #Run all test on bringup-bench
 def run_tests(sub_dirs):
     add_target_files_to_common()
@@ -87,7 +101,7 @@ def run_tests(sub_dirs):
     
     for sub_dir in sub_dirs:
         add_common_headers(sub_dir)
-        build.run_test_bringup_bench(sub_dir, sub_dir + "/output.out", "-D", "TARGET_HOST") # Build and run test
+        run_test_bringup_bench(sub_dir, sub_dir + "/output.out", "-D", "TARGET_HOST") # Build and run test
         remove_common_headers(sub_dir)
         if(check_test(sub_dir)):
             num_pass += 1

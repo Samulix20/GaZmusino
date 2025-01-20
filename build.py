@@ -2,9 +2,9 @@
 
 import subprocess
 import sys
-
 import os
 import pathlib
+import argparse
 
 
 RV_CROSS = "riscv64-unknown-elf-"
@@ -55,7 +55,7 @@ def remove_all(l, v):
 log_count = 0
 log_enabled = True
 
-def print_log(r, *args):
+def print_log(*args):
     global log_count, log_enabled
 
     if not log_enabled:
@@ -63,7 +63,14 @@ def print_log(r, *args):
 
     log_count += 1
     print(f"[{log_count}]", *args)
+
+def print_log_stderr(r):
+
+    if not log_enabled:
+        return
+    
     print(r, end='')
+
 
 def reset_log_count():
     global log_count
@@ -75,11 +82,12 @@ def raise_shell_err(p, *args):
         raise Exception(*args)
 
 def shell(*args):
+    print_log(*args)
     p = subprocess.run(args, capture_output=True)
     raise_shell_err(p, *args)
     o = p.stdout.decode("utf-8")
     r = p.stderr.decode("utf-8")
-    print_log(r, *args)
+    print_log_stderr(r)
     return o, r
 
 
@@ -149,54 +157,20 @@ def build_project(projectdir, buildir, targetname, *extra_args):
     target = f"{buildir}/{projectdir}/{targetname}"
     rvlink(srcs, bsp_objs + objs, lds, target)
 
-# TODO implement function that takes a list of source files instead of a directory
-# and produces an executable file
-def build_srcs(srcs, buildir, targetname, *extra_args):
-    objs = []
-    for src in srcs:
-        objs.append(rvcomp(src, buildir, *extra_args))
-
-##### # TODO rename test for project
-
-def compile_and_link_test_bringup_bench(testdir, buildir, targetname, *extra_args):
-    bsp_srcs, bsp_objs, lds = compile_bsp(f"{buildir}/{testdir}/bsp")
-    common_srcs, common_objs = compile_dir(path_common,f"{buildir}/{testdir}/common")
-    srcs, objs = compile_dir(testdir, f"{buildir}/{testdir}", *extra_args)
-    target = f"{buildir}/{testdir}/{targetname}"
-    rvlink(srcs, bsp_objs + objs + common_objs, lds, target)
-
-def compile_and_link_test(testdir, buildir, targetname, *extra_args):
-    bsp_srcs, bsp_objs, lds = compile_bsp(f"{buildir}/{testdir}/bsp")
-    srcs, objs = compile_dir(testdir, f"{buildir}/{testdir}", *extra_args)
-    target = f"{buildir}/{testdir}/{targetname}"
-    rvlink(srcs, bsp_objs + objs, lds, target)
-
-def run_test_bringup_bench(testdir, logfile, *extra_args):
-    compile_and_link_test_bringup_bench(testdir, "build", "main.elf", *extra_args)
+def run_project(projectdir, buildir, *extra_args):
+    shell("make")
+    build_project(projectdir, buildir, "main.elf", *extra_args)
     os.system(f"""
-        ./obj_dir/Vrv32_top -e build/{testdir}/main.elf > {logfile}
+        ./obj_dir/Vrv32_top -e {buildir}/{projectdir}/main.elf
     """)
 
-def run_test_log(testdir, stdout_file, profiling_file, *extra_args):
-    compile_and_link_test(testdir, "build", "main.elf", *extra_args)
+def run_project_log(projectdir, buildir, stdout_file, profiling_file, *extra_args):
+    shell("make")
+    build_project(projectdir, buildir, "main.elf", *extra_args)
     os.system(f"""
-        ./obj_dir/Vrv32_top -e build/{testdir}/main.elf --out {stdout_file} --prof {profiling_file}
-    """)
-
-def run_project(projdir, *extra_args):
-    compile_and_link_test(projdir, "build", "main.elf", *extra_args)
-    os.system(f"""
-        make
-        ./obj_dir/Vrv32_top -e build/{projdir}/main.elf
+        ./obj_dir/Vrv32_top -e {buildir}/{projectdir}/main.elf --out {stdout_file} --prof {profiling_file}
     """)
 
 if __name__ == "__main__":
-    run_project("examples/c_hello_world")
-    run_project("examples/cpp_hello_world")
-
-    # TODO setup argument parse
-    # --elf target file name, default main.elf
-    # --objs object files to link, default []
-    # --srcs list of files to compile, default []
-    # --proj directory from which extract files, default null
-    # --bdir build directory, default build
+    run_project("examples/cpp_hello_world", "build")
+    pass

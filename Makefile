@@ -32,13 +32,15 @@ PWD := $(shell pwd)
 obj_dir/${VERILATED_MODULE}: obj_dir/.verilator.stamp
 	make -C obj_dir -f ${VERILATED_MODULE}.mk
 
+# Verilator trace flags
+# --trace --trace-structs
+
 obj_dir/.verilator.stamp: \
 	$(CPP_SRC) $(CPP_HDR) ${TOP_MODULE_SRC} $(VERILOG_MODULES) \
 	$(VERILOG_HEADERS)
 	${VV} -I $(VERILOG_MODULES) \
 	-Wall --top-module ${TOP_MODULE} \
 	$(CPP_MEMORY_SIM) $(VVOPT) \
-	--trace --trace-structs \
 	--x-assign unique --x-initial unique \
 	--cc -CFLAGS "-I$(RV_BSP_PATH) -I$(PWD) $(CPP_MEMORY_SIM) -march=native -std=c++20 -Wall -Wextra" \
 	--exe ${TOP_MODULE_SRC} $(CPP_SRC)
