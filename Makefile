@@ -53,6 +53,8 @@ wave:
 bear: clean
 	bear -- make
 
+test: clean
+	python test_basic.py
+
 clean:
 	rm -rf obj_dir build waveform.vcd
-

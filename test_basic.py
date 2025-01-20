@@ -26,7 +26,6 @@ def run_isa_test(testname):
     test_res_path = f"{isa_test_buildir}/._isa_test_res.yaml"
     
     os.system(f"""
-        make > /dev/null
         ./obj_dir/Vrv32_top -e {exe_path} --prof "{test_res_path}"
     """)
     
@@ -97,6 +96,11 @@ def run_examples():
 
 if __name__ == "__main__":
     build.log_enabled = False
+
+    v = os.system("make")
+    if v != 0:
+        print(f"{RED}RTL BUILD ERROR{NC}")
+        exit(v)
 
     for test_group in test_groups_list:
         run_isa_test_folder(test_group)
