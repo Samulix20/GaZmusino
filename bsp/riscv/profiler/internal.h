@@ -10,12 +10,14 @@ void _stop_internal_counter(const uint8 id);
 
 // Wrappers that disable/enable the hw counters
 
+__attribute__((always_inline))
 inline void start_internal_counter(const uint8 id) {
     disable_hw_counters();
     _start_internal_counter(id);
     enable_hw_counters();
 }
 
+__attribute__((always_inline))
 inline void stop_internal_counter(const uint8 id) {
     disable_hw_counters();
     _stop_internal_counter(id);

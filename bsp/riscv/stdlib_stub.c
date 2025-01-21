@@ -8,7 +8,7 @@ extern int errno;
 
 #include <rvtarget.h>
 
-#define ALIGNMENT 16
+#define ALIGNMENT 4
 #define ALIGN(x) (((x) + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1))
 
 // Stubs for C stdlib syscalls

@@ -23,12 +23,14 @@
 
 // FUNCTIONS IMPLEMENTED HERE FOR INLINING
 
+__attribute__((always_inline))
 inline uint32 read_mcause() {
     uint32 mcause;
     asm volatile("csrr %0, mcause" : "=r" (mcause));
     return mcause;
 }
 
+__attribute__((always_inline))
 inline uint32 read_mscratch() {
     uint32 mscratch;
     asm volatile("csrr %0, mscratch" : "=r" (mscratch));
@@ -36,30 +38,40 @@ inline uint32 read_mscratch() {
 }
 
 // Bitmask set mie
+__attribute__((always_inline))
 inline void set_mie(uint32 mask) {
     asm volatile("csrs mie, %0" :: "r" (mask));
 }
+
 // Bitmask clear mie
+__attribute__((always_inline))
 inline void clear_mie(uint32 mask) {
     asm volatile("csrc mie, %0" :: "r" (mask));
 }
 
 // mstatus mie bit
 #define MSTATUS_MIE (1 << 3)
+
 // Bitmask set mstatus
+__attribute__((always_inline))
 inline void set_mstatus(uint32 mask) {
     asm volatile("csrs mstatus, %0" :: "r" (mask));
 }
+
 // Bitmask clear mstatus
+__attribute__((always_inline))
 inline void clear_mstatus(uint32 mask) {
     asm volatile("csrc mstatus, %0" :: "r" (mask));
 }
+
+__attribute__((always_inline))
 inline uint32 read_mstatus() {
     uint32 mstatus;
     asm volatile("csrr %0, mstatus" : "=r" (mstatus));
     return mstatus;
 }
 
+__attribute__((always_inline))
 inline uint32 read_mepc() {
     uint32 mepc;
     asm volatile("csrr %0, mepc" : "=r" (mepc));
@@ -70,10 +82,12 @@ inline uint32 read_mepc() {
 #define MCYCLE_BIT      (1)
 #define MINSTRET_BIT    (1 << 2)
 
+__attribute__((always_inline))
 inline void set_mcountinhibit(uint32 mask) {
     asm volatile("csrs mcountinhibit, %0" :: "r" (mask));
 }
 
+__attribute__((always_inline))
 inline void clear_mcountinhibit(uint32 mask) {
     asm volatile("csrc mcountinhibit, %0" :: "r" (mask));
 }
@@ -81,6 +95,7 @@ inline void clear_mcountinhibit(uint32 mask) {
 // Utility functions for disable/enable the hw counters
 // 2 cycles overhead
 
+__attribute__((always_inline))
 inline void disable_hw_counters() {
     asm volatile(
         "li x31, 5\n"
@@ -89,6 +104,7 @@ inline void disable_hw_counters() {
     );
 }
 
+__attribute__((always_inline))
 inline void enable_hw_counters() {
     asm volatile(
         "li x31, 5\n"
@@ -97,6 +113,7 @@ inline void enable_hw_counters() {
     );
 }
 
+__attribute__((always_inline))
 inline uint64 read_mcycle() {
     uint32 cl, ch;
 
@@ -109,6 +126,7 @@ inline uint64 read_mcycle() {
     return ((uint64) ch << 32) | cl;
 }
 
+__attribute__((always_inline))
 inline uint64 read_instret() {
     uint32 il, ih;
 
@@ -121,6 +139,7 @@ inline uint64 read_instret() {
     return ((uint64) ih << 32) | il;
 }
 
+__attribute__((always_inline))
 inline void read_hw_counters(uint64* cycles, uint64* instr) {
     uint32 cl, ch, il, ih;
 
