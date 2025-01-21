@@ -1,7 +1,7 @@
+import sys, os
+sys.path.append(os.path.realpath(".."))
+from riscv_system_verilog import build
 
-import build
-
-import os
 import yaml
 
 RED = "\033[31m"
@@ -90,7 +90,7 @@ def run_examples():
             continue
         
         print(f"{UNDERLINE}Example {project}{NC}")
-        build.run_project(f"{examples_path}/{project}", "build")
+        build.build_and_run(f"{examples_path}/{project}", "build")
         print("")
 
 

@@ -1,5 +1,3 @@
-#!python
-
 import subprocess
 import sys
 import os
@@ -157,14 +155,14 @@ def build_project(projectdir, buildir, targetname, *extra_args):
     target = f"{buildir}/{projectdir}/{targetname}"
     rvlink(srcs, bsp_objs + objs, lds, target)
 
-def run_project(projectdir, buildir, *extra_args):
+def build_and_run(projectdir, buildir, *extra_args):
     shell("make")
     build_project(projectdir, buildir, "main.elf", *extra_args)
     os.system(f"""
         ./obj_dir/Vrv32_top -e {buildir}/{projectdir}/main.elf
     """)
 
-def run_project_log(projectdir, buildir, stdout_file, profiling_file, *extra_args):
+def build_and_run_log(projectdir, buildir, stdout_file, profiling_file, *extra_args):
     shell("make")
     build_project(projectdir, buildir, "main.elf", *extra_args)
     os.system(f"""
@@ -172,5 +170,5 @@ def run_project_log(projectdir, buildir, stdout_file, profiling_file, *extra_arg
     """)
 
 if __name__ == "__main__":
-    run_project("examples/cpp_hello_world", "build")
+    build_and_run("examples/cpp_hello_world", "build")
     pass

@@ -1,8 +1,9 @@
-#!python
+import sys, os
+sys.path.append(os.path.realpath(".."))
+from riscv_system_verilog import build
 
-import build
+import basic
 
-import os
 import shutil
 import filecmp
 import argparse
@@ -10,6 +11,8 @@ from pathlib import Path
 
 RED = "\033[31m"
 GREEN = "\033[32m"
+BOLD = '\033[1m'
+NC='\033[0m'
 
 path_testbench = "test/bringup-bench"
 path_common = path_testbench + "/common"
@@ -42,21 +45,8 @@ def remove_common_headers(dirname):
         if os.path.exists(file_path):  
             os.remove(file_path)      
 
-# Delete the last "num_lines" of a file
-def delete_last_lines(file, num_lines):
-    with open(file, 'r') as f:
-        lines = f.readlines()
-    
-    # Eliminar las últimas 'num_lineas_a_eliminar' líneas
-    lines = lines[:-num_lines]
-    
-    # Escribir el contenido modificado de vuelta al archivo
-    with open(file, 'w') as f:
-        f.writelines(lines)
-
 # Check if the output of the test is the expexted 
 def check_test(dirname):
-    delete_last_lines(dirname + "/output.out", 5)
     archivos_out = [archivo for archivo in os.listdir(dirname) if archivo.endswith(".out")]
     
     if filecmp.cmp(dirname + "/" + archivos_out[0], dirname + "/" + archivos_out[1], shallow=False):
@@ -64,14 +54,6 @@ def check_test(dirname):
         return True
     else:
         return False
-
-# Print statistics of the tests 
-def print_results(num_test, num_pass, num_fail):
-    if(num_fail != 0):
-        print(f"{RED}[" + str(num_fail) + "/" + str(num_test) + "] TEST FAILED")
-        print(f"{GREEN}[" + str(num_pass) + "/" + str(num_test) + "] TEST PASSED")
-    else:
-        print(f"{GREEN}ALL [" + str(num_pass) + "/" + str(num_test) + "] TESTS PASSED")
 
 def add_target_files_to_common():
     for file in os.listdir(path_target):
@@ -89,31 +71,41 @@ def compile_and_link_test_bringup_bench(testdir, buildir, targetname, *extra_arg
 def run_test_bringup_bench(testdir, logfile, *extra_args):
     compile_and_link_test_bringup_bench(testdir, "build", "main.elf", *extra_args)
     os.system(f"""
-        ./obj_dir/Vrv32_top -e build/{testdir}/main.elf > {logfile}
+        ./obj_dir/Vrv32_top -e build/{testdir}/main.elf --out {logfile} > /dev/null
     """)
 
 #Run all test on bringup-bench
 def run_tests(sub_dirs):
+    print(f"{BOLD}RUNNING BRINGUP-BENCH...{NC}")
+    
     add_target_files_to_common()
     num_test = 0
     num_pass = 0
     num_fail = 0
-    
+
+    clearterm = f"\r{" "*80}\r"
+
     for sub_dir in sub_dirs:
+        print(clearterm, end='')
+        print(f"[{num_test + 1}/{len(sub_dirs)}] Running {sub_dir}", end='', flush=True)
+        
         add_common_headers(sub_dir)
         run_test_bringup_bench(sub_dir, sub_dir + "/output.out", "-D", "TARGET_HOST") # Build and run test
         remove_common_headers(sub_dir)
+
         if(check_test(sub_dir)):
             num_pass += 1
         else:
             num_fail += 1
+            print(clearterm, end='')
             print(f"{RED}TEST: " + sub_dir + " FAIL")
             print("CHECK " + sub_dir + "/output.out")
-            print("")
+            print(f"{NC}")
         
         num_test += 1
     
-    print_results(num_test, num_pass, num_fail)
+    print(clearterm, end='')
+    basic.print_results(num_test, num_pass, num_fail)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run tests on bringup-bench")
