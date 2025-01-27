@@ -16,3 +16,7 @@ build
 waveform.vcd
 examples/extra
 testlog
+
+*.trace
+*.kanata
+*.log

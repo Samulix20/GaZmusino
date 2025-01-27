@@ -56,7 +56,10 @@ bear: clean
 	bear -- make
 
 test: clean
-	python test/basic.py
+	python modules/basic_test.py
+
+bringup: clean
+	python modules/bringup_bench_test.py --short
 
 clean:
 	rm -rf obj_dir build waveform.vcd

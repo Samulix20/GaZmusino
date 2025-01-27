@@ -97,6 +97,11 @@ always_comb begin
         internal_data.reg_data[2] = csr_data;
     end
 
+    // Generate NOP
+    if (fetch_decode_buff.generate_nop) begin
+        internal_data.control = create_bubble_ctrl();
+    end
+
     output_internal_data = internal_data;
 
     if (stall | set_nop) begin

@@ -4,6 +4,7 @@ import os
 import pathlib
 import argparse
 
+import konata
 
 RV_CROSS = "riscv64-unknown-elf-"
 RV_CC = f"{RV_CROSS}gcc"
@@ -169,6 +170,16 @@ def build_and_run_log(projectdir, buildir, stdout_file, profiling_file, *extra_a
         ./obj_dir/Vrv32_top -e {buildir}/{projectdir}/main.elf --out {stdout_file} --prof {profiling_file}
     """)
 
+def build_and_run_trace(projectdir, buildir, trace_file, trace_kanata, *extra_args):
+    shell("make")
+    build_project(projectdir, buildir, "main.elf", *extra_args)
+    os.system(f"""
+        ./obj_dir/Vrv32_top -e {buildir}/{projectdir}/main.elf --trace {trace_file}
+    """)
+    konata.kanata_format(trace_file, f"{buildir}/{projectdir}/main.elf", trace_kanata)
+
 if __name__ == "__main__":
-    build_and_run("examples/cpp_hello_world", "build")
+    #build_and_run("examples/cpp_hello_world", "build")
+    #build_and_run_log("examples/c_hello_world", "build", "out", "prof")
+    build_and_run_trace("examples/cpp_hello_world", "build", "trace.trace", "trace.kanata")
     pass

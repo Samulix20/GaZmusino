@@ -1,8 +1,7 @@
 import sys, os
-sys.path.append(os.path.realpath(".."))
-from riscv_system_verilog import build
 
-import basic
+import build
+import basic_test
 
 import shutil
 import filecmp
@@ -105,7 +104,7 @@ def run_tests(sub_dirs):
         num_test += 1
     
     print(clearterm, end='')
-    basic.print_results(num_test, num_pass, num_fail)
+    basic_test.print_results(num_test, num_pass, num_fail)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Run tests on bringup-bench")
@@ -119,6 +118,7 @@ if __name__ == "__main__":
         sub_dirs += ["test/bringup-bench/" + dir for dir in long_tests]
     else:
         parser.print_help()
+        exit(0)
     
     build.log_enabled = False
     run_tests(sub_dirs)

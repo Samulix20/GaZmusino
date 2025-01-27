@@ -33,7 +33,8 @@ rv32_word wb_bypass;
 logic exec_jump /*verilator public*/;
 logic jump_set_nop;
 rv32_word exec_jump_addr, jump_nop_pc;
-rv32_word pc, next_pc /*verilator public*/;
+rv32_word pc /*verilator public*/; 
+rv32_word next_pc /*verilator public*/;
 
 always_comb begin
     jump_set_nop = 0;

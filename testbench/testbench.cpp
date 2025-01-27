@@ -10,11 +10,13 @@
 // Verilator
 #include <verilated.h>
 #include <verilated_vcd_c.h>
+
 #include "Vrv32_top.h"
 
 #include "rv32_test_utils.h"
 #include "rv32_memory_utils.h"
 #include "rv_instr_simulation.h"
+#include "testbench/rv32_trace_stages.h"
 
 int main(int argc, char** argv) {
 
@@ -25,8 +27,7 @@ int main(int argc, char** argv) {
     sim_data.stdout_file_ptr = &std::cout;
 
     uint64_t sim_time = 0;
-
-    bool forever = true;
+    bool do_trace = false;
 
     // Evaluate Verilator comand args
     Verilated::commandArgs(argc, argv);
@@ -51,12 +52,13 @@ int main(int argc, char** argv) {
             sim_data.prof_file.open(argv[i]);
             sim_data.prof_file_ptr = &sim_data.prof_file;
         }
+        else if (arg == "--trace") {
+            i++;
+            if (i == argc) break;
+            sim_data.trace_file.open(argv[i]);
+            do_trace = sim_data.trace_file.is_open();
+        }
     }
-
-    // TODO fix trace
-    //std::string rv_disassembly_file = "";
-    //bool print_trace = false;
-    //auto diassembly_map = rv32_test::load_dissasembly(rv_disassembly_file);
 
     // Create device under test
     Vrv32_top *dut = new Vrv32_top;
@@ -110,14 +112,12 @@ int main(int argc, char** argv) {
 
         dut->eval();
 
-        // Old Debug stage tracer, TODO fix trace
-        // Only on high clk and after reset
-        //if (print_trace && !reset_on && dut->clk == 0) {
-        //    std::cout << rv32_test::trace_stages(dut, diassembly_map);
-        //}
-
         // Trace waveform
         //m_trace->dump(sim_time);
+
+        if (!reset_on && do_trace) {
+            rv32_test::trace_stages(sim_data);
+        }
         
         // Advance simulation loop
         sim_time++;

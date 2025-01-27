@@ -5,11 +5,12 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
-#include <elf.h>
 #include <cassert>
 #include <fstream>
-#include <sstream>
 #include <string>
+
+#include <elf.h>
+#include <unistd.h>
 
 // Device under test headers
 #include "Vrv32_top_rv32_types.h"
@@ -28,6 +29,12 @@
 #endif
 
 namespace rv32_test {
+
+// Shorter type definitions
+using i32 = int32_t;
+using u32 = uint32_t;
+using i8 = int8_t;
+using u8 = uint8_t;
 
 // Pre-declare this function reuquired by exit
 std::string profiler_counters_yaml();
@@ -54,14 +61,31 @@ struct SimulationData {
 
     std::ofstream prof_file;
     std::ostream* prof_file_ptr;
+
+    std::ofstream trace_file;
 };
 
+// Simulation Exit code
+inline void simulation_exit(SimulationData& sim_data, uint32_t exit_code) {
+    // Measure simulation time
+    auto sim_end = std::chrono::high_resolution_clock::now();
+    auto time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(sim_end - sim_data.sim_start);
 
-// Rust type definitions
-using i32 = int32_t;
-using u32 = uint32_t;
-using i8 = int8_t;
-using u8 = uint8_t;
+    // Print profiling counters information in yaml format
+    std::ostream& prof_file = *sim_data.prof_file_ptr;
+    prof_file << "---\n";
+    prof_file << "runtime: " << std::format("\"{:%T}\"", time_elapsed) << "\n";
+    prof_file << "exit_status: " << exit_code << '\n';
+    prof_file << "sim_cycles: " << sim_data.sim_time / 2 << '\n';
+    prof_file << profiler_counters_yaml();
+
+    // Close log files if open
+    if(sim_data.stdout_file.is_open()) sim_data.stdout_file.close();
+    if(sim_data.prof_file.is_open()) sim_data.prof_file.close();
+    if(sim_data.trace_file.is_open()) sim_data.trace_file.close();
+
+    exit(exit_code);
+}
 
 // Utilty using statements
 using DecodeStageData = Vrv32_top_decode_exec_buffer_t__struct__0;
@@ -77,13 +101,36 @@ using InstructionR4 = Vrv32_top_rv_r4_instr_t__struct__0;
 using CoreControlSignals = Vrv32_top_rv_control_t__struct__0;
 using RV32Types = Vrv32_top_rv32_types;
 
-// Getters core internal data
-
+// Instruction format 
 inline InstructionR4 instr_to_r4(const Instruction& instr) {
     InstructionR4 r;
     r.set(instr.get());
     return r;
 }
+
+
+// Getters core internal data
+
+// Fetch Stage 
+inline uint32_t get_pc(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->pc;
+}
+
+inline uint32_t get_next_pc(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->next_pc;
+}
+
+inline MemoryRequest get_instruction_request(const Vrv32_top* rvtop) {
+    MemoryRequest instruction_request;
+    instruction_request.set(rvtop->core_instr_request);
+    return instruction_request;
+}
+
+inline uint32_t get_instruction_response(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->instr;
+}
+
+// Decode stage
 
 inline Instruction get_decoder_input(const Vrv32_top* rvtop) {
     Instruction i;
@@ -103,6 +150,12 @@ inline DecodeStageData get_decode_stage_data(const Vrv32_top* rvtop) {
     return d;
 }
 
+inline uint8_t get_decode_stall(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->dec_stall;
+}
+
+// Exec stage
+
 inline DecodeStageData get_exec_stage_input(const Vrv32_top* rvtop) {
     DecodeStageData d;
     d.set(rvtop->rv32_top->core->decode_exec_buff);
@@ -112,7 +165,6 @@ inline DecodeStageData get_exec_stage_input(const Vrv32_top* rvtop) {
 struct BypassRegisterData {
     uint32_t reg_data[RV32Types::CORE_RF_NUM_READ];
 };
-
 inline BypassRegisterData get_exec_bypass_register_data(const Vrv32_top* rvtop) {
     BypassRegisterData r;
     for(size_t i = 0; i < RV32Types::CORE_RF_NUM_READ; i++) {
@@ -127,6 +179,13 @@ inline ExecutionStageData get_exec_stage_data(const Vrv32_top* rvtop) {
     return d;
 }
 
+
+inline uint8_t get_exec_jump(const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->exec_jump;
+}
+
+// Memory stage
+
 inline MemoryStageData get_mem_stage_data(const Vrv32_top* rvtop) {
     MemoryStageData d;
     d.set(rvtop->rv32_top->core->mem_stage->internal_data);
@@ -137,26 +196,6 @@ inline WritebackStageData get_wb_stage_data(const Vrv32_top* rvtop) {
     WritebackStageData d;
     d.set(rvtop->rv32_top->core->mem_wb_buff);
     return d;
-}
-
-inline uint32_t get_wb_result_data(const Vrv32_top* rvtop) {
-    RegisterFileWriteRequest rfwr;
-    rfwr.set(rvtop->rv32_top->core->rf_write_request);
-    return rfwr.data;
-}
-
-inline uint32_t get_next_pc(const Vrv32_top* rvtop) {
-    return rvtop->rv32_top->core->next_pc;
-}
-
-inline MemoryRequest get_instruction_request(const Vrv32_top* rvtop) {
-    MemoryRequest instruction_request;
-    instruction_request.set(rvtop->core_instr_request);
-    return instruction_request;
-}
-
-inline uint32_t get_instruction_response(const Vrv32_top* rvtop) {
-    return rvtop->rv32_top->instr;
 }
 
 inline MemoryRequest get_memory_request(const Vrv32_top* rvtop) {
@@ -173,13 +212,17 @@ inline uint8_t get_memory_stall(const Vrv32_top* rvtop) {
     return rvtop->rv32_top->core->mem_stall;
 }
 
-inline uint8_t get_decode_stall(const Vrv32_top* rvtop) {
-    return rvtop->rv32_top->core->dec_stall;
+
+// Writeback stage
+
+inline uint32_t get_wb_result_data(const Vrv32_top* rvtop) {
+    RegisterFileWriteRequest rfwr;
+    rfwr.set(rvtop->rv32_top->core->rf_write_request);
+    return rfwr.data;
 }
 
-inline uint8_t get_exec_jump(const Vrv32_top* rvtop) {
-    return rvtop->rv32_top->core->exec_jump;
-}
+// Internal profiler counters
+// Standard ISA
 
 inline uint64_t get_mcycle(const Vrv32_top* rvtop) {
     return rvtop->rv32_top->core->csr_file->mcycle;
@@ -189,55 +232,14 @@ inline uint64_t get_minstret (const Vrv32_top* rvtop) {
     return rvtop->rv32_top->core->csr_file->minstret;
 }
 
-inline uint64_t get_mdecstall (const Vrv32_top* rvtop) {
-    return rvtop->rv32_top->core->csr_file->mdecstall;
-}
+// Custom counters
 
 inline uint64_t get_mjmp (const Vrv32_top* rvtop) {
     return rvtop->rv32_top->core->csr_file->mjmp;
 }
 
-using DissasemblyMap = std::unordered_map<uint32_t, std::string>;
-
-inline DissasemblyMap load_dissasembly(std::string filename) {
-    DissasemblyMap m;
-    std::stringstream ss;
-    std::string line = "", pc_token = "", instr_token = "";
-
-    std::ifstream f = std::ifstream(filename);
-    if (!f.is_open()) return m;
-
-    while(!f.eof()) {
-        getline(f, line);
-        if (line == "") continue; // Guard for empty lines
-        ss.clear();
-        ss << line;
-        getline(ss, pc_token, ';');
-        getline(ss, instr_token, ';');
-        m[std::stoi(pc_token)] = instr_token;
-    }
-
-    return m;
-}
-
-inline void simulation_exit(SimulationData& sim_data, uint32_t exit_code) {
-    // Measure simulation time
-    auto sim_end = std::chrono::high_resolution_clock::now();
-    auto time_elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(sim_end - sim_data.sim_start);
-
-    // Print profiling counters information in yaml format
-    std::ostream& prof_file = *sim_data.prof_file_ptr;
-    prof_file << "---\n";
-    prof_file << "runtime: " << std::format("\"{:%T}\"", time_elapsed) << "\n";
-    prof_file << "exit_status: " << exit_code << '\n';
-    prof_file << "sim_cycles: " << sim_data.sim_time / 2 << '\n';
-    prof_file << profiler_counters_yaml();
-
-    // Close log files if open
-    if(sim_data.stdout_file.is_open()) sim_data.stdout_file.close();
-    if(sim_data.prof_file.is_open()) sim_data.prof_file.close();
-
-    exit(exit_code);
+inline uint64_t get_mdecstall (const Vrv32_top* rvtop) {
+    return rvtop->rv32_top->core->csr_file->mdecstall;
 }
 
 }

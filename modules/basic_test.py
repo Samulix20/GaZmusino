@@ -1,6 +1,6 @@
 import sys, os
-sys.path.append(os.path.realpath(".."))
-from riscv_system_verilog import build
+
+import build
 
 import yaml
 
