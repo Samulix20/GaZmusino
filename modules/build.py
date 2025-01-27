@@ -178,8 +178,20 @@ def build_and_run_trace(projectdir, buildir, trace_file, trace_kanata, *extra_ar
     """)
     konata.kanata_format(trace_file, f"{buildir}/{projectdir}/main.elf", trace_kanata)
 
+def build_and_run_bare_asm(projectdir, buildir, trace_file, trace_kanata, *extra_args):
+    shell("make")
+    lds = create_linker_script(f"{buildir}/{projectdir}")
+    srcs, objs = compile_dir(projectdir, f"{buildir}/{projectdir}", *(extra_args + ("-nostdlib",)))
+    target = f"{buildir}/{projectdir}/bare.elf"
+    rvlink(srcs, objs, lds, target)
+    os.system(f"""
+        ./obj_dir/Vrv32_top -e {target} --trace {trace_file}
+    """)
+    konata.kanata_format(trace_file, f"{target}", trace_kanata)
+
 if __name__ == "__main__":
     #build_and_run("examples/cpp_hello_world", "build")
     #build_and_run_log("examples/c_hello_world", "build", "out", "prof")
-    build_and_run_trace("examples/cpp_hello_world", "build", "trace.trace", "trace.kanata")
+    build_and_run_trace("examples/c_hello_world", "build", "trace.trace", "trace.kanata")
+    #build_and_run_bare_asm("examples/extra/bare", "build", "trace.trace", "trace.kanata")
     pass

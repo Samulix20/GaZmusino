@@ -58,6 +58,10 @@ always_ff @(posedge clk) begin
     end
 
     else if (!stall) mem_wb_buff <= internal_data;
+    
+    else begin 
+        mem_wb_buff.control.is_bubble <= 1;
+    end
 end
 
 endmodule

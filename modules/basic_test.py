@@ -20,7 +20,7 @@ exe_path = f"{isa_test_buildir}/test.elf"
 def comp_isa_test(src):
     os.system(f"mkdir -p {isa_test_buildir}")
     obj = build.rvcomp(src, isa_test_buildir, f"-I{isa_macros_path}")
-    build.rvlink([src], [obj], f"{isa_macros_path}/linker.lds", exe_path, "-nostartfiles")
+    build.rvlink([src], [obj], f"{isa_macros_path}/linker.lds", exe_path, "-nostdlib")
 
 def run_isa_test(testname):
     test_res_path = f"{isa_test_buildir}/._isa_test_res.yaml"

@@ -121,4 +121,9 @@ def kanata_format(trace_path, elf_path, out_path):
                 out_f.write(f"S\t{new_id}\t0\tF\n")
                 out_f.write(f"L\t{new_id}\t0\t{instr_dict[int(pipeline['F'][0])]}\n")
     
+    # After end remove instructions from trace
+    for tracked_id in tracked_instructions.keys():
+        if tracked_instructions[tracked_id][1] not in ['M', 'W']:
+            out_f.write(f"R\t{tracked_id}\t0\t1\n")
+                
     out_f.close()

@@ -175,14 +175,12 @@ inline void handle_data_request(Vrv32_top* rvtop, rv32_memory& rvmem) {
     if (request.addr <= rvmem.max_addr) {
 
         // Delay control
-        /*
-        if (data_wait_cyles >= 1) {
+        if (data_wait_cyles >= 0) {
             if (rvtop->clk == 1) data_wait_cyles = 0;
         } else {
             if (rvtop->clk == 1) data_wait_cyles++;
             return;
         }
-        */
 
         rvtop->rv32_top->mem_data_ready = 1;
 
