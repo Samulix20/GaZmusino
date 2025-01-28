@@ -107,6 +107,7 @@ def run_tests(sub_dirs):
     basic_test.print_results(num_test, num_pass, num_fail)
     
 if __name__ == "__main__":
+    build.shell("make")
     parser = argparse.ArgumentParser(description="Run tests on bringup-bench")
     parser.add_argument("--short", help="Run short tests (~10 mins)", action="store_true")
     parser.add_argument("--long", help="Run long tests(3+ hours)", action="store_true")

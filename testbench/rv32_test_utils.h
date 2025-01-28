@@ -8,6 +8,7 @@
 #include <cassert>
 #include <fstream>
 #include <string>
+#include <map>
 
 #include <elf.h>
 #include <unistd.h>
@@ -47,10 +48,47 @@ struct rv32_memory {
     std::unique_ptr<uint8_t> memory;
 };
 
+struct rv32_cache_mem {
+    int8_t delay = 2;
+    std::map<int8_t, int32_t> lines;
+    bool request_active = false;
+
+    int set_request(int32_t addr) {
+        if(!request_active) {
+            request_active = true;
+            // ADDR: 32 bits. [tag 20 bits, index 8 bits, offset 4 bits]
+            int8_t index = (addr >> 4) & 0xFF;
+            int tag = (addr >> 12) & 0xFFFFF;
+            // Check if line is in cache
+            if(lines.find(index) == lines.end()) {
+                // Add bits 
+                lines[index] = tag;
+                return delay;
+            } else {
+                if(lines[index] == tag) {
+                    return 0;
+                } else {
+                    lines[index] = tag;
+                    return delay;
+                }
+                return 0;
+            }
+        } else {
+            return delay;
+        }
+    }
+
+    int free_request(){
+        request_active = false;
+        return 0;
+    }
+};
+
 struct SimulationData {
     Vrv32_top *dut;
     rv32_memory mem;
-    
+    rv32_cache_mem cache_mem;
+
     // Time measures
     uint64_t sim_time; 
     time_point_ns sim_start;

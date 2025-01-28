@@ -158,8 +158,8 @@ inline void handle_instruction_request(Vrv32_top* rvtop, rv32_memory& rvmem) {
     }
 }
 
-inline void handle_data_request(Vrv32_top* rvtop, rv32_memory& rvmem) {
-    
+inline void handle_data_request(Vrv32_top* rvtop, rv32_memory& rvmem, rv32_cache_mem& cache_mem) {
+    int request_delay = 0;
     // Set up values with 1 cycle delay
     rvtop->rv32_top->memory_data = read_mem_data;
 
@@ -173,15 +173,16 @@ inline void handle_data_request(Vrv32_top* rvtop, rv32_memory& rvmem) {
     if (request.op == RV32Types::MEM_NOP) return;
 
     if (request.addr <= rvmem.max_addr) {
-
         // Delay control
-        if (data_wait_cyles >= 0) {
+        request_delay = cache_mem.set_request(request.addr);
+        
+        if (data_wait_cyles >= request_delay) {
             if (rvtop->clk == 1) data_wait_cyles = 0;
         } else {
             if (rvtop->clk == 1) data_wait_cyles++;
             return;
         }
-
+        cache_mem.free_request();
         rvtop->rv32_top->mem_data_ready = 1;
 
         // Read/Write data memory
@@ -213,7 +214,7 @@ inline void handle_memory_request(SimulationData& sim_data) {
     #ifdef CPP_MEMORY_SIM
 
     handle_instruction_request(sim_data.dut, sim_data.mem);
-    handle_data_request(sim_data.dut, sim_data.mem);
+    handle_data_request(sim_data.dut, sim_data.mem, sim_data.cache_mem);
 
     #endif
 }
