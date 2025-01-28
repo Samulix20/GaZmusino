@@ -49,9 +49,14 @@ struct rv32_memory {
 };
 
 struct rv32_cache_mem {
+    int num_ways = 4;
     int8_t delay = 2;
-    std::map<int8_t, int32_t> lines;
+    
+    std::vector<std::map<int8_t, int32_t>> ways;
+    
     bool request_active = false;
+
+    rv32_cache_mem() : ways(num_ways, std::map<int8_t, int32_t>()) {}
 
     int set_request(int32_t addr) {
         if(!request_active) {
@@ -59,20 +64,17 @@ struct rv32_cache_mem {
             // ADDR: 32 bits. [tag 20 bits, index 8 bits, offset 4 bits]
             int8_t index = (addr >> 4) & 0xFF;
             int tag = (addr >> 12) & 0xFFFFF;
-            // Check if line is in cache
-            if(lines.find(index) == lines.end()) {
-                // Add bits 
-                lines[index] = tag;
-                return delay;
-            } else {
-                if(lines[index] == tag) {
+            // Check if line exists in any block
+            for(auto& way : ways) {
+                if(way.find(index) != way.end() && way[index] == tag) {
                     return 0;
-                } else {
-                    lines[index] = tag;
-                    return delay;
                 }
-                return 0;
             }
+            // Put line in a random way
+            int rand_way = rand() % num_ways;
+            ways[rand_way][index] = tag;
+            return delay;
+
         } else {
             return delay;
         }
