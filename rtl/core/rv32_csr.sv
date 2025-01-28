@@ -10,8 +10,10 @@ import rv32_types::*;
     output rv32_word read_value,
     // Write ports
     input csr_write_request_t write_request,
+    input interrupt_request_t interrupt_request,
     // Always available signals
-    output mstatus_t mstatus, 
+    output mstatus_t mstatus,
+    output rv32_word mtvec, mepc,
     // Performance counters...
     input logic instr_retired,
     input logic dec_stall,
@@ -36,8 +38,8 @@ mstatus_t next_mstatus;
 
 // Interrupt related registers
 rv32_word mcause, next_mcause;
-rv32_word mepc, next_mepc;
-rv32_word mtvec, next_mtvec;
+rv32_word next_mepc;
+rv32_word next_mtvec;
 
 // Scratch register
 
@@ -155,7 +157,19 @@ always_comb begin
         endcase
     end
 
-    // Interrup write logic
+    // Interrup logic
+    if (interrupt_request.do_interrupt) begin
+        next_mepc = interrupt_request.from;
+        if (interrupt_request.is_mret) begin 
+            next_mstatus.mie = next_mstatus.mpie;
+            next_mstatus.mpie = 1;
+        end
+        else begin
+            next_mepc = interrupt_request.from;
+            next_mstatus.mpie = next_mstatus.mie;
+            next_mstatus.mie = 0;
+        end
+    end
 
 end
 

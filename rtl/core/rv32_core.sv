@@ -22,6 +22,11 @@ import rv32_types::*;
     input rv32_word data
 );
 
+// CSR values
+mstatus_t mstatus;
+rv32_word mtvec;
+rv32_word mepc;
+
 // Interrupt bus
 interrupt_request_t interrupt_request;
 jump_request_t jump_request;
@@ -46,6 +51,16 @@ always_comb begin
     // Jump instruction
     if (jump_request.do_jump) begin 
         next_pc = jump_request.to;
+    end
+
+    // Interrupt execution
+    if (interrupt_request.do_interrupt) begin 
+        if (interrupt_request.is_mret) begin 
+            next_pc = mepc;
+        end
+        else begin
+            next_pc = mtvec;
+        end
     end
 
     // A instruction is stalling
@@ -76,9 +91,6 @@ rv32_register_file #(.NUM_READ_PORTS(CORE_RF_NUM_READ)) rf(
     .write_request(rf_write_request)
 );
 
-// CSR
-mstatus_t mstatus;
-
 rv32_word csr_read_data;
 rv_csr_id_t csr_read_id;
 csr_write_request_t csr_write_request;
@@ -88,12 +100,19 @@ always_comb begin
 end
 rv32_csr csr_file(
     .clk(clk), .resetn(resetn),
+    // Read CSR
     .read_id(csr_read_id), .read_value(csr_read_data),
+    // Write CSR
     .write_request(csr_write_request),
+    // Performace counters
     .instr_retired(instr_retired),
     .dec_stall(dec_stall),
     .jump_taken(jump_request.do_jump),
-    .mstatus(mstatus)
+    .interrupt_request(interrupt_request),
+    // CSR values
+    .mstatus(mstatus),
+    .mtvec(mtvec),
+    .mepc(mepc)
 );
 
 // FETCH STAGE
@@ -155,6 +174,7 @@ rv32_mem_stage mem_stage(
     .exec_mem_buff(exec_mem_buff),
     .mem_wb_buff(mem_wb_buff),
     // Control
+    .mstatus(mstatus),
     .stall(mem_stall),
     .mtip(mtip),
     .interrupt_request(interrupt_request),
