@@ -2,6 +2,7 @@
 
 /*
  CPU 4 memory stage
+ - Consolidation point
  - Memory requests
 */
 
@@ -12,9 +13,11 @@ import rv32_types::*;
     // Clk, Reset signals
     input logic clk, resetn,
     // Pipeline I/O
+    input logic mtip,
     input exec_mem_buffer_t exec_mem_buff,
     output mem_wb_buffer_t mem_wb_buff,
     output logic stall,
+    output interrupt_request_t interrupt_request,
     // Data Mem I/O
     output memory_request_t data_request,
     input logic request_done,
@@ -46,6 +49,14 @@ always_comb begin
     else stall = ~request_done;
 
     // Consolidation Point
+    if (mtip) begin
+        interrupt_request.do_interrupt = 1;
+        interrupt_request.from = exec_mem_buff.pc;
+    end 
+    else begin 
+        interrupt_request.do_interrupt = 0;
+    end
+
     // Check if instruction is retiring for counters
     instr_retired = ~(internal_data.control.is_bubble | stall);
 end

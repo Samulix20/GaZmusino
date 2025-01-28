@@ -18,9 +18,9 @@ import rv32_types::*;
     input decode_exec_buffer_t decode_exec_buff,
     output exec_mem_buffer_t exec_mem_buff,
     input logic stop,
-    // Jump control signals
-    output logic do_jump,
-    output rv32_word jump_addr,
+    input interrupt_request_t interrupt_request,
+    // Jump signals
+    output jump_request_t jump_request,
     // Bypass data
     input rv32_word wb_bypass
 );
@@ -127,8 +127,9 @@ always_comb begin
     internal_data.pc = decode_exec_buff.pc;
 
     // Addr for jumps and jump signal
-    jump_addr = int_alu_result;
-    do_jump = branch_unit_out;
+    jump_request.from = internal_data.pc;
+    jump_request.to = int_alu_result;
+    jump_request.do_jump = branch_unit_out;
 
     if (tb_exec == 0) begin
 
@@ -158,7 +159,6 @@ always_comb begin
 
     end
 
-
 end
 
 always_ff @(posedge clk) begin
@@ -166,6 +166,11 @@ always_ff @(posedge clk) begin
         exec_mem_buff.instr <= RV_NOP;
         exec_mem_buff.pc <= 0;
         exec_mem_buff.control <= create_bubble_ctrl();
+    end
+    else if (interrupt_request.do_interrupt) begin 
+        exec_mem_buff.instr <= RV_NOP;
+        exec_mem_buff.control <= create_bubble_ctrl();
+        exec_mem_buff.pc <= interrupt_request.from;
     end
     else if (!stop) exec_mem_buff <= internal_data;
 end

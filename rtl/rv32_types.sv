@@ -251,4 +251,29 @@ typedef struct packed {
     mem_op_t op;
 } memory_request_t /*verilator public*/;
 
+// Flush request
+typedef struct packed {
+    logic do_flush;
+    rv32_word pc;
+} flush_request_t /*verilator public*/;
+
+// Jump bus
+typedef struct packed {
+    logic do_jump;
+    rv32_word to;
+    rv32_word from;
+} jump_request_t /*verilator public*/;
+
+// Interrupt bus
+typedef struct packed {
+    logic do_interrupt;
+    rv32_word from;
+} interrupt_request_t /*verilator public*/;
+
+// Global CSR register formats
+typedef struct packed {
+    logic mie;
+    logic mpie;
+} mstatus_t;
+
 endpackage

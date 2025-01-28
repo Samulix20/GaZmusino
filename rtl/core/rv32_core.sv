@@ -10,6 +10,8 @@ import rv32_types::*;
 (
     // Clk, Reset signals
     input logic clk, resetn,
+    // Interrupts
+    input logic mtip,
     // Instructions memory port
     output memory_request_t instr_request,
     input logic instr_request_done,
@@ -20,6 +22,10 @@ import rv32_types::*;
     input rv32_word data
 );
 
+// Interrupt bus
+interrupt_request_t interrupt_request;
+jump_request_t jump_request;
+
 // Stage buffers
 fetch_decode_buffer_t fetch_decode_buff /*verilator public*/;
 decode_exec_buffer_t decode_exec_buff /*verilator public*/;
@@ -29,24 +35,17 @@ mem_wb_buffer_t mem_wb_buff /*verilator public*/;
 // Bypass signals
 rv32_word wb_bypass;
 
-// PC/Jump logic
-logic exec_jump /*verilator public*/;
-logic jump_set_nop;
-rv32_word exec_jump_addr, jump_nop_pc;
+// PC logic
 rv32_word pc /*verilator public*/; 
 rv32_word next_pc /*verilator public*/;
 
 always_comb begin
-    jump_set_nop = 0;
-    jump_nop_pc = decode_exec_buff.pc;
-
     // Default pc increase
     next_pc = pc + 4;
 
     // Jump instruction
-    if(exec_jump) begin
-        next_pc = exec_jump_addr;
-        jump_set_nop = 1;
+    if (jump_request.do_jump) begin 
+        next_pc = jump_request.to;
     end
 
     // A instruction is stalling
@@ -78,6 +77,8 @@ rv32_register_file #(.NUM_READ_PORTS(CORE_RF_NUM_READ)) rf(
 );
 
 // CSR
+mstatus_t mstatus;
+
 rv32_word csr_read_data;
 rv_csr_id_t csr_read_id;
 csr_write_request_t csr_write_request;
@@ -91,7 +92,8 @@ rv32_csr csr_file(
     .write_request(csr_write_request),
     .instr_retired(instr_retired),
     .dec_stall(dec_stall),
-    .jump_taken(exec_jump)
+    .jump_taken(jump_request.do_jump),
+    .mstatus(mstatus)
 );
 
 // FETCH STAGE
@@ -104,9 +106,7 @@ rv32_fetch_stage fetch_stage(
     // Control
     .stall(fetch_stall),
     .stop(dec_stall | mem_stall),
-    // Jump signals
-    .set_nop(jump_set_nop),
-    .set_nop_pc(jump_nop_pc),
+    .jump_request(jump_request),
     // INSTR MEM I/O
     .instr_request(instr_request),
     .request_done(instr_request_done)
@@ -123,9 +123,7 @@ rv32_decode_stage decode_stage(
     // Control
     .stall(dec_stall),
     .stop(mem_stall),
-    // Jump signals
-    .set_nop(jump_set_nop),
-    .set_nop_pc(jump_nop_pc),
+    .jump_request(jump_request),
     // Register file read
     .reg_data(reg_data),
     // CSR file read
@@ -143,8 +141,8 @@ rv32_exec_stage exec_stage(
     // Control
     .stop(mem_stall),
     // Jump signals
-    .do_jump(exec_jump),
-    .jump_addr(exec_jump_addr),
+    .jump_request(jump_request),
+    .interrupt_request(interrupt_request),
     // Bypass
     .wb_bypass(rf_write_request.data)
 );
@@ -158,6 +156,8 @@ rv32_mem_stage mem_stage(
     .mem_wb_buff(mem_wb_buff),
     // Control
     .stall(mem_stall),
+    .mtip(mtip),
+    .interrupt_request(interrupt_request),
     // Data Memory I/O
     .data_request(data_request),
     .request_done(data_request_done),

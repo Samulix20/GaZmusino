@@ -12,8 +12,8 @@ import rv32_types::*;
     // Clk, Reset signals
     input logic clk, resetn,
     // Pipeline I/O
-    input logic set_nop, stop,
-    input rv32_word set_nop_pc,
+    input logic stop,
+    input jump_request_t jump_request,
     input fetch_decode_buffer_t fetch_decode_buff,
     output decode_exec_buffer_t decode_exec_buff,
     output logic stall,
@@ -97,17 +97,17 @@ always_comb begin
         internal_data.reg_data[2] = csr_data;
     end
 
-    // Generate NOP
+    // Generate NOP control also
     if (fetch_decode_buff.generate_nop) begin
         internal_data.control = create_bubble_ctrl();
     end
 
     output_internal_data = internal_data;
 
-    if (stall | set_nop) begin
+    if (stall | jump_request.do_jump) begin
         output_internal_data.instr = RV_NOP;
         output_internal_data.control = create_bubble_ctrl();
-        if (set_nop) output_internal_data.pc = set_nop_pc;
+        if (jump_request.do_jump) output_internal_data.pc = jump_request.from;
     end
 
 end
