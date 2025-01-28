@@ -84,10 +84,7 @@ def run_examples():
 
     print(f"{BOLD}RUNNING EXAMPLES...{NC}")
 
-    for project in os.listdir(examples_path):
-        # Igore extra folder by default
-        if project == "extra":
-            continue
+    for project in ["c_hello_world", "cpp_hello_world"]:
         
         print(f"{UNDERLINE}Example {project}{NC}")
         build.build_and_run(f"{examples_path}/{project}", "build")
