@@ -154,13 +154,23 @@ always_comb begin
             use_rs[0] = 1;
         end
 
-        // Zicsr
-        // RD = CSR
-        OPCODE_ZICSR: begin
-            control.register_wb = 1;
-            control.csr_wb = 1;
-            control.wb_result_src = WB_CSR;
-            use_rs[0] = 1;
+        
+        OPCODE_SYSTEM: begin
+            if (instr.funct3 == 'b000) begin 
+                // PRIV subopcode
+                // MRET
+                if (instr.funct3 == 'b00010 & instr.funct7 == 'b0011000) begin
+                    control.is_mret = 1;
+                end
+            end
+            else begin
+                // Zicsr
+                // RD = CSR
+                control.register_wb = 1;
+                control.csr_wb = 1;
+                control.wb_result_src = WB_CSR;
+                use_rs[0] = 1;
+            end
         end
 
         OPCODE_CUSTOM_0: begin

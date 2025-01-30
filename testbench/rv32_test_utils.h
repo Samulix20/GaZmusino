@@ -248,11 +248,6 @@ inline ExecutionStageData get_exec_stage_data(const Vrv32_top* rvtop) {
     return d;
 }
 
-
-inline uint8_t get_exec_jump(const Vrv32_top* rvtop) {
-    return rvtop->rv32_top->core->exec_jump;
-}
-
 // Memory stage
 
 inline MemoryStageData get_mem_stage_data(const Vrv32_top* rvtop) {

@@ -10,6 +10,9 @@ import rv32_types::*;
     input rv32_word mmio_data [NUM_MMIO]
 );
 
+// Interrupt signals
+logic timer_interrupt /*verilator public*/ = 0;
+
 // Memory bus signals
 logic instr_request_done /*verilator public*/;
 rv32_word instr /*verilator public*/;
@@ -20,6 +23,8 @@ logic core_data_ready;
 
 rv32_core core (
     .clk(clk), .resetn(resetn),
+    // Interrupts
+    .mtip(timer_interrupt),
     // Instruction
     .instr_request(core_instr_request),
     .instr_request_done(instr_request_done),

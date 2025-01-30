@@ -52,8 +52,8 @@ typedef enum logic [6:0] {
     OPCODE_STORE = 7'b0100011,
     OPCODE_INTEGER_IMM = 7'b0010011,
     OPCODE_INTEGER_REG = 7'b0110011,
-    OPCODE_ZICSR = 7'b1110011,
     OPCODE_BARRIER = 7'b0001111,
+    OPCODE_SYSTEM = 7'b1110011,
     OPCODE_CUSTOM_0 = 7'b0001011,
     OPCODE_CUSTOM_1 = 7'b0101011,
     OPCODE_CUSTOM_2 = 7'b1011011,
@@ -183,6 +183,8 @@ typedef struct packed {
     logic register_wb;
     // Final CSR write
     logic csr_wb;
+    // MRET trap
+    logic is_mret;
 } rv_control_t /*verilator public*/;
 
 // Used for NOP generation
@@ -202,6 +204,7 @@ function automatic rv_control_t create_nop_ctrl();
     instr.wb_result_src = WB_INT_ALU;
     instr.register_wb = 0;
     instr.csr_wb = 0;
+    instr.is_mret = 0;
 
     return instr;
 endfunction
@@ -250,5 +253,31 @@ typedef struct packed {
     rv32_word data;
     mem_op_t op;
 } memory_request_t /*verilator public*/;
+
+// Flush request
+typedef struct packed {
+    logic do_flush;
+    rv32_word pc;
+} flush_request_t /*verilator public*/;
+
+// Jump bus
+typedef struct packed {
+    logic do_jump;
+    rv32_word to;
+    rv32_word from;
+} jump_request_t /*verilator public*/;
+
+// Interrupt bus
+typedef struct packed {
+    logic do_interrupt;
+    logic is_mret;
+    rv32_word from;
+} interrupt_request_t /*verilator public*/;
+
+// Global CSR register formats
+typedef struct packed {
+    logic mie;
+    logic mpie;
+} mstatus_t;
 
 endpackage

@@ -10,8 +10,10 @@ import rv32_types::*;
     output rv32_word read_value,
     // Write ports
     input csr_write_request_t write_request,
-    // Always available signals, mstatus...
-    // TODO
+    input interrupt_request_t interrupt_request,
+    // Always available signals
+    output mstatus_t mstatus,
+    output rv32_word mtvec, mepc,
     // Performance counters...
     input logic instr_retired,
     input logic dec_stall,
@@ -19,14 +21,27 @@ import rv32_types::*;
 );
 
 // CSR LIST
-typedef enum logic [11:0] {    
+typedef enum logic [11:0] {
+    CSR_MSTATUS = 'h300,
+    CSR_MTVEC = 'h305,
     CSR_MCOUNTINHIBIT = 'h320,
     CSR_MSCRATCH = 'h340,
+    CSR_MEPC = 'h341,
+    CSR_MCAUSE = 'h342,
     CSR_MCYCLE = 'hB00,
     CSR_MCYCLEH = 'hB80,
     CSR_MINSTRET = 'hB02,
     CSR_MINSTRETH = 'hB82
 } valid_opcodes_t /*verilator public*/;
+
+mstatus_t next_mstatus;
+
+// Interrupt related registers
+rv32_word mcause, next_mcause;
+rv32_word next_mepc;
+rv32_word next_mtvec;
+
+// Scratch register
 
 rv32_word mscratch, next_mscratch;
 
@@ -54,12 +69,25 @@ always_comb begin
 
     // Output control
     case (read_id)
-        CSR_MCOUNTINHIBIT: begin 
-            read_value[0] = mcountinhibit.cy;
-            read_value[2] = mcountinhibit.ir;
+        CSR_MSTATUS: begin
+            read_value[3] = mstatus.mie;
+            read_value[7] = mstatus.mpie;
+        end
+        CSR_MTVEC: begin
+            read_value = mtvec;
+        end
+        CSR_MEPC: begin
+            read_value = mepc;
+        end
+        CSR_MCAUSE: begin 
+            read_value = mcause;
         end
         CSR_MSCRATCH: begin 
             read_value = mscratch;
+        end
+        CSR_MCOUNTINHIBIT: begin 
+            read_value[0] = mcountinhibit.cy;
+            read_value[2] = mcountinhibit.ir;
         end
         CSR_MCYCLE: begin
             read_value = mcycle[0];
@@ -91,12 +119,27 @@ always_comb begin
     // User write logic
     if (write_request.write) begin
         case (write_request.id)
-            CSR_MCOUNTINHIBIT: begin 
-                next_mcountinhibit.cy = write_request.value[0];
-                next_mcountinhibit.ir = write_request.value[2];
+            
+            CSR_MSTATUS: begin
+                next_mstatus.mie = write_request.value[3];
+                next_mstatus.mpie = write_request.value[7];
+            end
+            CSR_MTVEC: begin
+                next_mtvec = write_request.value;
+            end
+            CSR_MEPC: begin
+                next_mepc = write_request.value;
+            end
+            CSR_MCAUSE: begin 
+                next_mcause = write_request.value;
             end
             CSR_MSCRATCH: begin 
                 next_mscratch = write_request.value;
+            end
+            
+            CSR_MCOUNTINHIBIT: begin 
+                next_mcountinhibit.cy = write_request.value[0];
+                next_mcountinhibit.ir = write_request.value[2];
             end
             CSR_MCYCLE: begin
                 next_mcycle[0] = write_request.value;
@@ -113,6 +156,21 @@ always_comb begin
             default: ;
         endcase
     end
+
+    // Interrup logic
+    if (interrupt_request.do_interrupt) begin
+        next_mepc = interrupt_request.from;
+        if (interrupt_request.is_mret) begin 
+            next_mstatus.mie = next_mstatus.mpie;
+            next_mstatus.mpie = 1;
+        end
+        else begin
+            next_mepc = interrupt_request.from;
+            next_mstatus.mpie = next_mstatus.mie;
+            next_mstatus.mie = 0;
+        end
+    end
+
 end
 
 // Register control
@@ -122,6 +180,12 @@ always_ff @(posedge clk) begin
         minstret <= 0;
         mcountinhibit <= 0;
     end else begin
+        
+        mstatus <= next_mstatus;
+        mtvec <= next_mtvec;
+        mepc <= next_mepc;
+        mcause <= next_mcause;
+
         mcycle <= next_mcycle;
         minstret <= next_minstret;
         mcountinhibit <= next_mcountinhibit;

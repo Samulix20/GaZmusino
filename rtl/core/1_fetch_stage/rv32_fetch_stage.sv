@@ -12,9 +12,8 @@ import rv32_types::*;
     input logic clk, resetn,
 
     // Core I/O
-    input logic set_nop,
     input logic stop,
-    input rv32_word set_nop_pc,
+    input jump_request_t jump_request,
 
     input rv32_word pc,
     output logic stall,
@@ -43,8 +42,8 @@ always_ff @(posedge clk) begin
     end
 
     // A instruction is flushing the pipeline
-    else if (set_nop) begin
-        fetch_decode_buff.pc <= set_nop_pc;
+    else if (jump_request.do_jump) begin
+        fetch_decode_buff.pc <= jump_request.from;
         fetch_decode_buff.generate_nop <= 1;
     end
 
