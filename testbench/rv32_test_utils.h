@@ -50,28 +50,50 @@ struct rv32_memory {
 
 struct rv32_cache_mem {
     int num_ways = 4;
+    // 1 way  -> [tag 22 bits, index 8 bits, word 2 bits]
+    // 2 ways -> [tag 23 bits, index 7 bits, word 2 bits]
+    // 4 ways -> [tag 24 bits, index 6 bits, word 2 bits]
+    int index_bits = 6;
+    int word_bits = 2;
+    int offset_bits = 2;
+    int32_t mask_index = 0;
     int8_t delay = 2;
+    int num_requests = 0;
+    int num_hits = 0;
+    int num_replaces = 0;
     
     std::vector<std::map<int8_t, int32_t>> ways;
     
     bool request_active = false;
 
-    rv32_cache_mem() : ways(num_ways, std::map<int8_t, int32_t>()) {}
+    rv32_cache_mem() : ways(num_ways, std::map<int8_t, int32_t>()) {
+        init_mask();
+        srand(time(0));
+    }
+
+    void init_mask() {
+        mask_index = (1 << index_bits) - 1;
+    }
 
     int set_request(int32_t addr) {
         if(!request_active) {
+            num_requests++;
             request_active = true;
-            // ADDR: 32 bits. [tag 20 bits, index 8 bits, offset 4 bits]
-            int8_t index = (addr >> 4) & 0xFF;
-            int tag = (addr >> 12) & 0xFFFFF;
+            int8_t index = (addr >> (word_bits + offset_bits)) & mask_index;
+            int32_t tag = (addr >> (index_bits + word_bits + offset_bits));
+
             // Check if line exists in any block
             for(auto& way : ways) {
                 if(way.find(index) != way.end() && way[index] == tag) {
+                    num_hits++;
                     return 0;
                 }
             }
             // Put line in a random way
             int rand_way = rand() % num_ways;
+            if(ways[rand_way].find(index) != ways[rand_way].end()) {
+                num_replaces++;
+            }
             ways[rand_way][index] = tag;
             return delay;
 
@@ -117,6 +139,13 @@ inline void simulation_exit(SimulationData& sim_data, uint32_t exit_code) {
     prof_file << "runtime: " << std::format("\"{:%T}\"", time_elapsed) << "\n";
     prof_file << "exit_status: " << exit_code << '\n';
     prof_file << "sim_cycles: " << sim_data.sim_time / 2 << '\n';
+    prof_file << "cache_profiling: \n";
+    prof_file << "\trequests: " << sim_data.cache_mem.num_requests << '\n';
+    prof_file << "\thits: " << sim_data.cache_mem.num_hits << '\n';
+    prof_file << "\tmisses: " << sim_data.cache_mem.num_requests - sim_data.cache_mem.num_hits << '\n';
+    prof_file << "\treplaces: " << sim_data.cache_mem.num_replaces << '\n';
+    prof_file << "\thit_rate: " << (float)sim_data.cache_mem.num_hits / sim_data.cache_mem.num_requests << '\n';
+    prof_file << "\tmiss_rate: " << 1 - (float)sim_data.cache_mem.num_hits / sim_data.cache_mem.num_requests << '\n';
     prof_file << profiler_counters_yaml();
 
     // Close log files if open
