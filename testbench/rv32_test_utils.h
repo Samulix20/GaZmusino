@@ -48,63 +48,116 @@ struct rv32_memory {
     std::unique_ptr<uint8_t> memory;
 };
 
+struct rv32_block_cache {
+    u32 block_words_size = 4;
+    u32 tag;
+    uint64_t last_access = 0;
+    std::vector<u32> data;
+
+    rv32_block_cache(u32 tag = 0, u32 value = 0)
+        : tag(tag), data(block_words_size, value) {}
+};
+
+u32 size_cache = 4096; //Bytes
+u32 block_size = 16; //Bytes
+u32 num_ways = 4;
+u32 offset_bits = 2;
+bool cache_enable = true;
+enum Policy {RANDOM, LRU};
+
 struct rv32_cache_mem {
-    int num_ways = 4;
-    // 1 way  -> [tag 22 bits, index 8 bits, word 2 bits]
-    // 2 ways -> [tag 23 bits, index 7 bits, word 2 bits]
-    // 4 ways -> [tag 24 bits, index 6 bits, word 2 bits]
-    int index_bits = 6;
-    int word_bits = 2;
-    int offset_bits = 2;
-    int32_t mask_index = 0;
-    int8_t delay = 2;
-    int num_requests = 0;
-    int num_hits = 0;
-    int num_replaces = 0;
+    uint64_t num_requests = 0, num_hits = 0, num_replaces = 0;
+    u32 index_bits, word_bits, mask_index;
+    uint8_t delay;
+    Policy policy;
     
-    std::vector<std::map<int8_t, int32_t>> ways;
+    std::vector<std::map<uint8_t, rv32_block_cache>> ways;
     
     bool request_active = false;
 
-    rv32_cache_mem() : ways(num_ways, std::map<int8_t, int32_t>()) {
-        init_mask();
-        srand(time(0));
-    }
-
-    void init_mask() {
+    rv32_cache_mem() {
+        ways.resize(num_ways);
+        index_bits = log2(size_cache/block_size) - log2(num_ways);
+        word_bits = log2(block_size / 4);
         mask_index = (1 << index_bits) - 1;
+        delay = 2;
+        policy = LRU;
+        srand(time(NULL));
     }
 
-    int set_request(int32_t addr) {
+    u8 get_lru_way(u8 index) {
+        // Replace line in the least recently used way
+        u8 lru_way = 0;
+        uint64_t lru_access = ways[0][index].last_access;
+        for(int i = 1; i < num_ways; i++){
+            if(ways[i][index].last_access < lru_access){
+                lru_access = ways[i][index].last_access;
+                lru_way = i;
+            }
+        }
+        return lru_way;
+    }
+
+    u32 set_request(u32 addr) {
+        int free_way = -1;
+        int way_index = -1;
+        u8 write_way = -1;
+
         if(!request_active) {
             num_requests++;
             request_active = true;
-            int8_t index = (addr >> (word_bits + offset_bits)) & mask_index;
-            int32_t tag = (addr >> (index_bits + word_bits + offset_bits));
+            u8 index = (addr >> (word_bits + offset_bits)) & mask_index;
+            u32 tag = (addr >> (index_bits + word_bits + offset_bits));
 
             // Check if line exists in any block
             for(auto& way : ways) {
-                if(way.find(index) != way.end() && way[index] == tag) {
-                    num_hits++;
-                    return 0;
+                way_index++;
+                if(way.find(index) != way.end()) {
+                    if(way[index].tag == tag){
+                        num_hits++;
+                        way[index].last_access = num_requests;
+                        return 0;
+                    } 
+                } else if (free_way == -1) {
+                    free_way = way_index;
                 }
             }
-            // Put line in a random way
-            int rand_way = rand() % num_ways;
-            if(ways[rand_way].find(index) != ways[rand_way].end()) {
+             
+            if (free_way != -1) {
+                write_way = free_way;
+            } else {
+                switch (policy) {
+                    case RANDOM:
+                        // Replace line in a random way
+                        write_way = rand() % num_ways;
+                        break;
+                    
+                    case LRU:
+                        write_way = get_lru_way(index);
+                        break;
+
+                    default:
+                        break;
+                }
                 num_replaces++;
             }
-            ways[rand_way][index] = tag;
-            return delay;
-
-        } else {
+            ways[write_way][index].tag = tag;
+            ways[write_way][index].last_access = num_requests;
             return delay;
         }
+        return delay;
     }
 
-    int free_request(){
+    uint32_t free_request(){
         request_active = false;
         return 0;
+    }
+
+    void print_cache_utilization() {
+        u32 ways_total_size = (size_cache/block_size) / num_ways;
+        for(int i = 0; i < num_ways; i++) {
+            printf("Way %d: %d/%d used entries\n", i + 1, ways[0].size(), ways_total_size);
+        }
     }
 };
 
@@ -147,6 +200,8 @@ inline void simulation_exit(SimulationData& sim_data, uint32_t exit_code) {
     prof_file << "\thit_rate: " << (float)sim_data.cache_mem.num_hits / sim_data.cache_mem.num_requests << '\n';
     prof_file << "\tmiss_rate: " << 1 - (float)sim_data.cache_mem.num_hits / sim_data.cache_mem.num_requests << '\n';
     prof_file << profiler_counters_yaml();
+
+    sim_data.cache_mem.print_cache_utilization();
 
     // Close log files if open
     if(sim_data.stdout_file.is_open()) sim_data.stdout_file.close();

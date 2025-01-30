@@ -90,6 +90,10 @@ inline uint32_t read_aligned_word(const rv32_memory& rvmem, const uint32_t addr)
     return *reinterpret_cast<uint32_t*>(rvmem.memory.get() + (addr & (~3)));
 }
 
+inline uint32_t* read_aligned_block(const rv32_memory& rvmem, const uint32_t addr) {
+    return reinterpret_cast<uint32_t*>(rvmem.memory.get() + (addr & (~15)));
+}
+
 template <typename T>
 void write_mem(rv32_memory& rvmem, const uint32_t addr, const uint32_t data) {
     *reinterpret_cast<T*>(rvmem.memory.get() + addr) = static_cast<T>(data);
@@ -125,6 +129,7 @@ inline void handle_mmio_request(SimulationData& sim_data) {
 
 // Store the values for 1 cycle delay serve
 static uint32_t read_instr = 0, read_mem_data = 0;
+static uint32_t* read_mem_block = 0;
 static uint32_t instr_wait_cyles = 0, data_wait_cyles = 0;
 static bool aux = false;
 
@@ -174,15 +179,19 @@ inline void handle_data_request(Vrv32_top* rvtop, rv32_memory& rvmem, rv32_cache
 
     if (request.addr <= rvmem.max_addr) {
         // Delay control
-        request_delay = cache_mem.set_request(request.addr);
+        if(cache_enable){
+            request_delay = cache_mem.set_request(request.addr);
         
-        if (data_wait_cyles >= request_delay) {
-            if (rvtop->clk == 1) data_wait_cyles = 0;
-        } else {
-            if (rvtop->clk == 1) data_wait_cyles++;
-            return;
+            if (data_wait_cyles >= request_delay) {
+                if (rvtop->clk == 1) data_wait_cyles = 0;
+            } else {
+                if (rvtop->clk == 1) data_wait_cyles++;
+                return;
+            }
+            
+            cache_mem.free_request();
         }
-        cache_mem.free_request();
+        
         rvtop->rv32_top->mem_data_ready = 1;
 
         // Read/Write data memory
