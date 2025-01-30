@@ -24,6 +24,7 @@ import rv32_types::*;
 
 // CSR values
 mstatus_t mstatus;
+mie_t mie;
 rv32_word mtvec;
 rv32_word mepc;
 
@@ -112,7 +113,8 @@ rv32_csr csr_file(
     // CSR values
     .mstatus(mstatus),
     .mtvec(mtvec),
-    .mepc(mepc)
+    .mepc(mepc),
+    .mie(mie)
 );
 
 // FETCH STAGE
@@ -176,7 +178,7 @@ rv32_mem_stage mem_stage(
     .exec_mem_buff(exec_mem_buff),
     .mem_wb_buff(mem_wb_buff),
     // Control
-    .mstatus(mstatus), .mepc(mepc),
+    .mstatus(mstatus), .mepc(mepc), .mie(mie),
     .stall(mem_stall),
     .mtip(mtip),
     .interrupt_request(interrupt_request),

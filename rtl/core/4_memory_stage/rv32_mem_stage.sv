@@ -15,6 +15,7 @@ import rv32_types::*;
     // Pipeline I/O
     input rv32_word mepc,
     input mstatus_t mstatus,
+    input mie_t mie,
     input logic mtip,
     input exec_mem_buffer_t exec_mem_buff,
     output mem_wb_buffer_t mem_wb_buff,
@@ -57,7 +58,7 @@ always_comb begin
     else stall = ~request_done;
 
     // Consolidation Point
-    if (interrupt_request.is_mret | (mtip & mstatus.mie)) begin
+    if ( interrupt_request.is_mret | (mstatus.mie & (mie.mtie & mtip)) ) begin
         // Dont write to CSR or memory
         data_request.op = MEM_NOP;
         csr_write_request.write = 0;

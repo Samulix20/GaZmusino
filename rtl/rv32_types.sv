@@ -280,4 +280,10 @@ typedef struct packed {
     logic mpie;
 } mstatus_t;
 
+typedef struct packed {
+    logic msie;
+    logic mtie;
+    logic meie;
+} mie_t;
+
 endpackage

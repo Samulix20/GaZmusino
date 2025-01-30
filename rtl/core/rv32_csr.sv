@@ -13,6 +13,7 @@ import rv32_types::*;
     input interrupt_request_t interrupt_request,
     // Always available signals
     output mstatus_t mstatus,
+    output mie_t mie,
     output rv32_word mtvec, mepc,
     // Performance counters...
     input logic instr_retired,
@@ -23,6 +24,7 @@ import rv32_types::*;
 // CSR LIST
 typedef enum logic [11:0] {
     CSR_MSTATUS = 'h300,
+    CSR_MIE = 'h304,
     CSR_MTVEC = 'h305,
     CSR_MCOUNTINHIBIT = 'h320,
     CSR_MSCRATCH = 'h340,
@@ -35,6 +37,7 @@ typedef enum logic [11:0] {
 } valid_opcodes_t /*verilator public*/;
 
 mstatus_t next_mstatus;
+mie_t next_mie;
 
 // Interrupt related registers
 rv32_word mcause, next_mcause;
@@ -72,6 +75,11 @@ always_comb begin
         CSR_MSTATUS: begin
             read_value[3] = mstatus.mie;
             read_value[7] = mstatus.mpie;
+        end
+        CSR_MIE: begin
+            read_value[3] = mie.msie;
+            read_value[7] = mie.mtie;
+            read_value[11] = mie.meie;
         end
         CSR_MTVEC: begin
             read_value = mtvec;
@@ -123,6 +131,11 @@ always_comb begin
             CSR_MSTATUS: begin
                 next_mstatus.mie = write_request.value[3];
                 next_mstatus.mpie = write_request.value[7];
+            end
+            CSR_MIE: begin
+                next_mie.msie = write_request.value[3];
+                next_mie.mtie = write_request.value[7];
+                next_mie.meie = write_request.value[11];
             end
             CSR_MTVEC: begin
                 next_mtvec = write_request.value;
@@ -181,9 +194,15 @@ always_ff @(posedge clk) begin
         // Mstatus reset values
         mstatus.mie <= 0;
         mstatus.mpie <= 1;
+        // Mie reset values
+        mie.msie <= 0;
+        mie.mtie <= 0;
+        mie.meie <= 0;
     end else begin
         
         mstatus <= next_mstatus;
+        mie <= next_mie;
+
         mtvec <= next_mtvec;
         mepc <= next_mepc;
         mcause <= next_mcause;

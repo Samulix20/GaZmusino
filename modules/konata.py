@@ -119,7 +119,7 @@ def kanata_format(trace_path, elf_path, out_path):
                 tracked_instructions[new_id] = [pipeline['F'][0], 'F']
                 out_f.write(f"I\t{new_id}\t0\t0\n")
                 out_f.write(f"S\t{new_id}\t0\tF\n")
-                out_f.write(f"L\t{new_id}\t0\t{instr_dict[int(pipeline['F'][0])]}\n")
+                out_f.write(f"L\t{new_id}\t0\t{hex(int(pipeline['F'][0]))}: {instr_dict[int(pipeline['F'][0])]}\n")
     
     # After end remove instructions from trace
     for tracked_id in tracked_instructions.keys():
