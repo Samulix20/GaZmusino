@@ -159,7 +159,6 @@ always_comb begin
 
     // Interrup logic
     if (interrupt_request.do_interrupt) begin
-        next_mepc = interrupt_request.from;
         if (interrupt_request.is_mret) begin 
             next_mstatus.mie = next_mstatus.mpie;
             next_mstatus.mpie = 1;
@@ -179,6 +178,9 @@ always_ff @(posedge clk) begin
         mcycle <= 0;
         minstret <= 0;
         mcountinhibit <= 0;
+        // Mstatus reset values
+        mstatus.mie <= 0;
+        mstatus.mpie <= 1;
     end else begin
         
         mstatus <= next_mstatus;

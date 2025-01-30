@@ -14,6 +14,7 @@ import rv32_types::*;
     // Core I/O
     input logic stop,
     input jump_request_t jump_request,
+    input interrupt_request_t interrupt_request,
 
     input rv32_word pc,
     output logic stall,
@@ -38,6 +39,11 @@ end
 always_ff @(posedge clk) begin
     if (!resetn) begin
         fetch_decode_buff.pc <= 0;
+        fetch_decode_buff.generate_nop <= 1;
+    end
+
+    else if (interrupt_request.do_interrupt) begin 
+        fetch_decode_buff.pc <= interrupt_request.from;
         fetch_decode_buff.generate_nop <= 1;
     end
 

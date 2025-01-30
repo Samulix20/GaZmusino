@@ -191,8 +191,8 @@ def build_and_run_bare(projectdir, buildir, trace_file, trace_kanata, *extra_arg
 
 if __name__ == "__main__":
     # Examples
-    build_and_run("examples/cpp_hello_world", "build")
+    #build_and_run("examples/cpp_hello_world", "build")
     #build_and_run_log("examples/c_hello_world", "build", "out", "prof")
-    #build_and_run_trace("examples/c_hello_world", "build", "trace.trace", "trace.kanata")
+    build_and_run_trace("examples/c_hello_world", "build", "trace.trace", "trace.kanata")
     #build_and_run_bare("examples/extra/bare", "build", "trace.trace", "trace.kanata")
     pass

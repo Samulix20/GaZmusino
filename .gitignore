@@ -17,6 +17,8 @@ waveform.vcd
 examples/extra
 testlog
 
+# Trace
+konata-linux-x64
 *.trace
 *.kanata
 *.log

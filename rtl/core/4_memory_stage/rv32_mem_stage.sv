@@ -13,6 +13,7 @@ import rv32_types::*;
     // Clk, Reset signals
     input logic clk, resetn,
     // Pipeline I/O
+    input rv32_word mepc,
     input mstatus_t mstatus,
     input logic mtip,
     input exec_mem_buffer_t exec_mem_buff,
@@ -41,8 +42,13 @@ always_comb begin
     data_request.data = exec_mem_buff.data_result[0];
 
     // Default interrupt values
-    interrupt_request.from = exec_mem_buff.pc;
     interrupt_request.is_mret = exec_mem_buff.control.is_mret;
+    if (interrupt_request.is_mret) begin 
+        interrupt_request.from = mepc;
+    end 
+    else begin 
+        interrupt_request.from = exec_mem_buff.pc;
+    end
 
     internal_data = exec_mem_buff;
 
@@ -51,7 +57,7 @@ always_comb begin
     else stall = ~request_done;
 
     // Consolidation Point
-    if ((mtip & mstatus.mie) | interrupt_request.is_mret) begin
+    if (interrupt_request.is_mret | (mtip & mstatus.mie)) begin
         // Dont write to CSR or memory
         data_request.op = MEM_NOP;
         csr_write_request.write = 0;
@@ -72,7 +78,7 @@ always_ff @(posedge clk) begin
         mem_wb_buff.control <= create_bubble_ctrl();
         mem_wb_buff.pc <= 0;
     end
-    else if (interrupt_request.do_interrupt) begin
+    else if (interrupt_request.do_interrupt & ~interrupt_request.is_mret) begin
         // Flush
         mem_wb_buff.control <= create_bubble_ctrl();
     end

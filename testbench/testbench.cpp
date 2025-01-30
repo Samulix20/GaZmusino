@@ -97,6 +97,14 @@ int main(int argc, char** argv) {
             rv32_test::handle_memory_request(sim_data);
         }
 
+        // Iterrupt test
+        if (!reset_on && (sim_time >= 200)) {
+            dut->rv32_top->timer_interrupt = 1;
+            if (sim_time >= 20000) {
+                dut->rv32_top->timer_interrupt = 0;
+            }
+        }
+
         // Update signals
         dut->eval();
 

@@ -15,6 +15,6 @@ void _trap_handler() {
             printf("Unexpected mcause found: 0x%08lx\n", mcause);
             printf("MEPC: 0x%08lx\n", read_mepc());
             printf("MSCRATCH: 0x%08lx\n", read_mscratch());
-            exit(mcause);
+            //exit(mcause);
     }
 }
