@@ -125,6 +125,7 @@ rv32_fetch_stage fetch_stage(
     // Control
     .stall(fetch_stall),
     .stop(dec_stall | mem_stall),
+    .interrupt_request(interrupt_request),
     .jump_request(jump_request),
     // INSTR MEM I/O
     .instr_request(instr_request),
@@ -142,6 +143,7 @@ rv32_decode_stage decode_stage(
     // Control
     .stall(dec_stall),
     .stop(mem_stall),
+    .interrupt_request(interrupt_request),
     .jump_request(jump_request),
     // Register file read
     .reg_data(reg_data),
@@ -174,7 +176,7 @@ rv32_mem_stage mem_stage(
     .exec_mem_buff(exec_mem_buff),
     .mem_wb_buff(mem_wb_buff),
     // Control
-    .mstatus(mstatus),
+    .mstatus(mstatus), .mepc(mepc),
     .stall(mem_stall),
     .mtip(mtip),
     .interrupt_request(interrupt_request),

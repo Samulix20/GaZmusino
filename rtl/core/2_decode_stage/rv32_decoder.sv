@@ -159,7 +159,7 @@ always_comb begin
             if (instr.funct3 == 'b000) begin 
                 // PRIV subopcode
                 // MRET
-                if (instr.funct3 == 'b00010 & instr.funct7 == 'b0011000) begin
+                if ((instr.rs2 == 'b00010) & (instr.funct7 == 'b0011000)) begin
                     control.is_mret = 1;
                 end
             end

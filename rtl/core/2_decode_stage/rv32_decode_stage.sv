@@ -14,6 +14,7 @@ import rv32_types::*;
     // Pipeline I/O
     input logic stop,
     input jump_request_t jump_request,
+    input interrupt_request_t interrupt_request,
     input fetch_decode_buffer_t fetch_decode_buff,
     output decode_exec_buffer_t decode_exec_buff,
     output logic stall,
@@ -108,6 +109,12 @@ always_comb begin
         output_internal_data.instr = RV_NOP;
         output_internal_data.control = create_bubble_ctrl();
         if (jump_request.do_jump) output_internal_data.pc = jump_request.from;
+    end
+
+    if (interrupt_request.do_interrupt) begin 
+        output_internal_data.instr = RV_NOP;
+        output_internal_data.control = create_bubble_ctrl();
+        output_internal_data.pc = interrupt_request.from;
     end
 
 end
